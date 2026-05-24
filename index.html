@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.64</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.65</div>
     </div>
   </aside>
 
@@ -710,18 +710,45 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Perfil cognitivo</div>
+        <div class="card-title">Perfil cognitivo y diagnóstico neuropsicológico presuntivo</div>
         <div class="field"><div style="display:flex;gap:6px;margin-bottom:4px;"><button type="button" onclick="boldToolbar('inf-perfil-cog')" style="padding:2px 10px;font-size:0.8rem;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:serif;" title="Seleccioná texto y presioná B"><b>B</b></button><span style="font-size:0.72rem;color:var(--muted);align-self:center;">Seleccioná texto → B para negrita</span></div><textarea id="inf-perfil-cog" rows="6" placeholder="Descripción integrativa del perfil neuropsicológico..."></textarea></div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
         <div class="card-title">Conclusiones</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.84rem;margin-bottom:10px;cursor:pointer;">
+          <input type="checkbox" id="inf-incluir-conclusiones" style="accent-color:var(--accent);width:16px;height:16px;">
+          Incluir conclusiones en el informe
+        </label>
         <div class="field"><div style="display:flex;gap:6px;margin-bottom:4px;"><button type="button" onclick="boldToolbar('inf-conclusiones')" style="padding:2px 10px;font-size:0.8rem;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:serif;" title="Seleccioná texto y presioná B"><b>B</b></button><span style="font-size:0.72rem;color:var(--muted);align-self:center;">Seleccioná texto → B para negrita</span></div><textarea id="inf-conclusiones" rows="5" placeholder="Síntesis diagnóstica y conclusiones clínicas..."></textarea></div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Recomendaciones</div>
-        <div class="field"><div style="display:flex;gap:6px;margin-bottom:4px;"><button type="button" onclick="boldToolbar('inf-recomendaciones')" style="padding:2px 10px;font-size:0.8rem;font-weight:700;background:var(--bg);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-family:serif;" title="Seleccioná texto y presioná B"><b>B</b></button><span style="font-size:0.72rem;color:var(--muted);align-self:center;">Seleccioná texto → B para negrita</span></div><textarea id="inf-recomendaciones" rows="5" placeholder="Intervenciones sugeridas, derivaciones, seguimiento..."></textarea></div>
+        <div class="card-title">Sugerencias</div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Solo las opciones tildadas aparecerán en el informe (sección 6).</p>
+        <div id="inf-sugerencias-checks" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+        <div class="field">
+          <label>Sugerencias personalizadas (texto libre)</label>
+          <textarea id="inf-sugerencias-extra" rows="4" placeholder="Agregar sugerencias adicionales..."></textarea>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Apéndice A — Sugerencias para mantener su mente activa</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="inf-incluir-apendice-a" checked style="accent-color:var(--accent);width:16px;height:16px;">
+          Incluir Apéndice A en el informe
+        </label>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:8px;line-height:1.5;">Texto fijo con recomendaciones de estilo de vida para la protección cognitiva.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Apéndice B — Resultados estadísticos</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.84rem;cursor:pointer;">
+          <input type="checkbox" id="inf-incluir-apendice-b" checked style="accent-color:var(--accent);width:16px;height:16px;">
+          Incluir Apéndice B en el informe
+        </label>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:8px;line-height:1.5;">Tabla completa de resultados con puntajes Z, percentiles y categorías (neuropsicológicos, clínica, TDAH, dolor y familiares).</p>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
@@ -5965,6 +5992,7 @@ function generarPDFHistorial() {
 
 function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacSexo, pacEscol, inf) {
   inf = inf || {};
+  var infCfgPack = infExtraerConfig(inf);
 
   var fechas  = datos.map(function(r){ return r.fecha; }).filter(Boolean).sort();
   var periodo = fechas.length > 1 ? fechas[0] + ' — ' + fechas[fechas.length-1] : (fechas[0] || '');
@@ -7075,7 +7103,7 @@ function renderCuestionariosFam(d) {
     '<div>Generado: '+new Date().toLocaleDateString('es-AR')+'</div></div></div>'+
 
     // ── Ficha del paciente (con datos del informe) ──
-    '<div class="sec-titulo">Datos del Paciente</div>'+
+    '<div class="sec-titulo">1. Datos Personales</div>'+
     '<div class="ficha-grid">'+
     '<div class="ficha-item"><span class="ficha-lbl">Apellido y Nombre:</span><span>'+pacNombre+'</span></div>'+
     (pacEdad?'<div class="ficha-item"><span class="ficha-lbl">Edad:</span><span>'+pacEdad+'</span></div>':'')+
@@ -7096,113 +7124,31 @@ function renderCuestionariosFam(d) {
     (inf.habitos_toxicos?'<div class="ficha-item" style="grid-column:1/-1"><span class="ficha-lbl">Hábitos Tóxicos:</span><span>'+inf.habitos_toxicos+'</span></div>':'')+
     '</div>'+
 
-    // ── Secciones narrativas ──
-    pdfSec('Motivo de Consulta', inf.motivo_consulta)+
-    pdfSec('Descripción de la Conducta Durante la Evaluación', inf.descripcion_conducta)+
-    pdfSec('Perfil Cognitivo', inf.perfil_cognitivo)+
-
-    // ── Gráfico de perfil Z ──
+    pdfSec('2. Motivo de Consulta', inf.motivo_consulta)+
+    pdfSec('3. Descripción de la Conducta Durante la Evaluación', inf.descripcion_conducta)+
+    buildPruebasRealizadasHtml(datos)+
+    pdfSec('5. Perfil Cognitivo y Diagnóstico Neuropsicológico Presuntivo', inf.perfil_cognitivo)+
+    (infCfgPack.cfg.incluir_conclusiones && (inf.conclusiones||'').trim() ? pdfSec('Conclusiones', inf.conclusiones) : '')+
+    buildSugerenciasInformeHtml(infCfgPack.cfg, infCfgPack.sugerenciasPersonalizadas)+
+    (infCfgPack.cfg.incluir_apendice_a ? buildApendiceAInformeHtml() : '')+
+    (infCfgPack.cfg.incluir_apendice_b ? (
+    '<div class="sec-titulo">8. Apéndice B: Resultados Estadísticos</div>'+
     (testsNp.length ? renderGraficoPerfil(testsNp) : '')+
-
-
-    // ── Pruebas Administradas (formato narrativo por dominio) ──
-    (function(){
-      var NOMBRES = {
-        'MoCA':               'Montreal Cognitive Assessment (MoCA)',
-        'ACE-R':              'Addenbrooke\'s Cognitive Examination — Revisado (ACE-R)',
-        'WAIS-IV':            'Retención de Dígitos, Claves y Secuencia Número-Letra — WAIS-IV',
-        'TMT A-B':            'Trail Making Test (TMT-A y TMT-B)',
-        'Fluencia Verbal':    'Fluencia Verbal Semántica y Fonológica',
-        'Cuestionarios Familiares': 'Cuestionarios Familiares (NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG)',
-        'BNT-60':             'Test de Denominación de Boston — Versión completa 60 ítems (BNT-60)',
-        'BNT-12':             'Test de Denominación de Boston — Versión abreviada 12 ítems (BNT-12)',
-        'Rey Verbal':         'Test de Aprendizaje Auditivo-Verbal de Rey (RAVLT)',
-        'TAVEC':              'Test de Aprendizaje Verbal España-Complutense (TAVEC)',
-        'BEM 144 Signoret':   'Batería de Eficacia Mnésica 144 — Signoret (BEM-144)',
-        'WCST-64':            'Wisconsin Card Sorting Test — Versión 64 cartas (WCST-64)',
-        'Stroop':             'Test de Colores y Palabras Stroop — Versión 3 colores (Golden, 1978)',
-        'Figura Rey':         'Figura Compleja de Rey-Osterrieth (ROCF)',
-        'BTA':                'Brief Test of Attention (BTA)',
-        'Test del Hotel':     'Test del Hotel (Pinasco et al., 2023)',
-        'BADS-Llaves':        'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
-        'BADS-Juicio':        'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
-        'BADS-Zoo':           'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
-        'BTA':                'Brief Test of Attention (BTA)',
-        'Test del Hotel':     'Test del Hotel (Pinasco et al., 2023)',
-        'BADS-Llaves':        'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
-        'BADS-Juicio':        'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
-        'BADS-Zoo':           'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
-        'SDMT-escrita':       'Symbol Digit Modalities Test — Versión Escrita (SDMT)',
-        'SDMT-oral':          'Symbol Digit Modalities Test — Versión Oral (SDMT)',
-        'IFS':                'INECO Frontal Screening (IFS)',
-        'Test del Reloj (Cacho)': 'Test del Reloj — Método Cacho et al.',
-        'BDI-II':             'Inventario de Depresión de Beck — Segunda Edición (BDI-II)',
-        'STAI':               'Inventario de Ansiedad Estado-Rasgo (STAI)',
-        'PHQ-9':              'Cuestionario de Salud del Paciente (PHQ-9)',
-        'GAD-7':              'Escala de Trastorno de Ansiedad Generalizada (GAD-7)',
-        'Birleson':           'Escala de Depresión en Adolescentes — Birleson (PACES)',
-        'AAA':                'Autoreporte de Ansiedad para Adolescentes (AAA)',
-        'SPAI-B':             'Inventario de Fobia Social — Versión Breve (SPAI-B)',
-        'CSI':                'Inventario de Estrategias de Afrontamiento (CSI)',
-        'SCL-90-R':           'Inventario de Síntomas SCL-90-R',
-        'MBI-HSS':            'Inventario de Burnout de Maslach (MBI-HSS)',
-        'ASRS-V1.1':          'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
-        'WURS-25':            'Escala de Wender-Utah — Versión 25 ítems (WURS-25)',
-        'PCS':                'Escala de Catastrofización del Dolor (PCS)',
-        'CSQ':                'Cuestionario de Estrategias de Afrontamiento al Dolor (CSQ)',
-        'PBQ':                'Cuestionario de Conductas de Dolor (PBQ)',
-        'BPI':                'Inventario Breve de Dolor (BPI)'
-      };
-      var DOMINIOS = [
-        {label:'Screening cognitivo global',      tests:['MoCA','ACE-R']},
-        {label:'Atención y velocidad de procesamiento', tests:['WAIS-IV','TMT A-B','SDMT-escrita','SDMT-oral','BTA']},
-        {label:'Lenguaje',                         tests:['Fluencia Verbal','BNT-60','BNT-12']},
-        {label:'Memoria',                          tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
-        {label:'Funciones ejecutivas',             tests:['WCST-64','IFS','Stroop','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
-        {label:'Evaluación cognitiva global',      tests:['Test del Reloj (Cacho)']},
-        {label:'Psicología clínica',               tests:['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS']},
-        {label:'TDAH',                             tests:['ASRS-V1.1','WURS-25']},
-        {label:'Evaluación del dolor',                tests:['PCS','CSQ','PBQ','BPI']}
-      ];
-      var testsTomados = datos.map(function(r){return r.test;});
-      var html = '<div class="sec-titulo">Pruebas Administradas</div>';
-      DOMINIOS.forEach(function(dom){
-        var presentes = dom.tests.filter(function(t){return testsTomados.indexOf(t)!==-1;});
-        if (!presentes.length) return;
-        html += '<p style="font-family:Arial,sans-serif;font-size:11pt;margin:6px 0 2px;">';
-        html += '<strong>'+dom.label+'</strong></p>';
-        html += '<p style="font-family:Arial,sans-serif;font-size:11pt;margin:0 0 8px;line-height:1.5;text-align:justify;">';
-        html += presentes.map(function(t){return NOMBRES[t]||t;}).join(' · ');
-        html += '</p>';
-      });
-      return html;
-    })()+
-
-    // ── Secciones ──
     (testsNp.length ?
-      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:0;">Evaluación Neuropsicológica</div>'+
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Evaluación Neuropsicológica</div>'+
       renderNP(testsNp) : '')+
-
     (testsTd.length ?
       '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">TDAH</div>'+
       renderCL(testsTd) : '')+
-
     (testsDo.length ?
       '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Evaluación del Dolor</div>'+
       renderDolor(testsDo) : '')+
-
     (testsCl.length ?
       '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Psicología Clínica</div>'+
       renderCL(testsCl) : '')+
-
     (testsNp.length ? refZ : '')+
-
-    // ── Reporte del Acompañante ──
     (famHtml ? famHtml : '')+
-
-    // ── Conclusiones y Recomendaciones ──
-    pdfSec('Conclusiones', inf.conclusiones)+
-    pdfSec('Recomendaciones', inf.recomendaciones)+
+    '') : '')+
 
     // ── Firma ──
     '<div style="margin-top:50px;font-family:Arial,sans-serif;font-size:11pt;">'+
@@ -12115,6 +12061,214 @@ function guardarBNT() {
   }).catch(function(){toast('Error al guardar','error');});
 }
 
+var INF_CFG_PREFIX = '/*INF_CFG:';
+var INF_SUGERENCIAS_OPCIONES = [
+  { id: 's1', text: 'Sostener consulta con profesional derivante a fines de correlacionar los resultados obtenidos con estudios complementarios (neuroimágenes, laboratorio, entre otros).' },
+  { id: 's2', text: 'Mantener chequeo médico general a fin de controlar factores de salud que puedan influir sobre el estado cognitivo (cardiovasculares, niveles de colesterol y triglicéridos, etc.), ya que son factores de riesgo para fluctuaciones cognitivas.' },
+  { id: 's3', text: 'Repetir estudio de valoración neuropsicológica en un plazo de 12 a 18 meses, a los fines de tener un estudio confirmatorio y de seguimiento sobre las variaciones de su estado cognitivo actual.' },
+  { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el Apéndice A del presente informe.' }
+];
+var INF_APENDICE_A_ITEMS = [
+  'Realice ejercicio físico periódicamente. El mismo debe implicar una frecuencia de al menos 3 veces por semana, y una duración de 45 minutos. Puede realizar caminatas, o alguna otra actividad física aeróbica de su agrado. Se sugiere complementar la actividad aeróbica con actividades de flexibilidad, como yoga, y de resistencia. Para el inicio del programa de ejercicio debe contar con previa autorización y asesoramiento médico.',
+  'Lleve un estilo de vida saludable, intentando no abusar del alcohol ni del tabaco.',
+  'Mantenga una dieta variada, que incluya al menos 5 porciones de frutas y vegetales cada día. Evite el consumo de grasas saturadas o snacks. Beba al menos 1,5 a 2 litros de agua a diario, fundamental fuente protectora del cerebro.',
+  'Evite situaciones de estrés emocional y mantenga actividades ocio recreativas.',
+  'Mantenga una amplia gama de intereses y actividades de entretenimiento (ver películas, escuchar música). Retome sus intereses previos que le brindaban satisfacción.',
+  'Busque generar momentos de encuentro con sus amistades significativas o familiares, intercambie con ellos temas de su interés.'
+];
+
+function infDefaultCfg() {
+  return {
+    sugerencias: { s1: false, s2: false, s3: false, s4: false },
+    incluir_conclusiones: false,
+    incluir_apendice_a: true,
+    incluir_apendice_b: true
+  };
+}
+
+function infParseRecomendaciones(str) {
+  str = str || '';
+  if (str.indexOf(INF_CFG_PREFIX) === 0) {
+    var end = str.indexOf('*/');
+    if (end !== -1) {
+      try {
+        var cfg = JSON.parse(str.slice(INF_CFG_PREFIX.length, end));
+        return { cfg: Object.assign(infDefaultCfg(), cfg), text: str.slice(end + 2).replace(/^\n/, '') };
+      } catch (e) {}
+    }
+  }
+  return { cfg: infDefaultCfg(), text: str };
+}
+
+function infSerializeRecomendaciones(cfg, text) {
+  return INF_CFG_PREFIX + JSON.stringify(cfg) + '*/\n' + (text || '');
+}
+
+function infExtraerConfig(inf) {
+  inf = inf || {};
+  var parsed = infParseRecomendaciones(inf.recomendaciones);
+  var cfg = parsed.cfg;
+  var sugerenciasPersonalizadas = parsed.text;
+  if (inf.datos && typeof inf.datos === 'object' && !Array.isArray(inf.datos)) {
+    var d = inf.datos;
+    cfg = Object.assign(infDefaultCfg(), {
+      sugerencias: d.sugerencias || cfg.sugerencias,
+      incluir_conclusiones: d.incluir_conclusiones != null ? d.incluir_conclusiones : cfg.incluir_conclusiones,
+      incluir_apendice_a: d.incluir_apendice_a != null ? d.incluir_apendice_a : cfg.incluir_apendice_a,
+      incluir_apendice_b: d.incluir_apendice_b != null ? d.incluir_apendice_b : cfg.incluir_apendice_b
+    });
+    if (d.sugerencias_personalizadas != null) sugerenciasPersonalizadas = d.sugerencias_personalizadas;
+  }
+  return { cfg: cfg, sugerenciasPersonalizadas: sugerenciasPersonalizadas };
+}
+
+function infRenderSugerenciasChecks() {
+  var el = document.getElementById('inf-sugerencias-checks');
+  if (!el) return;
+  el.innerHTML = INF_SUGERENCIAS_OPCIONES.map(function(s) {
+    return '<label style="display:flex;align-items:flex-start;gap:8px;font-size:0.84rem;line-height:1.45;cursor:pointer;">' +
+      '<input type="checkbox" id="inf-sug-' + s.id + '" data-sug-id="' + s.id + '" style="accent-color:var(--accent);width:16px;height:16px;margin-top:2px;flex-shrink:0;">' +
+      '<span>' + s.text + '</span></label>';
+  }).join('');
+}
+
+function infGetConfigFromForm() {
+  var cfg = infDefaultCfg();
+  INF_SUGERENCIAS_OPCIONES.forEach(function(s) {
+    var cb = document.getElementById('inf-sug-' + s.id);
+    if (cb) cfg.sugerencias[s.id] = cb.checked;
+  });
+  var ic = document.getElementById('inf-incluir-conclusiones');
+  var ia = document.getElementById('inf-incluir-apendice-a');
+  var ib = document.getElementById('inf-incluir-apendice-b');
+  cfg.incluir_conclusiones = ic ? ic.checked : false;
+  cfg.incluir_apendice_a = ia ? ia.checked : true;
+  cfg.incluir_apendice_b = ib ? ib.checked : true;
+  return cfg;
+}
+
+function infApplyConfigToForm(cfg) {
+  cfg = cfg || infDefaultCfg();
+  INF_SUGERENCIAS_OPCIONES.forEach(function(s) {
+    var cb = document.getElementById('inf-sug-' + s.id);
+    if (cb) cb.checked = !!cfg.sugerencias[s.id];
+  });
+  var ic = document.getElementById('inf-incluir-conclusiones');
+  var ia = document.getElementById('inf-incluir-apendice-a');
+  var ib = document.getElementById('inf-incluir-apendice-b');
+  if (ic) ic.checked = !!cfg.incluir_conclusiones;
+  if (ia) ia.checked = cfg.incluir_apendice_a !== false;
+  if (ib) ib.checked = cfg.incluir_apendice_b !== false;
+}
+
+function infFormatoBold(txt) {
+  return (txt || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').split('\n').join('<br>');
+}
+
+function buildSugerenciasInformeHtml(cfg, textoExtra) {
+  var items = [];
+  INF_SUGERENCIAS_OPCIONES.forEach(function(s) {
+    if (cfg.sugerencias && cfg.sugerencias[s.id]) items.push(s.text);
+  });
+  if (!items.length && !(textoExtra && textoExtra.trim())) return '';
+  var html = '<div class="sec-titulo">6. Sugerencias</div>';
+  items.forEach(function(t, i) {
+    html += '<p class="narrativa" style="margin-left:1.2em;text-indent:-1.2em;">' + (i + 1) + '. ' + infFormatoBold(t) + '</p>';
+  });
+  if (textoExtra && textoExtra.trim()) {
+    var startN = items.length + 1;
+    textoExtra.trim().split('\n').forEach(function(line, j) {
+      if (!line.trim()) return;
+      html += '<p class="narrativa" style="margin-left:1.2em;text-indent:-1.2em;">' + (startN + j) + '. ' + infFormatoBold(line.trim()) + '</p>';
+    });
+  }
+  return html;
+}
+
+function buildApendiceAInformeHtml() {
+  var html = '<div class="sec-titulo">7. Apéndice A: Sugerencias para Mantener su Mente Activa</div>';
+  html += '<p class="narrativa">Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:</p>';
+  INF_APENDICE_A_ITEMS.forEach(function(t) {
+    html += '<p class="narrativa" style="margin-left:1em;text-indent:-0.6em;">- ' + t + '</p>';
+  });
+  return html;
+}
+
+function buildPruebasRealizadasHtml(datos) {
+  var NOMBRES = {
+    'MoCA': 'Montreal Cognitive Assessment (MoCA)',
+    'ACE-R': "Addenbrooke's Cognitive Examination — Revisado (ACE-R)",
+    'WAIS-IV': 'Retención de Dígitos, Claves y Secuencia Número-Letra — WAIS-IV',
+    'TMT A-B': 'Trail Making Test (TMT-A y TMT-B)',
+    'Fluencia Verbal': 'Fluencia Verbal Semántica y Fonológica',
+    'Cuestionarios Familiares': 'Cuestionarios Familiares (NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG)',
+    'BNT-60': 'Test de Denominación de Boston — 60 ítems (BNT-60)',
+    'BNT-12': 'Test de Denominación de Boston — 12 ítems (BNT-12)',
+    'Rey Verbal': 'Test de Aprendizaje Auditivo-Verbal de Rey (RAVLT)',
+    'TAVEC': 'Test de Aprendizaje Verbal España-Complutense (TAVEC)',
+    'BEM 144 Signoret': 'Batería de Eficacia Mnésica 144 — Signoret (BEM-144)',
+    'WCST-64': 'Wisconsin Card Sorting Test — 64 cartas (WCST-64)',
+    'Stroop': 'Test de Colores y Palabras Stroop (Golden, 1978)',
+    'Figura Rey': 'Figura Compleja de Rey-Osterrieth (ROCF)',
+    'BTA': 'Brief Test of Attention (BTA)',
+    'Test del Hotel': 'Test del Hotel (Pinasco et al., 2023)',
+    'BADS-Llaves': 'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
+    'BADS-Juicio': 'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
+    'BADS-Zoo': 'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
+    'SDMT-escrita': 'Symbol Digit Modalities Test — Escrita (SDMT)',
+    'SDMT-oral': 'Symbol Digit Modalities Test — Oral (SDMT)',
+    'IFS': 'INECO Frontal Screening (IFS)',
+    'FAB': 'Frontal Assessment Battery (FAB)',
+    'D2': 'Test de Atención d2 (Brickenkamp)',
+    'Token Test': 'Token Test',
+    'Test del Reloj (Cacho)': 'Test del Reloj — Método Cacho et al.',
+    'BDI-II': 'Inventario de Depresión de Beck — 2ª Ed. (BDI-II)',
+    'STAI': 'Inventario de Ansiedad Estado-Rasgo (STAI)',
+    'PHQ-9': 'Cuestionario de Salud del Paciente (PHQ-9)',
+    'GAD-7': 'Escala de Trastorno de Ansiedad Generalizada (GAD-7)',
+    'Birleson': 'Escala de Depresión en Adolescentes — Birleson (PACES)',
+    'AAA': 'Autoreporte de Ansiedad para Adolescentes (AAA)',
+    'SPAI-B': 'Inventario de Fobia Social — Versión Breve (SPAI-B)',
+    'CSI': 'Inventario de Estrategias de Afrontamiento (CSI)',
+    'SCL-90-R': 'Inventario de Síntomas SCL-90-R',
+    'MBI-HSS': 'Inventario de Burnout de Maslach (MBI-HSS)',
+    'ASRS-V1.1': 'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
+    'WURS-25': 'Escala de Wender-Utah — 25 ítems (WURS-25)',
+    'DEX': 'Cuestionario Disejecutivo (DEX)',
+    'PCS': 'Escala de Catastrofización del Dolor (PCS)',
+    'CSQ': 'Cuestionario de Estrategias de Afrontamiento al Dolor (CSQ)',
+    'PBQ': 'Cuestionario de Conductas de Dolor (PBQ)',
+    'BPI': 'Inventario Breve de Dolor (BPI)'
+  };
+  var DOMINIOS = [
+    { label: 'Screening cognitivo global', tests: ['MoCA', 'ACE-R', 'Test del Reloj (Cacho)'] },
+    { label: 'Atención y velocidad de procesamiento', tests: ['WAIS-IV', 'TMT A-B', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'] },
+    { label: 'Lenguaje', tests: ['Fluencia Verbal', 'BNT-60', 'BNT-12', 'Token Test'] },
+    { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
+    { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
+    { label: 'Visoconstructivo', tests: ['Figura Rey'] },
+    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX'] },
+    { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI'] },
+    { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
+    { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
+  ];
+  var testsTomados = datos.map(function(r) { return r.test; });
+  var tiene = DOMINIOS.some(function(dom) {
+    return dom.tests.some(function(t) { return testsTomados.indexOf(t) !== -1; });
+  });
+  if (!tiene) return '';
+  var html = '<div class="sec-titulo">4. Pruebas Realizadas</div>';
+  DOMINIOS.forEach(function(dom) {
+    var presentes = dom.tests.filter(function(t) { return testsTomados.indexOf(t) !== -1; });
+    if (!presentes.length) return;
+    html += '<p style="font-family:Arial,sans-serif;font-size:11pt;margin:6px 0 2px;"><strong>' + dom.label + '</strong></p>';
+    html += '<p style="font-family:Arial,sans-serif;font-size:11pt;margin:0 0 8px;line-height:1.5;text-align:justify;">';
+    html += presentes.map(function(t) { return NOMBRES[t] || t; }).join(' · ');
+    html += '</p>';
+  });
+  return html;
+}
+
 // ══ INFORME NEUROPSICOLÓGICO ══════════════════════════════════════════════════
 var INFORME_PAC_ID = null;
 
@@ -12135,8 +12289,10 @@ function abrirInforme() {
   // Limpiar campos
   var campos = ['inf-fecha-eval','inf-evaluado-por','inf-derivado-por','inf-dni','inf-ocupacion',
     'inf-procedencia','inf-dominancia','inf-contacto','inf-ant-clinicos','inf-ant-psiq',
-    'inf-ant-fam','inf-habitos','inf-motivo','inf-conducta','inf-perfil-cog','inf-conclusiones','inf-recomendaciones'];
+    'inf-ant-fam','inf-habitos','inf-motivo','inf-conducta','inf-perfil-cog','inf-conclusiones','inf-sugerencias-extra'];
   campos.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  infRenderSugerenciasChecks();
+  infApplyConfigToForm(infDefaultCfg());
   window._firmaBase64 = null;
   var prev = document.getElementById('inf-firma-preview-wrap');
   if(prev) prev.style.display='none';
@@ -12171,12 +12327,17 @@ function cargarInforme(pacId) {
         'inf-conducta':     inf.descripcion_conducta||'',
         'inf-perfil-cog':   inf.perfil_cognitivo||'',
         'inf-conclusiones': inf.conclusiones||'',
-        'inf-recomendaciones': inf.recomendaciones||''
+        'inf-sugerencias-extra': ''
       };
       Object.keys(map).forEach(function(id){
         var el = document.getElementById(id);
         if(el) el.value = map[id];
       });
+      infRenderSugerenciasChecks();
+      var infPack = infExtraerConfig(inf);
+      infApplyConfigToForm(infPack.cfg);
+      var extraEl = document.getElementById('inf-sugerencias-extra');
+      if (extraEl) extraEl.value = infPack.sugerenciasPersonalizadas || '';
       // Mostrar firma existente si hay
       if (inf.firma_imagen) {
         var wrap = document.getElementById('inf-firma-existente');
@@ -12207,7 +12368,7 @@ function guardarInforme() {
     descripcion_conducta: document.getElementById('inf-conducta').value || null,
     perfil_cognitivo: document.getElementById('inf-perfil-cog').value || null,
     conclusiones:     document.getElementById('inf-conclusiones').value || null,
-    recomendaciones:  document.getElementById('inf-recomendaciones').value || null,
+    recomendaciones:  (function(){ var cfg=infGetConfigFromForm(); var ex=document.getElementById('inf-sugerencias-extra'); return infSerializeRecomendaciones(cfg, ex?ex.value:''); })(),
     firma_imagen:     window._firmaBase64 || null,
     actualizado:      new Date().toISOString()
   };
@@ -14022,6 +14183,8 @@ function generarWordHistorial() {
 }
 
 function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pacOcup,pacDNI,fechaEval,inf) {
+  inf = inf || {};
+  var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
@@ -14316,7 +14479,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   body+=_wPar(_wRun('INFORME DE EVALUACIÓN NEUROPSICOLÓGICA',{bold:true,sz:28,color:'000000',font:'Arial'}),{align:'center',before:0,after:120});
 
   // 2. DATOS DEL PACIENTE
-  body+=secTit('1. Datos del Paciente');
+  body+=secTit('1. Datos Personales');
   body+=_wTable([
     dpRow('Apellido y Nombre', pacNombre),
     dpRow('Edad',              pacEdad),
@@ -14354,7 +14517,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var testsTomados=datos.map(function(r){return r.test;});
   var tieneTests=DOMINIOS_PRUEBAS.some(function(dom){return dom.tests.some(function(t){return testsTomados.indexOf(t)!==-1;});});
   if(tieneTests){
-    body+=secTit('4. Pruebas Administradas');
+    body+=secTit('4. Pruebas Realizadas');
     DOMINIOS_PRUEBAS.forEach(function(dom){
       var presentes=dom.tests.filter(function(t){return testsTomados.indexOf(t)!==-1;});
       if(!presentes.length)return;
@@ -14366,33 +14529,57 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     });
   }
 
-  // 6. PERFIL COGNITIVO
+  // 5. PERFIL COGNITIVO
   if((inf.perfil_cognitivo||'').trim()){
-    body+=secTit('6. Perfil Cognitivo y Diagnóstico Neuropsicológico Presuntivo');
+    body+=secTit('5. Perfil Cognitivo y Diagnóstico Neuropsicológico Presuntivo');
     parrafos(inf.perfil_cognitivo).forEach(function(p){body+=p;});
     body+=_wPar('',{before:0,after:80});
   }
 
-  // 7. CONCLUSIONES
-  if((inf.conclusiones||'').trim()){
-    body+=secTit('7. Conclusiones');
+  // Conclusiones (opcional, entre sección 5 y 6)
+  if(infCfgPack.cfg.incluir_conclusiones && (inf.conclusiones||'').trim()){
+    body+=secTit('Conclusiones');
     parrafos(inf.conclusiones).forEach(function(p){body+=p;});
     body+=_wPar('',{before:0,after:80});
   }
 
-  // 8. SUGERENCIAS (fijas siempre)
-  body+=secTit('8. Sugerencias');
-  body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">1.  Sostener consulta con profesional derivante a fines de correlacionar los resultados obtenidos con estudios complementarios (neuroimágenes, laboratorio, entre otros).</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">2.  Mantener chequeo médico general a fin de controlar factores de salud que puedan influir sobre el estado cognitivo (cardiovasculares, niveles de colesterol y triglicéridos, etc.), ya que son factores de riesgo para fluctuaciones cognitivas.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">3.  Repetir estudio de valoración neuropsicológica en un plazo de 12 a 18 meses, a los fines de tener un estudio confirmatorio y de seguimiento sobre las variaciones de su estado cognitivo actual.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">4.  Se sugiere iniciar un programa de estimulación cognitiva a fin de evitar consolidación de déficits cognitivos y lograr mayores estrategias de aprendizaje y memoria con alcance ecológico, y de mejoramiento de la funcionalidad instrumental y expansiva.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">5.  Sostener proceso psicoterapéutico y/o psiquiátrico para el abordaje de la sintomatología emocional y el reforzamiento de estrategias de gestión de estrés.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">6.  Realizar y/o sostener consulta con psiquiatría a fin de prevenir y controlar afectividad negativa y labilidad emocional, como el manejo de cambios conductuales incipientes.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">7.  El profesional derivante podrá valorar la pertinencia de sugerir un programa de orientación y acompañamiento a familiares.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">8.  Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el Apéndice A del presente informe.</w:t></w:r></w:p>';
-  body+=_wPar('',{before:0,after:80});
+  // 6. SUGERENCIAS (según checkboxes)
+  (function(){
+    var cfg = infCfgPack.cfg;
+    var extra = infCfgPack.sugerenciasPersonalizadas || '';
+    var items = [];
+    INF_SUGERENCIAS_OPCIONES.forEach(function(s){ if(cfg.sugerencias && cfg.sugerencias[s.id]) items.push(s.text); });
+    if(!items.length && !(extra && extra.trim())) return;
+    body+=secTit('6. Sugerencias');
+    function wEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    items.forEach(function(t,i){
+      body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(i+1)+'.  '+wEsc(t)+'</w:t></w:r></w:p>';
+    });
+    if(extra && extra.trim()){
+      var startN = items.length + 1;
+      extra.trim().split('\n').forEach(function(line,j){
+        if(!line.trim()) return;
+        body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(startN+j)+'.  '+wEsc(line.trim())+'</w:t></w:r></w:p>';
+      });
+    }
+    body+=_wPar('',{before:0,after:80});
+  })();
 
-  // 9. APÉNDICE A
-  body+=secTit('Apéndice A: Sugerencias para Mantener su Mente Activa');
-  body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
-  body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Realice ejercicio físico periódicamente. El mismo debe implicar una frecuencia de al menos 3 veces por semana, y una duración de 45 minutos. Puede realizar caminatas, o alguna otra actividad física aeróbica de su agrado. Se sugiere, en caso posible, complementar la actividad aeróbica con actividades de flexibilidad, como yoga, y de resistencia (que impliquen fuerza). Para el inicio del programa de ejercicio debe contar con previa autorización y asesoramiento médico.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Lleve un estilo de vida saludable, intentado no abusar del alcohol y ni del tabaco.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Mantenga una dieta variada, que incluya al menos 5 porciones de frutas y vegetales cada día. Evite el consumo de grasas saturadas o snacks. Beba al menos 1,5 a 2 litros de agua a diario (al menos 6 vasos), fundamental fuente protectora del cerebro.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Evite situaciones de estrés emocional y mantenga actividades ocio recreativas.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Mantenga una amplia gama de intereses y actividades de entretenimiento (ver películas, escuchar música). Retome sus intereses previos que le brindaban satisfacción.</w:t></w:r></w:p><w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">●  Busque generar momentos de encuentro con sus amistades significativas o familiares, intercambie con ellos temas de su interés.</w:t></w:r></w:p>';
-  body+=_wPar('',{before:0,after:120});
+  // 7. APÉNDICE A (opcional)
+  if(infCfgPack.cfg.incluir_apendice_a){
+    body+=secTit('7. Apéndice A: Sugerencias para Mantener su Mente Activa');
+    body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
+    INF_APENDICE_A_ITEMS.forEach(function(t){
+      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
+    });
+    body+=_wPar('',{before:0,after:120});
+  }
 
-  // 10. APÉNDICE B - RESULTADOS ESTADÍSTICOS
-  body+=secTit('Apéndice B: Resultados Estadísticos');
+  // 8. APÉNDICE B - RESULTADOS ESTADÍSTICOS (opcional)
+  if(infCfgPack.cfg.incluir_apendice_b){
+  body+=secTit('8. Apéndice B: Resultados Estadísticos');
+
+
 
   // Tabla NP con grilla Z
   var npRows=buildNPRows(testsNP);
@@ -14513,6 +14700,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wTable(famRows,COL_FAM);
     body+=_wPar('N/V = no valorado; N/C = paciente no está en condiciones para responder o ser valorado.',{before:40,after:80});
     body+=_wPar('',{before:0,after:80});
+  }
+
   }
 
   // (Perfil, conclusiones y sugerencias ya están arriba en el orden correcto)
