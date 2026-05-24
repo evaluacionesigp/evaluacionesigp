@@ -121,6 +121,24 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 /* ══ MAIN CONTENT ══ */
 .app-main { margin-left:220px; margin-top:0; flex:1; min-height:100vh; display:flex; flex-direction:column; }
+.topbar {
+  display:flex; align-items:center; justify-content:flex-end; gap:12px;
+  padding:10px 48px; border-bottom:1px solid var(--border); background:var(--surface);
+  flex-shrink:0; position:sticky; top:0; z-index:50;
+}
+.topbar-paciente-wrap { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.topbar-paciente-label {
+  font-size:0.86rem; font-weight:500; color:var(--muted); white-space:nowrap;
+}
+.topbar-paciente-label.activo { color:var(--green); font-weight:700; }
+.topbar-paciente-select {
+  min-width:200px; max-width:280px; padding:7px 12px; font-size:0.84rem;
+  font-family:'Outfit',sans-serif; border:1.5px solid var(--border2); border-radius:8px;
+  background:var(--surface2); color:var(--muted); cursor:pointer;
+}
+.topbar-paciente-select.activo {
+  color:var(--green); font-weight:600; border-color:#8fc98f; background:#f0faf0;
+}
 .app-content { flex:1; padding:40px 48px; max-width:980px; }
 
 /* ══ RESPONSIVE MOBILE ══ */
@@ -136,6 +154,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   .sidebar-user { display:none; }
   .sidebar-btn-salir { width:auto; padding:5px 10px; font-size:0.74rem; }
   .app-main { margin-left:0; margin-top:52px; }
+  .topbar { padding:8px 16px; }
+  .topbar-paciente-select { min-width:160px; max-width:100%; }
   .app-content { padding:20px 16px; }
 }
 
@@ -447,12 +467,20 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.63</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.64</div>
     </div>
   </aside>
 
   <!-- MAIN -->
   <div class="app-main">
+    <header class="topbar" id="app-topbar">
+      <div class="topbar-paciente-wrap">
+        <span id="topbar-paciente-label" class="topbar-paciente-label">— Seleccionar paciente —</span>
+        <select id="topbar-paciente-select" class="topbar-paciente-select" title="Paciente activo para toda la sesión" onchange="onTopbarPacienteChange()">
+          <option value="">— Seleccionar paciente —</option>
+        </select>
+      </div>
+    </header>
     <div class="app-content">
 
     <!-- ── INICIO ── -->
@@ -5089,6 +5117,7 @@ var RESULTADOS = [];
 // ── Sin restauración automática: siempre arrancar en el login ──────────────────
 var pacienteSelModal = null;
 var sectorActual = '';
+var PAC_ACTIVO = null;
 
 // ══ SUPABASE HELPER ══════════════════════════════════════════════════════════
 function supaFetch(path, method, body, token, extraHeaders) {
@@ -5136,7 +5165,8 @@ function doLogin() {
 }
 function doLogout() {
   SESSION = null; PACIENTES = []; RESULTADOS = [];
-  try { localStorage.removeItem('psico_session'); } catch(e) {}
+  PAC_ACTIVO = null;
+  try { localStorage.removeItem('psico_session'); sessionStorage.removeItem('pac_activo_id'); } catch(e) {}
   var app = document.getElementById('screen-app');
   app.classList.remove('active');
   app.style.display = 'none';
@@ -5162,6 +5192,7 @@ function cargarPacientes() {
       renderPacientes();
       renderPacientesInicio();
       llenarSelectPacientes();
+      restaurarPacienteActivo();
       renderUltimas();
     });
 }
@@ -5294,6 +5325,7 @@ function editarPaciente(id) {
     .then(function(){
       var idx = PACIENTES.findIndex(function(x){ return String(x.id)===String(id); });
       if (idx !== -1) Object.assign(PACIENTES[idx], updates);
+      if (PAC_ACTIVO && String(PAC_ACTIVO.id) === String(id)) Object.assign(PAC_ACTIVO, updates);
       document.body.removeChild(modal);
       renderPacientes();
       renderPacientesInicio();
@@ -5314,10 +5346,337 @@ function borrarPaciente(id, nombre) {
       return supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'DELETE', null, SESSION.access_token);
     })
     .then(function() {
+      if (PAC_ACTIVO && String(PAC_ACTIVO.id) === String(id)) setPacienteActivo(null);
       cargarPacientes();
       cargarResultados();
       toast('Paciente eliminado');
     });
+}
+
+// ══ PACIENTE ACTIVO GLOBAL ═══════════════════════════════════════════════════
+function setPacienteActivo(id) {
+  if (!id) {
+    PAC_ACTIVO = null;
+  } else {
+    PAC_ACTIVO = PACIENTES.find(function(p){ return String(p.id) === String(id); }) || null;
+    if (!PAC_ACTIVO) id = null;
+  }
+  try {
+    if (PAC_ACTIVO) sessionStorage.setItem('pac_activo_id', String(PAC_ACTIVO.id));
+    else sessionStorage.removeItem('pac_activo_id');
+  } catch(e) {}
+  actualizarTopbarPaciente();
+}
+
+function restaurarPacienteActivo() {
+  try {
+    var id = sessionStorage.getItem('pac_activo_id');
+    if (id) setPacienteActivo(id);
+    else actualizarTopbarPaciente();
+  } catch(e) { actualizarTopbarPaciente(); }
+}
+
+function onTopbarPacienteChange() {
+  var sel = document.getElementById('topbar-paciente-select');
+  if (!sel) return;
+  setPacienteActivo(sel.value || null);
+}
+
+function actualizarTopbarPaciente() {
+  var label = document.getElementById('topbar-paciente-label');
+  var sel = document.getElementById('topbar-paciente-select');
+  var opciones = '<option value="">— Seleccionar paciente —</option>' +
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+  if (sel) {
+    sel.innerHTML = opciones;
+    if (PAC_ACTIVO) {
+      sel.value = PAC_ACTIVO.id;
+      sel.classList.add('activo');
+    } else {
+      sel.value = '';
+      sel.classList.remove('activo');
+    }
+  }
+  if (label) {
+    if (PAC_ACTIVO) {
+      label.textContent = '👤 ' + PAC_ACTIVO.nombre;
+      label.classList.add('activo');
+    } else {
+      label.textContent = '— Seleccionar paciente —';
+      label.classList.remove('activo');
+    }
+  }
+}
+
+function parseAniosEscolaridad(escolaridad) {
+  if (!escolaridad) return null;
+  var s = String(escolaridad).toLowerCase();
+  var m = s.match(/(\d+)\s*a[nñ]os?/);
+  if (m) return parseInt(m[1], 10);
+  m = s.match(/(\d+)/);
+  if (m) {
+    var n = parseInt(m[1], 10);
+    if (n <= 25) return n;
+  }
+  if (/postgrado|maestr|doctorado|posgrado/.test(s)) return 18;
+  if (/universit/.test(s)) return 16;
+  if (/terciar/.test(s)) return 14;
+  if (/secundar/.test(s)) {
+    if (/complet|termin/.test(s)) return 12;
+    if (/incomplet/.test(s)) return 9;
+    return 12;
+  }
+  if (/primar/.test(s)) return 6;
+  if (/analfabet|sin estudios/.test(s)) return 0;
+  return null;
+}
+
+function sexoARey(sexo) {
+  if (!sexo) return '';
+  var s = String(sexo).toLowerCase();
+  if (s === 'h' || s === 'm') return s;
+  if (s.indexOf('masc') !== -1 || s === 'hombre' || s === 'varon' || s === 'varón') return 'h';
+  if (s.indexOf('fem') !== -1 || s === 'mujer') return 'm';
+  return '';
+}
+
+function pacSetVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && val !== null && val !== undefined && val !== '') el.value = val;
+}
+
+function grupoRey(edad) {
+  if (edad === null || edad < 16) return '';
+  if (edad <= 19) return '0';
+  if (edad <= 29) return '1';
+  if (edad <= 39) return '2';
+  if (edad <= 49) return '3';
+  if (edad <= 59) return '4';
+  if (edad <= 69) return '5';
+  return '6';
+}
+
+function grupoTmt(edad) {
+  if (edad === null || edad < 16) return '';
+  if (edad <= 29) return '0';
+  if (edad <= 49) return '1';
+  if (edad <= 64) return '2';
+  return '3';
+}
+
+function escolTmt(anios) {
+  if (anios === null) return '';
+  if (anios <= 6) return 'baja';
+  if (anios <= 10) return 'media';
+  return 'alta';
+}
+
+function grupoFlv(edad) {
+  if (edad === null || edad < 15) return '';
+  if (edad <= 29) return '0';
+  if (edad <= 49) return '1';
+  return '2';
+}
+
+function neFlv(anios) {
+  if (anios === null) return '';
+  return anios >= 12 ? 'alto' : 'bajo';
+}
+
+function grupoStroop(edad) {
+  if (edad === null || edad < 16) return '';
+  if (edad <= 44) return '0';
+  if (edad <= 64) return '1';
+  return '2';
+}
+
+function grupoSpaib(edad) {
+  if (edad === null || edad < 18) return '';
+  return edad <= 35 ? '18-35' : '36-80';
+}
+
+function grupoIfs(edad) {
+  if (edad === null || edad < 20) return '';
+  if (edad <= 34) return '0';
+  if (edad <= 49) return '1';
+  if (edad <= 64) return '2';
+  return '3';
+}
+
+function neIfs(anios) {
+  if (anios === null) return '';
+  if (anios <= 7) return '0';
+  if (anios <= 12) return '1';
+  return '2';
+}
+
+function grupoWcst(edad) {
+  if (edad === null || edad < 18) return '';
+  if (edad < 30) return '0';
+  if (edad >= 80) return '6';
+  return String(1 + Math.floor((edad - 30) / 10));
+}
+
+function neAltoBajo(anios) {
+  if (anios === null) return '';
+  return anios >= 12 ? 'alto' : 'bajo';
+}
+
+function neAcer(anios) {
+  if (anios === null) return '';
+  return anios <= 6 ? 'baja' : 'alta';
+}
+
+function neMoca(anios) {
+  if (anios === null) return '';
+  if (anios <= 6) return 'primaria';
+  if (anios <= 12) return 'media';
+  return 'alta';
+}
+
+function grupoQuinquenal18(edad, maxIdx) {
+  if (edad === null || edad < 18) return '';
+  var idx = Math.floor((edad - 18) / 5);
+  if (idx > maxIdx) return String(maxIdx);
+  return String(idx);
+}
+
+function grupoDecada20(edad) {
+  if (edad === null || edad < 20) return '';
+  if (edad < 30) return '0';
+  if (edad < 40) return '1';
+  if (edad < 50) return '2';
+  return '3';
+}
+
+function grupoHotel(edad) {
+  if (edad === null || edad < 19) return '';
+  if (edad <= 29) return '0';
+  if (edad <= 39) return '1';
+  if (edad <= 49) return '2';
+  return '3';
+}
+
+function grupoSignoret(edad) {
+  if (edad === null) return '';
+  if (edad <= 45) return '0';
+  if (edad <= 55) return '1';
+  if (edad <= 65) return '2';
+  if (edad <= 75) return '3';
+  if (edad <= 85) return '4';
+  return '5';
+}
+
+function grupoTavec(edad) {
+  if (edad === null || edad < 16) return '';
+  if (edad <= 24) return '1';
+  if (edad <= 34) return '2';
+  if (edad <= 44) return '3';
+  if (edad <= 54) return '4';
+  if (edad <= 64) return '5';
+  if (edad <= 74) return '6';
+  return '7';
+}
+
+function grupoSdmtOral(edad) {
+  if (edad === null || edad < 19) return '';
+  if (edad <= 35) return '0';
+  if (edad <= 50) return '1';
+  return '2';
+}
+
+function escolFcrBtaSdmtEscrita(anios) {
+  if (anios === null) return '';
+  return anios > 12 ? '0' : '1';
+}
+
+function escolSdmtOral(anios) {
+  if (anios === null) return '';
+  if (anios <= 11) return '0';
+  if (anios <= 16) return '1';
+  return '2';
+}
+
+function escolFab(anios, texto) {
+  var s = (texto || '').toLowerCase();
+  if (/universit|terciar/.test(s)) return '2';
+  if (/secundar/.test(s)) return '1';
+  if (/primar/.test(s)) return '0';
+  if (anios === null) return '';
+  if (anios >= 14) return '2';
+  if (anios >= 7) return '1';
+  return '0';
+}
+
+function educBads(anios, texto) {
+  var s = (texto || '').toLowerCase();
+  if (/postgrado|maestr|doctorado|posgrado/.test(s)) return '4';
+  if (/universit/.test(s)) return '3';
+  if (/terciar/.test(s)) return '2';
+  if (/secundar/.test(s)) return '1';
+  if (/primar/.test(s)) return '0';
+  if (anios === null) return '';
+  if (anios >= 17) return '4';
+  if (anios >= 14) return '3';
+  if (anios >= 12) return '2';
+  if (anios >= 7) return '1';
+  return '0';
+}
+
+function aplicarPacienteActivoATest(testId) {
+  if (!PAC_ACTIVO) return;
+  var p = PAC_ACTIVO;
+  var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) : null;
+  var anios = parseAniosEscolaridad(p.escolaridad);
+
+  pacSetVal(testId + '-paciente', p.id);
+
+  if (edad !== null) {
+    pacSetVal('rey-edad', grupoRey(edad));
+    pacSetVal('tmt-edad', grupoTmt(edad));
+    pacSetVal('flv-edad', grupoFlv(edad));
+    pacSetVal('stroop-edad', grupoStroop(edad));
+    pacSetVal('spaib-edad', grupoSpaib(edad));
+    pacSetVal('ifs-edad', grupoIfs(edad));
+    pacSetVal('wcst-edad', grupoWcst(edad));
+    pacSetVal('fcr-edad', grupoQuinquenal18(edad, 12));
+    pacSetVal('bta-edad', grupoQuinquenal18(edad, 12));
+    pacSetVal('sdmt-edad-escrita', grupoQuinquenal18(edad, 12));
+    pacSetVal('sdmt-edad-oral', grupoSdmtOral(edad));
+    pacSetVal('llaves-edad', grupoDecada20(edad));
+    pacSetVal('juicio-edad', grupoDecada20(edad));
+    pacSetVal('zoo-edad', grupoDecada20(edad));
+    pacSetVal('hotel-edad', grupoHotel(edad));
+    pacSetVal('signoret-edad', grupoSignoret(edad));
+    pacSetVal('tavec-edad', grupoTavec(edad));
+    pacSetVal('token-edad', edad);
+    pacSetVal('fab-edad', edad);
+    pacSetVal('d2-edad', edad);
+  }
+
+  pacSetVal('rey-sexo', sexoARey(p.sexo));
+
+  if (anios !== null) {
+    pacSetVal('tmt-escol', escolTmt(anios));
+    pacSetVal('flv-ne', neFlv(anios));
+    pacSetVal('ifs-ne', neIfs(anios));
+    pacSetVal('wcst-ne', neAltoBajo(anios));
+    pacSetVal('acer-ne', neAcer(anios));
+    pacSetVal('moca-ne', neMoca(anios));
+    pacSetVal('fcr-escol', escolFcrBtaSdmtEscrita(anios));
+    pacSetVal('bta-escol', escolFcrBtaSdmtEscrita(anios));
+    pacSetVal('sdmt-escol-escrita', escolFcrBtaSdmtEscrita(anios));
+    pacSetVal('sdmt-escol-oral', escolSdmtOral(anios));
+    pacSetVal('fab-escol', escolFab(anios, p.escolaridad));
+    pacSetVal('token-escol', anios);
+    var educB = educBads(anios, p.escolaridad);
+    pacSetVal('llaves-educ', educB);
+    pacSetVal('juicio-educ', educB);
+    pacSetVal('zoo-educ', educB);
+  }
+
+  if (testId === 'stroop' && typeof stroopActualizar === 'function') stroopActualizar();
+  if (testId === 'token' && typeof tokenLive === 'function') tokenLive();
 }
 
 function llenarSelectPacientes() {
@@ -5330,6 +5689,7 @@ function llenarSelectPacientes() {
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
   });
+  actualizarTopbarPaciente();
 }
 
 function mostrarFormPac() {
@@ -7198,6 +7558,7 @@ function irTest(t) {
   if (t === 'juicio') iniciarJuicio();
   if (t === 'zoo') iniciarZoo();
   if (t === 'sdmt') iniciarSDMT();
+  aplicarPacienteActivoATest(t);
 }
 
 function volverSector() {
