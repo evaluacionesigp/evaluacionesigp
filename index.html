@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.80</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.81</div>
     </div>
   </aside>
 
@@ -15851,10 +15851,9 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
       : _wPar('',{before:40,after:40});
     cells.push(_wCell(content, {w:COL_WIDTHS_HDR[5+i], fill:cellFill, noWrap:true}));
   });
-  // Interpretación (opcional: criterio TAVEC con color)
+  // Interpretación (opcional: texto TAVEC; siempre negro, igual que el resto de la tabla)
   var interpTxt = interpCustom && interpCustom.label ? interpCustom.label : zInterp(z);
-  var interpCol = interpCustom && interpCustom.color ? interpCustom.color : '000000';
-  cells.push(_wCell(_wPar(_wRun(interpTxt,{sz:20,bold:!!(interpCustom&&interpCustom.label),color:interpCol,font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[18],fill:bg}));
+  cells.push(_wCell(_wPar(_wRun(interpTxt,{sz:20,bold:false,color:'000000',font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[18],fill:bg}));
 
   return _wRow(cells);
 }
@@ -16052,7 +16051,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2tw] : null;
             var interp = tavecInterpWord(z, td[3]);
-            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, interp));
+            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }));
             rowCount++;
           });
 
