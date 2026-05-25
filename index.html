@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.70</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.71</div>
     </div>
   </aside>
 
@@ -12528,6 +12528,53 @@ function wordLogoDrawing(rEmbed, cx, cy, docId, name, descr) {
     '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing>';
 }
 
+/** Convierte logo (JPEG/PNG) a PNG válido para Word — misma lógica que _ref_docx */
+function _prepareLogoPngBytes(logoB64OrDataUrl) {
+  return new Promise(function(resolve) {
+    try {
+      var b64 = logoB64OrDataUrl;
+      if (String(b64).indexOf('data:') === 0) {
+        var parsed = parseDataUrl(b64);
+        b64 = parsed ? parsed.b64 : b64;
+      }
+      var bin = atob(b64), raw = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
+      var mime = (raw[0] === 0x89 && raw[1] === 0x50) ? 'image/png' : 'image/jpeg';
+      var done = function(bytes) { resolve(bytes); };
+      if (typeof createImageBitmap === 'function') {
+        createImageBitmap(new Blob([raw], { type: mime })).then(function(bmp) {
+          var c = document.createElement('canvas');
+          c.width = bmp.width;
+          c.height = bmp.height;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(bmp, 0, 0);
+          c.toBlob(function(blob) {
+            if (!blob) { done(raw); return; }
+            blob.arrayBuffer().then(function(buf) { done(new Uint8Array(buf)); });
+          }, 'image/png');
+        }).catch(function() { done(raw); });
+      } else {
+        var img = new Image();
+        img.onload = function() {
+          var c = document.createElement('canvas');
+          c.width = img.naturalWidth;
+          c.height = img.naturalHeight;
+          c.getContext('2d').drawImage(img, 0, 0);
+          var dataUrl = c.toDataURL('image/png');
+          var p = parseDataUrl(dataUrl);
+          if (p) {
+            var b = atob(p.b64), arr = new Uint8Array(b.length);
+            for (var j = 0; j < b.length; j++) arr[j] = b.charCodeAt(j);
+            done(arr);
+          } else { done(raw); }
+        };
+        img.onerror = function() { done(raw); };
+        img.src = 'data:' + mime + ';base64,' + b64;
+      }
+    } catch (e) { resolve(null); }
+  });
+}
+
 function buildWordHeaderXml(hasGp, hasCt) {
   var hdrNs = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"' +
@@ -12547,22 +12594,22 @@ function buildWordHeaderXml(hasGp, hasCt) {
     ' mc:Ignorable="w14 wp14">';
   var sep = '<w:p><w:pPr><w:spacing w:before="60" w:after="0"/>' +
     '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="3a8f8f"/></w:pBdr></w:pPr></w:p>';
-  var logoH = Math.round(LOGO_MAX_H_CM * LOGO_EMU_PER_CM);
-  var logoW = Math.round(logoH * 1.35);
+  var logoEmu = 900000;
   if (hasGp || hasCt) {
     var gpCell = hasGp
-      ? '<w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgGP', logoW, logoH, 1, 'LogoGP', 'Logo González Palau') + '</w:r></w:p>'
+      ? '<w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgGP', logoEmu, logoEmu, 1, 'LogoGP', 'Logo González Palau') + '</w:r></w:p>'
       : '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>';
     var ctCell = hasCt
-      ? '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgCT', logoW, logoH, 2, 'LogoCT', 'Logo CIATEC') + '</w:r></w:p>'
+      ? '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgCT', logoEmu, logoEmu, 2, 'LogoCT', 'Logo CIATEC') + '</w:r></w:p>'
       : '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>';
     return hdrNs +
       '<w:tbl><w:tblPr><w:tblW w:w="13398" w:type="dxa"/><w:tblBorders>' +
       '<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>' +
       '<w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr>' +
-      '<w:tblGrid><w:gridCol w:w="6699"/><w:gridCol w:w="6699"/></w:tblGrid>' +
-      '<w:tr><w:tc><w:tcPr><w:tcW w:w="6699" w:type="dxa"/></w:tcPr>' + gpCell + '</w:tc>' +
-      '<w:tc><w:tcPr><w:tcW w:w="6699" w:type="dxa"/></w:tcPr>' + ctCell + '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
+      '<w:tblGrid><w:gridCol w:w="1800"/><w:gridCol w:w="5760"/><w:gridCol w:w="1800"/></w:tblGrid>' +
+      '<w:tr><w:tc><w:tcPr><w:tcW w:w="1800" w:type="dxa"/></w:tcPr>' + gpCell + '</w:tc>' +
+      '<w:tc><w:tcPr><w:tcW w:w="5760" w:type="dxa"/></w:tcPr><w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p></w:tc>' +
+      '<w:tc><w:tcPr><w:tcW w:w="1800" w:type="dxa"/></w:tcPr>' + ctCell + '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
   }
   return hdrNs +
     '<w:tbl><w:tblPr><w:tblW w:w="13398" w:type="dxa"/><w:tblBorders>' +
@@ -14372,12 +14419,12 @@ function generarWordHistorial() {
     Promise.resolve(null);
 
   infPromise.then(function(inf){
-    try { _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pacOcup,pacDNI,fechaEval,inf||{}); }
-    catch(e){ console.error(e); toast('Error al generar Word: '+e.message,'error'); }
+    _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pacOcup,pacDNI,fechaEval,inf||{})
+      .catch(function(e){ console.error(e); toast('Error al generar Word: '+(e&&e.message?e.message:'desconocido'),'error'); });
   }).catch(function(e){ console.error(e); toast('Error al obtener informe','error'); });
 }
 
-function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pacOcup,pacDNI,fechaEval,inf) {
+async function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pacOcup,pacDNI,fechaEval,inf) {
   inf = inf || {};
   var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
@@ -14948,13 +14995,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
 
   // ── Header (logos) y Footer (pie institucional) ──
   var logosInforme = getLogosInforme();
-  var gpParsed = logosInforme.gp ? parseDataUrl(logosInforme.gp) : null;
-  var ctParsed = logosInforme.ct ? parseDataUrl(logosInforme.ct) : null;
-  var hasLogoGp = !!gpParsed;
-  var hasLogoCt = !!ctParsed;
+  var hasLogoGp = !!(logosInforme.gp && logosInforme.gp.length > 50);
+  var hasLogoCt = !!(logosInforme.ct && logosInforme.ct.length > 50);
   var headerXml = buildWordHeaderXml(hasLogoGp, hasLogoCt);
-
-
+  var gpPngBytes = hasLogoGp ? await _prepareLogoPngBytes(logosInforme.gp) : null;
+  var ctPngBytes = hasLogoCt ? await _prepareLogoPngBytes(logosInforme.ct) : null;
 
   // Footer XML — pie institucional centrado — texto institucional centrado
   var footerXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
@@ -14984,19 +15029,14 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       '</w:p>'+
     '</w:ftr>';
 
-  // Relaciones del documento (estilos, encabezado, pie)
+  // Relaciones del documento (como _ref_docx: imágenes en document.xml.rels → media/imageN.png)
   var relsXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
     '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>'+
     '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>'+
-    '</Relationships>';
-
-  // Las imágenes del encabezado deben enlazarse desde header1.xml.rels (no desde document.xml.rels)
-  var headerRelsXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
-    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
-    (hasLogoGp ? '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.'+(gpParsed.ext)+'"/>' : '')+
-    (hasLogoCt ? '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image2.'+(ctParsed.ext)+'"/>' : '')+
+    (hasLogoGp && gpPngBytes ? '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>' : '')+
+    (hasLogoCt && ctPngBytes ? '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png"/>' : '')+
     '</Relationships>';
 
   var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
@@ -15018,10 +15058,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
     '<Default Extension="xml" ContentType="application/xml"/>'+
     '<Default Extension="png" ContentType="image/png"/>'+
-    '<Default Extension="jpeg" ContentType="image/jpeg"/>'+
-    '<Default Extension="jpg" ContentType="image/jpeg"/>'+
-    (hasLogoGp ? '<Override PartName="/word/media/image1.'+gpParsed.ext+'" ContentType="image/'+(gpParsed.ext==='png'?'png':'jpeg')+'"/>' : '')+
-    (hasLogoCt ? '<Override PartName="/word/media/image2.'+ctParsed.ext+'" ContentType="image/'+(ctParsed.ext==='png'?'png':'jpeg')+'"/>' : '')+
     '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
     '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'+
     '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>'+
@@ -15036,13 +15072,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var appXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
     '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>Instituto González Palau</Application></Properties>';
 
-  // Decodificar base64 → Uint8Array para las imágenes
-  function b64ToBytes(b64) {
-    var bin = atob(b64), arr = new Uint8Array(bin.length);
-    for (var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
-    return arr;
-  }
-
   var zipEntries=[
     {name:'[Content_Types].xml',             data:enc.encode(contentTypes)},
     {name:'_rels/.rels',                     data:enc.encode(topRels)},
@@ -15050,10 +15079,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {name:'word/_rels/document.xml.rels',    data:enc.encode(relsXml)},
     {name:'word/styles.xml',                 data:enc.encode(stylesXml)},
     {name:'word/header1.xml',                data:enc.encode(headerXml)},
-    (hasLogoGp || hasLogoCt ? {name:'word/_rels/header1.xml.rels', data:enc.encode(headerRelsXml)} : null),
     {name:'word/footer1.xml',                data:enc.encode(footerXml)},
-    (hasLogoGp ? {name:'word/media/image1.'+gpParsed.ext, data:b64ToBytes(gpParsed.b64)} : null),
-    (hasLogoCt ? {name:'word/media/image2.'+ctParsed.ext, data:b64ToBytes(ctParsed.b64)} : null),
+    (hasLogoGp && gpPngBytes ? {name:'word/media/image1.png', data:gpPngBytes} : null),
+    (hasLogoCt && ctPngBytes ? {name:'word/media/image2.png', data:ctPngBytes} : null),
     {name:'docProps/app.xml',                data:enc.encode(appXml)},
     {name:'docProps/core.xml',               data:enc.encode(coreXml)},
   ].filter(function(e){ return e && e.data; });
