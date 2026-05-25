@@ -407,6 +407,17 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .mbi-opt { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; cursor: pointer; font-size: 0.78rem; color: var(--text); transition: all 0.15s; }
 .mbi-opt:hover { border-color: var(--accent); }
 .mbi-opt input[type=radio] { accent-color: var(--accent); }
+
+/* ══ Tooltip glosario clínico ══ */
+.test-nombre-glosario { cursor: help; display: inline-flex; align-items: center; gap: 4px; }
+.glosario-info-icon { font-size: 0.72rem; color: var(--accent); opacity: 0.85; line-height: 1; font-style: normal; }
+#tooltip-glosario { display: none; position: fixed; z-index: 10050; max-width: 400px; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 28px rgba(26,46,22,0.14); padding: 14px 16px; font-size: 0.8rem; line-height: 1.45; color: var(--text); pointer-events: none; }
+.tooltip-glosario-titulo { font-weight: 700; font-size: 0.88rem; color: var(--accentdk); margin-bottom: 10px; }
+.tooltip-glosario-seccion { margin-bottom: 10px; }
+.tooltip-glosario-seccion:last-child { margin-bottom: 0; }
+.tooltip-glosario-seccion strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); margin-bottom: 4px; }
+.tooltip-glosario-seccion p { margin: 0; }
+.tooltip-glosario-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
 </style>
 </head>
 <body>
@@ -467,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.76</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.77</div>
     </div>
   </aside>
 
@@ -6066,6 +6077,440 @@ function evaluarPacienteDesdeModal() {
 }
 function cerrarModal(id) { document.getElementById(id).classList.remove('active'); }
 
+// ══ GLOSARIO CLÍNICO — TOOLTIP TESTS ════════════════════════════════════════
+var GLOSARIO_TESTS = {
+  'MoCA': {
+    mide: 'Instrumento de cribado del deterioro cognitivo leve. Evalúa funciones ejecutivas, denominación, memoria, atención, lenguaje, abstracción y orientación en aproximadamente 10 minutos.',
+    interpretacion: {
+      bajo: 'Compatible con deterioro cognitivo mayor. Se requiere evaluación neuropsicológica completa para caracterizar el perfil.',
+      limite: 'Compatible con deterioro cognitivo leve. Requiere seguimiento y evaluación complementaria por dominio.',
+      normal: 'No se evidencia deterioro cognitivo en el cribado.',
+      alto: 'Rendimiento cognitivo global preservado, consistente con adecuada reserva cognitiva.'
+    },
+    preguntas: {
+      bajo: ['¿Qué dominios del MoCA están más comprometidos?', '¿El nivel de deterioro es consistente con la queja del familiar?', '¿Qué estudios complementarios orientarían el diagnóstico diferencial?'],
+      limite: ['¿El rendimiento es consistente con la queja subjetiva del paciente?', '¿Qué dominios específicos del MoCA están más afectados?', '¿El nivel educativo puede estar influyendo en el resultado?'],
+      normal: ['¿La preservación del MoCA es consistente con el resto del perfil?', '¿El paciente tiene queja subjetiva a pesar del rendimiento normal?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo?', '¿La reserva cognitiva puede estar enmascarando dificultades sutiles?']
+    }
+  },
+  'TMT A-B': {
+    mide: 'Evalúa velocidad de procesamiento y atención sostenida (Parte A) y flexibilidad cognitiva y atención alternante (Parte B).',
+    interpretacion: {
+      bajo: 'Compromiso significativo de velocidad de procesamiento y/o flexibilidad cognitiva. Compatible con disfunción fronto-subcortical.',
+      limite: 'Posible compromiso leve en velocidad de procesamiento o atención alternante. Integrar con el resto del perfil ejecutivo.',
+      normal: 'Velocidad de procesamiento y flexibilidad cognitiva preservadas.',
+      alto: 'Adecuada velocidad de procesamiento y flexibilidad cognitiva.'
+    },
+    preguntas: {
+      bajo: ['¿El compromiso es mayor en velocidad (TMT-A) o en flexibilidad (TMT-B)?', '¿La diferencia B-A está desproporcionadamente aumentada?', '¿Hay signos conductuales de disfunción ejecutiva en la entrevista?'],
+      limite: ['¿Influyeron factores de ansiedad o fatiga en el tiempo de ejecución?', '¿El resultado es consistente con el FAB y el IFS?', '¿Hay factores motores o visuales que puedan explicar el rendimiento?'],
+      normal: ['¿La preservación ejecutiva es consistente con la queja del paciente?', '¿El rendimiento es homogéneo entre la Parte A y la Parte B?'],
+      alto: ['¿El rendimiento elevado es consistente con el resto del perfil ejecutivo?']
+    }
+  },
+  'FAB': {
+    mide: 'Batería breve de funciones ejecutivas frontales. Incluye conceptualización, flexibilidad mental, programación motora, sensibilidad a interferencia y control inhibitorio.',
+    interpretacion: {
+      bajo: 'Compatible con síndrome disejecutivo de origen frontal. Puede observarse en demencias frontotemporales y parkinsonismos.',
+      limite: 'Dificultades leves en funciones frontales. Integrar con otros tests ejecutivos para caracterizar el perfil.',
+      normal: 'Funciones ejecutivas frontales preservadas en el cribado.',
+      alto: 'Control ejecutivo e inhibitorio por encima del rango esperado.'
+    },
+    preguntas: {
+      bajo: ['¿Qué subpruebas de la FAB están más comprometidas?', '¿Hay signos de desinhibición o perseveración en la conducta observada?', '¿El resultado es consistente con el IFS y el TMT-B?'],
+      limite: ['¿El compromiso es en programación motora, inhibición o flexibilidad?', '¿El rendimiento mejora con instrucciones explícitas?'],
+      normal: ['¿La preservación ejecutiva frontal es consistente con el resto del perfil?'],
+      alto: ['¿El rendimiento elevado en FAB es consistente con el IFS y el Stroop?']
+    }
+  },
+  'IFS': {
+    mide: 'INECO Frontal Screening. Evalúa programación motora, instrucciones conflictivas, Go-No Go, control inhibitorio, memoria de trabajo y abstracción.',
+    interpretacion: {
+      bajo: 'Disfunción ejecutiva frontal significativa. Mayor sensibilidad que la FAB para detectar compromiso sutil.',
+      limite: 'Posible disfunción ejecutiva leve. Evaluar en conjunto con FAB y TMT-B para caracterizar el perfil.',
+      normal: 'Funciones ejecutivas frontales preservadas.',
+      alto: 'Rendimiento ejecutivo por encima del rango esperado.'
+    },
+    preguntas: {
+      bajo: ['¿Hay disociación entre las subpruebas inhibitorias y las de memoria de trabajo?', '¿El resultado es consistente con la FAB y el TMT-B?', '¿El compromiso ejecutivo se refleja en las AVD reportadas por el familiar?'],
+      limite: ['¿Qué subpruebas del IFS están más afectadas?', '¿El rendimiento en Go-No Go sugiere dificultades inhibitorias específicas?'],
+      normal: ['¿La preservación en IFS es consistente con el resto del perfil ejecutivo?'],
+      alto: ['¿El rendimiento elevado es homogéneo en todas las subpruebas del IFS?']
+    }
+  },
+  'WCST-64': {
+    mide: 'Evalúa razonamiento abstracto, formación de conceptos y flexibilidad cognitiva. Sensible a lesiones prefrontales dorsolaterales.',
+    interpretacion: {
+      bajo: 'Rigidez cognitiva significativa. Errores perseverativos elevados son compatibles con disfunción prefrontal dorsolateral.',
+      limite: 'Posible dificultad para modificar estrategias ante el feedback. Integrar con otros tests ejecutivos.',
+      normal: 'Razonamiento abstracto y flexibilidad cognitiva preservados.',
+      alto: 'Adecuada capacidad de formación de conceptos y flexibilidad.'
+    },
+    preguntas: {
+      bajo: ['¿Predominan los errores perseverativos o los no perseverativos?', '¿Cuántas categorías logró completar el paciente?', '¿El rendimiento mejora con el tiempo o se mantiene rígido?'],
+      limite: ['¿El paciente puede cambiar de estrategia cuando recibe feedback negativo?', '¿El resultado es consistente con el TMT-B y el Stroop?'],
+      normal: ['¿La preservación en WCST es consistente con el resto del perfil ejecutivo?'],
+      alto: ['¿El rendimiento elevado sugiere adecuada reserva cognitiva ejecutiva?']
+    }
+  },
+  'Stroop': {
+    mide: 'Evalúa velocidad de procesamiento (Palabra, Color) y control inhibitorio (Color-Palabra). El índice de interferencia refleja inhibición de respuesta automática.',
+    interpretacion: {
+      bajo: 'Compromiso del control inhibitorio y/o velocidad de procesamiento. Puede observarse en TDAH, lesiones frontales y deterioro cognitivo.',
+      limite: 'Posible dificultad en inhibición o velocidad. Integrar con el perfil ejecutivo completo.',
+      normal: 'Control inhibitorio y velocidad de procesamiento preservados.',
+      alto: 'Adecuado control inhibitorio y velocidad de procesamiento.'
+    },
+    preguntas: {
+      bajo: ['¿El déficit es en velocidad (P y C) o específicamente en inhibición (PC)?', '¿El índice de interferencia está afectado de forma desproporcionada?', '¿Es consistente con el rendimiento en el TMT-B y el Go-No Go del IFS?'],
+      limite: ['¿La dificultad es mayor en la condición Color-Palabra?', '¿Influyeron factores de ansiedad o fatiga en el rendimiento?'],
+      normal: ['¿La preservación del control inhibitorio es consistente con el perfil ejecutivo?'],
+      alto: ['¿El rendimiento elevado en Stroop es consistente con el resto del perfil frontal?']
+    }
+  },
+  'TAVEC': {
+    mide: 'Evalúa aprendizaje serial, curva de adquisición, recuerdo libre y con clave a corto y largo plazo y reconocimiento. Diferencia perfil hipocámpico vs. estratégico.',
+    interpretacion: {
+      bajo: 'Compatible con compromiso significativo de la memoria episódica verbal. El patrón de errores orienta hacia el sustrato comprometido.',
+      limite: 'Posibles dificultades en consolidación o evocación verbal. Requiere análisis cualitativo de la curva de aprendizaje.',
+      normal: 'Memoria verbal episódica preservada.',
+      alto: 'Adecuada capacidad de aprendizaje y evocación verbal.'
+    },
+    preguntas: {
+      bajo: ['¿Hay beneficio de clave semántica en el recuerdo diferido?', '¿La curva de aprendizaje es plana o muestra algún aprendizaje?', '¿Hay intrusiones o perseveraciones que sugieran componente ejecutivo?'],
+      limite: ['¿La curva de aprendizaje es ascendente o irregular?', '¿El recuerdo diferido está más afectado que el inmediato?', '¿La clave semántica mejora el rendimiento en el recuerdo con clave?'],
+      normal: ['¿La preservación de memoria verbal es consistente con el resto del perfil?', '¿El paciente tiene queja de memoria a pesar del rendimiento normal?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo y la reserva cognitiva?']
+    }
+  },
+  'Rey Verbal': {
+    mide: 'Test de aprendizaje verbal de 15 palabras. Evalúa memoria inmediata, curva de aprendizaje y recuerdo diferido.',
+    interpretacion: {
+      bajo: 'Dificultades significativas en memoria verbal episódica.',
+      limite: 'Posibles dificultades en codificación o evocación verbal.',
+      normal: 'Memoria verbal inmediata y diferida preservadas.',
+      alto: 'Adecuada capacidad de aprendizaje verbal.'
+    },
+    preguntas: {
+      bajo: ['¿Cómo es la curva de aprendizaje a lo largo de los ensayos?', '¿El recuerdo diferido está más comprometido que el inmediato?', '¿Es consistente con el rendimiento en el TAVEC?'],
+      limite: ['¿La curva de aprendizaje es ascendente o plana?', '¿El recuerdo diferido se deteriora respecto al inmediato?'],
+      normal: ['¿La preservación de memoria verbal es consistente con el perfil general?'],
+      alto: ['¿El rendimiento elevado refleja estrategias de codificación eficaces?']
+    }
+  },
+  'Figura Rey': {
+    mide: 'Evalúa organización perceptiva y planificación visuoconstructiva (copia) y memoria visual episódica (evocación diferida).',
+    interpretacion: {
+      bajo: 'Copia deficiente sugiere dificultades visuoconstructivas o ejecutivas. Evocación deficiente con copia preservada sugiere compromiso mnésico visual.',
+      limite: 'Posibles dificultades visuoconstructivas o de memoria visual.',
+      normal: 'Habilidades visuoconstructivas y memoria visual preservadas.',
+      alto: 'Adecuadas habilidades visuoconstructivas y memoria visual.'
+    },
+    preguntas: {
+      bajo: ['¿Hay diferencia entre el rendimiento en copia y en evocación?', '¿La estrategia de copia fue global, por detalles o fragmentada?', '¿Los errores son de tipo constructivo o de planificación?'],
+      limite: ['¿La estrategia de copia fue organizada o fragmentada?', '¿La evocación diferida está más afectada que la copia inmediata?'],
+      normal: ['¿La preservación visuoconstructiva es consistente con el perfil?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo?']
+    }
+  },
+  'BNT-60': {
+    mide: 'Evaluación de denominación por confrontación visual de 60 ítems. Sensible a anomia y dificultades de acceso léxico.',
+    interpretacion: {
+      bajo: 'Sugiere anomia o dificultades significativas de acceso léxico. Puede ser signo temprano de EA o de afasia.',
+      limite: 'Posibles dificultades leves de acceso léxico. Considerar nivel educativo y origen cultural.',
+      normal: 'Capacidad de denominación preservada.',
+      alto: 'Vocabulario y acceso léxico preservados o superiores.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente se beneficia de la clave fonológica o semántica?', '¿Los errores son parafasias, circunloquios o bloqueos?', '¿Es consistente con el rendimiento en fluencia verbal?'],
+      limite: ['¿Los errores se concentran en ítems de baja frecuencia léxica?', '¿El nivel educativo puede estar moderando el rendimiento?'],
+      normal: ['¿La denominación preservada es consistente con el perfil de lenguaje?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo?']
+    }
+  },
+  'BNT-12': {
+    mide: 'Forma breve del Boston Naming Test de 12 ítems.',
+    interpretacion: {
+      bajo: 'Sugiere dificultades de acceso léxico. Complementar con BNT-60 para mayor sensibilidad.',
+      limite: 'Posibles dificultades leves de denominación.',
+      normal: 'Capacidad de denominación preservada.',
+      alto: 'Adecuado acceso léxico.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente reconoce el objeto pero no puede nombrarlo?', '¿Los errores son consistentes con anomia o con agnosia visual?', '¿Es consistente con la fluencia verbal semántica?'],
+      limite: ['¿Los errores se concentran en ítems visualmente complejos?', '¿El nivel educativo puede estar moderando el resultado?'],
+      normal: ['¿La preservación de denominación es consistente con el perfil de lenguaje?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo?']
+    }
+  },
+  'Fluencia Verbal': {
+    mide: 'Evalúa generación léxica espontánea y estrategias de búsqueda semántica (animales, frutas) y fonológica (letra P, F, A).',
+    interpretacion: {
+      bajo: 'Fluencia semántica baja sugiere compromiso léxico-semántico. Fluencia fonológica baja sugiere mayor compromiso ejecutivo-frontal.',
+      limite: 'Posibles dificultades en acceso léxico o en estrategias de búsqueda. Integrar con el perfil ejecutivo.',
+      normal: 'Acceso léxico y estrategias de búsqueda preservados.',
+      alto: 'Adecuada generación léxica y riqueza de estrategias.'
+    },
+    preguntas: {
+      bajo: ['¿Hay disociación entre fluencia semántica y fonológica?', '¿El paciente genera palabras en clusters o de forma aislada?', '¿Es consistente con el rendimiento en el BNT?'],
+      limite: ['¿La estrategia de búsqueda es organizada o aleatoria?', '¿La fluencia decae a lo largo del minuto o se mantiene estable?'],
+      normal: ['¿La preservación de fluencia es consistente con el perfil de lenguaje?'],
+      alto: ['¿El rendimiento elevado refleja estrategias de búsqueda eficientes?']
+    }
+  },
+  'D2': {
+    mide: 'Test de atención selectiva y concentración. Evalúa velocidad de procesamiento, precisión y control atencional bajo presión de tiempo.',
+    interpretacion: {
+      bajo: 'Dificultades significativas en atención selectiva y/o velocidad de procesamiento.',
+      limite: 'Posibles dificultades en atención selectiva o concentración.',
+      normal: 'Atención selectiva y concentración preservadas.',
+      alto: 'Adecuada atención selectiva y velocidad de procesamiento.'
+    },
+    preguntas: {
+      bajo: ['¿El rendimiento bajo es por velocidad (TOT) o por errores (CON)?', '¿Hay fatigabilidad atencional a lo largo de la prueba?', '¿Es consistente con el rendimiento en SDMT y Dígitos?'],
+      limite: ['¿Los errores aumentan hacia el final de la prueba?', '¿Influyeron factores de ansiedad o impulsividad en los errores?'],
+      normal: ['¿La preservación atencional es consistente con el perfil general?'],
+      alto: ['¿El rendimiento elevado es consistente con el SDMT y el BTA?']
+    }
+  },
+  'SDMT-escrita': {
+    mide: 'Symbol Digit Modalities Test escrito. Evalúa velocidad de procesamiento visomotora y atención sostenida.',
+    interpretacion: {
+      bajo: 'Enlentecimiento en velocidad de procesamiento. Sensible a patología de sustancia blanca y deterioro subcortical.',
+      limite: 'Posible enlentecimiento leve en procesamiento de información.',
+      normal: 'Velocidad de procesamiento preservada.',
+      alto: 'Adecuada velocidad de procesamiento visomotora.'
+    },
+    preguntas: {
+      bajo: ['¿Es consistente con la velocidad observada en el TMT-A?', '¿Hay diferencia entre la modalidad escrita y la oral?', '¿El enlentecimiento es progresivo a lo largo de la prueba?'],
+      limite: ['¿El rendimiento escrito es consistente con la modalidad oral?', '¿Influyeron factores motores en la velocidad de respuesta?'],
+      normal: ['¿La velocidad de procesamiento preservada es consistente con el perfil?'],
+      alto: ['¿El rendimiento elevado es consistente con el TMT-A y el D2?']
+    }
+  },
+  'SDMT-oral': {
+    mide: 'Symbol Digit Modalities Test oral. Permite comparar con la forma escrita para descartar factores motores.',
+    interpretacion: {
+      bajo: 'Déficit genuino de velocidad de procesamiento que no puede atribuirse a factores motores.',
+      limite: 'Posible enlentecimiento leve en procesamiento.',
+      normal: 'Velocidad de procesamiento oral preservada.',
+      alto: 'Adecuada velocidad de procesamiento.'
+    },
+    preguntas: {
+      bajo: ['¿El rendimiento oral es similar al escrito?', '¿La diferencia oral-escrita sugiere un componente motor?', '¿Es consistente con el TMT-A y el BTA?'],
+      limite: ['¿El rendimiento oral es mejor que el escrito?', '¿La diferencia entre modalidades es clínicamente significativa?'],
+      normal: ['¿La preservación en modalidad oral es consistente con el escrito?'],
+      alto: ['¿El rendimiento elevado es consistente con el SDMT escrito?']
+    }
+  },
+  'BTA': {
+    mide: 'Brief Test of Attention. Evalúa atención dividida y memoria de trabajo auditiva bajo interferencia.',
+    interpretacion: {
+      bajo: 'Dificultades en atención dividida y/o memoria de trabajo verbal.',
+      limite: 'Posibles dificultades en atención bajo interferencia auditiva.',
+      normal: 'Atención dividida y memoria de trabajo preservadas.',
+      alto: 'Adecuada atención bajo interferencia auditiva.'
+    },
+    preguntas: {
+      bajo: ['¿Es consistente con el rendimiento en Dígitos del WAIS?', '¿Hay diferencia entre las dos condiciones del BTA (letras vs. números)?', '¿El déficit atencional se refleja en el D2 y el SDMT?'],
+      limite: ['¿La dificultad es mayor en una de las dos condiciones del BTA?', '¿Influyeron factores de ansiedad o distracción?'],
+      normal: ['¿La preservación en BTA es consistente con el resto del perfil atencional?'],
+      alto: ['¿El rendimiento elevado es consistente con el Dígitos y el SDMT?']
+    }
+  },
+  'BADS-Zoo': {
+    mide: 'Evalúa planificación y estrategia en tarea ecológica de recorrido por un zoológico.',
+    interpretacion: {
+      bajo: 'Dificultades en planificación y organización estratégica. Alta validez ecológica para predecir funcionamiento en AVD.',
+      limite: 'Posibles dificultades leves en planificación.',
+      normal: 'Capacidad de planificación preservada.',
+      alto: 'Adecuada planificación y organización estratégica.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente puede planificar pero no ejecutar, o no puede planificar?', '¿Es consistente con el reporte del familiar en AVD instrumentales?', '¿El rendimiento es similar al Test del Hotel?'],
+      limite: ['¿La dificultad es en la planificación inicial o en la ejecución?', '¿El rendimiento mejora con guía externa?'],
+      normal: ['¿La preservación en Zoo es consistente con el Hotel y las Llaves?'],
+      alto: ['¿El rendimiento elevado es consistente con el resto del perfil ejecutivo?']
+    }
+  },
+  'BADS-Llaves': {
+    mide: 'Evalúa generación de estrategias sistemáticas en búsqueda espacial.',
+    interpretacion: {
+      bajo: 'Dificultades en generación de estrategias sistemáticas y organización espacial del comportamiento.',
+      limite: 'Posibles dificultades leves en organización estratégica.',
+      normal: 'Capacidad de generación de estrategias preservada.',
+      alto: 'Adecuada organización estratégica espacial.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente usó alguna estrategia o buscó al azar?', '¿El rendimiento es consistente con el Zoo y el Hotel?', '¿Las dificultades estratégicas se reflejan en las AVD?'],
+      limite: ['¿La estrategia fue parcialmente sistemática?', '¿El rendimiento mejora con instrucciones más explícitas?'],
+      normal: ['¿La preservación estratégica es consistente con el perfil ejecutivo?'],
+      alto: ['¿El rendimiento elevado es consistente con el Zoo y el Hotel?']
+    }
+  },
+  'BADS-Juicio': {
+    mide: 'Evalúa juicio de tiempo y estimación de duraciones de eventos cotidianos.',
+    interpretacion: {
+      bajo: 'Dificultades en juicio temporal y metacognición sobre el tiempo.',
+      limite: 'Posibles dificultades leves en estimación temporal.',
+      normal: 'Juicio de tiempo preservado.',
+      alto: 'Adecuada estimación temporal.'
+    },
+    preguntas: {
+      bajo: ['¿Los errores son por exceso o por defecto en la estimación?', '¿Es consistente con el reporte del familiar sobre el manejo del tiempo?', '¿Las dificultades temporales se reflejan en la gestión del tiempo diario?'],
+      limite: ['¿Las estimaciones erróneas son consistentes o aleatorias?', '¿El familiar reporta dificultades con el manejo del tiempo?'],
+      normal: ['¿La preservación del juicio temporal es consistente con el perfil?'],
+      alto: ['¿El rendimiento elevado es consistente con el resto del perfil ejecutivo?']
+    }
+  },
+  'Test del Hotel': {
+    mide: 'Test ecológico de funciones ejecutivas que evalúa multitarea, manejo del tiempo y flexibilidad cognitiva.',
+    interpretacion: {
+      bajo: 'Dificultades en gestión simultánea de tareas y manejo autónomo del tiempo. Alta validez ecológica para predecir AVD instrumentales.',
+      limite: 'Posibles dificultades leves en multitarea o manejo del tiempo.',
+      normal: 'Capacidad de multitarea y manejo del tiempo preservados.',
+      alto: 'Adecuada gestión ejecutiva en contexto ecológico.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente abandona tareas o no puede cambiar entre ellas?', '¿El manejo del tiempo es el aspecto más afectado?', '¿Las dificultades en el Hotel son consistentes con el reporte en AVD?'],
+      limite: ['¿La dificultad es mayor en el cambio entre tareas o en el control del tiempo?', '¿El rendimiento mejora con recordatorios externos?'],
+      normal: ['¿La preservación en el Hotel es consistente con el Zoo y las Llaves?'],
+      alto: ['¿El rendimiento elevado en el Hotel predice buen funcionamiento en AVD?']
+    }
+  },
+  'WAIS-IV': {
+    mide: 'Subtests de Dígitos (memoria de trabajo), Claves (velocidad de procesamiento) y Secuencia Número-Letra (memoria de trabajo compleja).',
+    interpretacion: {
+      bajo: 'Compromiso de memoria de trabajo y/o velocidad de procesamiento.',
+      limite: 'Posibles dificultades en memoria de trabajo o velocidad.',
+      normal: 'Memoria de trabajo y velocidad de procesamiento preservadas.',
+      alto: 'Adecuada memoria de trabajo y velocidad de procesamiento.'
+    },
+    preguntas: {
+      bajo: ['¿Hay disociación entre Dígitos, Claves y Secuencia Número-Letra?', '¿El rendimiento en Dígitos inversos es peor que en directos?', '¿El compromiso de velocidad (Claves) es consistente con el SDMT?'],
+      limite: ['¿La memoria de trabajo o la velocidad es el factor más afectado?', '¿El rendimiento en Dígitos inversos está preservado?'],
+      normal: ['¿La preservación en WAIS es consistente con el perfil atencional?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo?']
+    }
+  },
+  'BEM 144 Signoret': {
+    mide: 'Evaluación de memoria episódica verbal y visual con diferentes modalidades de codificación y evocación.',
+    interpretacion: {
+      bajo: 'Compromiso de memoria episódica. Comparar modalidades verbal y visual para orientar el perfil.',
+      limite: 'Posibles dificultades en memoria episódica.',
+      normal: 'Memoria episódica preservada.',
+      alto: 'Adecuada memoria episódica.'
+    },
+    preguntas: {
+      bajo: ['¿Hay diferencia entre el rendimiento verbal y visual?', '¿El reconocimiento está preservado respecto al recuerdo libre?', '¿Es consistente con el TAVEC y la Figura de Rey?'],
+      limite: ['¿La modalidad verbal o visual está más afectada?', '¿El reconocimiento mejora respecto al recuerdo libre?'],
+      normal: ['¿La preservación mnésica es consistente con el perfil general?'],
+      alto: ['¿El rendimiento elevado es consistente con el TAVEC y la Figura de Rey?']
+    }
+  },
+  'ACE-R': {
+    mide: 'Evaluación cognitiva de Addenbrooke revisada. Mayor sensibilidad que el MoCA para demencias focales. Cubre atención, memoria, fluencia, lenguaje y habilidades visuoespaciales.',
+    interpretacion: {
+      bajo: 'Compatible con deterioro cognitivo significativo. El perfil de subpuntajes orienta entre demencias corticales y subcorticales.',
+      limite: 'Compatible con deterioro cognitivo leve. Requiere evaluación complementaria por dominio.',
+      normal: 'No se evidencia deterioro cognitivo significativo en el cribado.',
+      alto: 'Rendimiento cognitivo global preservado.'
+    },
+    preguntas: {
+      bajo: ['¿Qué subescalas del ACE-R están más comprometidas?', '¿El perfil sugiere compromiso cortical (memoria+lenguaje) o subcortical?', '¿Es consistente con el rendimiento en el MoCA?'],
+      limite: ['¿Los dominios más afectados del ACE-R son consistentes con el perfil NP?', '¿El nivel educativo puede estar moderando el resultado?'],
+      normal: ['¿La preservación en ACE-R es consistente con el MoCA y el perfil general?'],
+      alto: ['¿El rendimiento elevado es consistente con la reserva cognitiva del paciente?']
+    }
+  },
+  'Test del Reloj (Cacho)': {
+    mide: 'Evalúa funciones ejecutivas, habilidades visuoconstructivas y visuoespaciales, e integración semántica del concepto de tiempo.',
+    interpretacion: {
+      bajo: 'Dificultades visuoconstructivas y/o ejecutivas. Los errores cualitativos orientan el diagnóstico diferencial.',
+      limite: 'Posibles dificultades leves visuoconstructivas o ejecutivas.',
+      normal: 'Habilidades visuoconstructivas y ejecutivas preservadas.',
+      alto: 'Adecuadas habilidades visuoconstructivas y ejecutivas.'
+    },
+    preguntas: {
+      bajo: ['¿Qué tipo de errores cometió el paciente (perseveración, confabulación, mala ubicación)?', '¿El error es más visuoespacial o conceptual?', '¿Es consistente con el rendimiento en la Figura de Rey?'],
+      limite: ['¿Los errores son de tipo visuoespacial o de planificación?', '¿El rendimiento mejora con el modelo de copia?'],
+      normal: ['¿La preservación visuoconstructiva es consistente con la Figura de Rey?'],
+      alto: ['¿El rendimiento elevado es consistente con el perfil visuoconstructivo?']
+    }
+  }
+};
+
+var GLOSARIO_ALIAS = {
+  'Reloj': 'Test del Reloj (Cacho)',
+  'BEM': 'BEM 144 Signoret',
+  'Fluencia': 'Fluencia Verbal',
+  'TMT-A': 'TMT A-B',
+  'TMT-B': 'TMT A-B',
+  'Zoo': 'BADS-Zoo',
+  'Llaves': 'BADS-Llaves',
+  'Juicio T.': 'BADS-Juicio',
+  'Fig.Rey Copia': 'Figura Rey',
+  'Fig.Rey RI': 'Figura Rey',
+  'SDMT (Esc.)': 'SDMT-escrita',
+  'SDMT (Oral)': 'SDMT-oral'
+};
+
+function categoriaZGlosario(z) {
+  if (z < -2) return 'bajo';
+  if (z < -1) return 'limite';
+  if (z <= 1) return 'normal';
+  return 'alto';
+}
+
+var GLOSARIO_CAT_COLOR = { bajo: '#c53030', limite: '#e07b00', normal: '#2e7a4f', alto: '#2563eb' };
+var GLOSARIO_CAT_LABEL = { bajo: 'Z < −2', limite: '−2 ≤ Z < −1', normal: '−1 ≤ Z ≤ 1', alto: 'Z > 1' };
+
+function resolverTestGlosario(testNombre) {
+  if (!testNombre) return null;
+  if (GLOSARIO_TESTS[testNombre]) return testNombre;
+  if (GLOSARIO_ALIAS[testNombre]) return GLOSARIO_ALIAS[testNombre];
+  if (testNombre.indexOf('TAVEC·') === 0) return 'TAVEC';
+  return null;
+}
+
+function ocultarTooltipTest() {
+  var tip = document.getElementById('tooltip-glosario');
+  if (tip) tip.style.display = 'none';
+}
+
+function mostrarTooltipTest(event, testNombre, zScore) {
+  var clave = resolverTestGlosario(testNombre);
+  if (!clave) return;
+  var g = GLOSARIO_TESTS[clave];
+  if (!g) return;
+  if (zScore === null || zScore === undefined || zScore === '' || isNaN(parseFloat(zScore))) return;
+  var z = parseFloat(zScore);
+  var cat = categoriaZGlosario(z);
+  var tip = document.getElementById('tooltip-glosario');
+  if (!tip) return;
+  var preguntas = (g.preguntas[cat] || []).map(function(q) {
+    return '<li style="margin:4px 0 0 16px;">' + q + '</li>';
+  }).join('');
+  var zFmt = (Math.round(z * 100) / 100).toFixed(2);
+  tip.innerHTML =
+    '<div class="tooltip-glosario-titulo">' + testNombre + '</div>' +
+    '<div class="tooltip-glosario-seccion"><strong>Qué mide</strong><p>' + g.mide + '</p></div>' +
+    '<div class="tooltip-glosario-seccion"><strong>Implicación clínica</strong>' +
+    '<span class="tooltip-glosario-badge" style="background:' + GLOSARIO_CAT_COLOR[cat] + ';">Z ' + zFmt + ' · ' + GLOSARIO_CAT_LABEL[cat] + '</span>' +
+    '<p>' + g.interpretacion[cat] + '</p></div>' +
+    '<div class="tooltip-glosario-seccion"><strong>Preguntas disparadoras</strong><ul style="margin:0;padding:0;list-style:disc;">' + preguntas + '</ul></div>';
+  tip.style.display = 'block';
+  var pad = 14;
+  var x = (event.clientX || 0) + pad;
+  var y = (event.clientY || 0) + pad;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+  var rect = tip.getBoundingClientRect();
+  if (rect.right > window.innerWidth - 8) tip.style.left = Math.max(8, x - rect.width - pad * 2) + 'px';
+  if (rect.bottom > window.innerHeight - 8) tip.style.top = Math.max(8, y - rect.height - pad * 2) + 'px';
+}
+
 // ══ HISTORIAL ════════════════════════════════════════════════════════════════
 function renderHistorial() {
   actualizarStatsHome();
@@ -6088,9 +6533,13 @@ function renderHistorial() {
     datos.map(function(r) {
       var nomPac = r.psico_pacientes ? r.psico_pacientes.nombre : '—';
       var zColor = r.puntaje_z===null ? 'var(--muted)' : r.puntaje_z >= -1.0 ? 'var(--green)' : r.puntaje_z >= -1.5 ? 'var(--yellow)' : r.puntaje_z >= -2.0 ? 'var(--orange)' : 'var(--red)';
+      var zArg = (r.puntaje_z !== null && r.puntaje_z !== undefined) ? r.puntaje_z : 'null';
+      var testCell = resolverTestGlosario(r.test)
+        ? '<span class="test-nombre-glosario" onmouseenter="mostrarTooltipTest(event,' + JSON.stringify(r.test) + ',' + zArg + ')" onmouseleave="ocultarTooltipTest()">' + r.test + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
+        : r.test;
       return '<tr style="border-bottom:1px solid var(--border);">' +
         '<td style="padding:10px 12px;font-size:0.84rem;">' + nomPac + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;font-weight:600;color:var(--accentdk);">' + r.test + '</td>' +
+        '<td style="padding:10px 12px;font-size:0.84rem;font-weight:600;color:var(--accentdk);">' + testCell + '</td>' +
         '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;">' + (r.puntaje_total !== null ? r.puntaje_total : '—') + '</td>' +
         '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;font-weight:700;color:'+zColor+';">' + (r.puntaje_z !== null ? r.puntaje_z : '—') + '</td>' +
         '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;">' + (r.puntaje_t !== null ? r.puntaje_t : '—') + '</td>' +
@@ -6473,48 +6922,48 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     var byTest = {};
     list.forEach(function(r){ byTest[r.test] = r; });
 
-    function addPunto(label, z, dominio) {
+    function addPunto(label, z, dominio, testGlosario) {
       if (z === null || z === undefined || isNaN(parseFloat(z))) return;
-      puntos.push({ label: label, z: parseFloat(parseFloat(z).toFixed(2)), dominio: dominio });
+      puntos.push({ label: label, z: parseFloat(parseFloat(z).toFixed(2)), dominio: dominio, testGlosario: testGlosario || label });
     }
 
     // Orden fijo por dominio — igual que en la imagen de referencia
     var ORDEN = [
       { dom: 'COGNITIVO GLOBAL', tests: [
-        { t:'MoCA',               fn: function(r){ addPunto('MoCA', r.puntaje_z, 'COG. GLOBAL'); } },
-        { t:'ACE-R',              fn: function(r){ addPunto('ACE-R', r.puntaje_z, 'COG. GLOBAL'); } },
-        { t:'Test del Reloj (Cacho)', fn: function(r){ addPunto('Reloj', r.puntaje_z, 'COG. GLOBAL'); } },
+        { t:'MoCA',               fn: function(r){ addPunto('MoCA', r.puntaje_z, 'COG. GLOBAL', 'MoCA'); } },
+        { t:'ACE-R',              fn: function(r){ addPunto('ACE-R', r.puntaje_z, 'COG. GLOBAL', 'ACE-R'); } },
+        { t:'Test del Reloj (Cacho)', fn: function(r){ addPunto('Reloj', r.puntaje_z, 'COG. GLOBAL', 'Test del Reloj (Cacho)'); } },
       ]},
       { dom: 'MEMORIA', tests: [
-        { t:'Rey Verbal', fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){ if(v.z!==null&&v.z!==undefined) addPunto(v.label.replace('Ensayo ','A').replace('Recuerdo ','Rec. '),v.z,'MEMORIA'); });}else{addPunto('Rey Verbal',r.puntaje_z,'MEMORIA');} } },
-        { t:'BEM 144 Signoret', fn: function(r){ addPunto('BEM', r.puntaje_z, 'MEMORIA'); } },
-        { t:'TAVEC', fn: function(r){ var d=r.datos||{}; var vars=[['RI-AT',d.zAT],['RL-LP',d.zRLLP],['RCL-LP',d.zRCLLP],['Discrim',d.zDiscrim]]; vars.forEach(function(v){if(v[1]!==null&&v[1]!==undefined) addPunto('TAVEC·'+v[0],v[1],'MEMORIA');}); } },
+        { t:'Rey Verbal', fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){ if(v.z!==null&&v.z!==undefined) addPunto(v.label.replace('Ensayo ','A').replace('Recuerdo ','Rec. '),v.z,'MEMORIA','Rey Verbal'); });}else{addPunto('Rey Verbal',r.puntaje_z,'MEMORIA','Rey Verbal');} } },
+        { t:'BEM 144 Signoret', fn: function(r){ addPunto('BEM', r.puntaje_z, 'MEMORIA', 'BEM 144 Signoret'); } },
+        { t:'TAVEC', fn: function(r){ var d=r.datos||{}; var vars=[['RI-AT',d.zAT],['RL-LP',d.zRLLP],['RCL-LP',d.zRCLLP],['Discrim',d.zDiscrim]]; vars.forEach(function(v){if(v[1]!==null&&v[1]!==undefined) addPunto('TAVEC·'+v[0],v[1],'MEMORIA','TAVEC');}); } },
       ]},
       { dom: 'ATENCIÓN', tests: [
-        { t:'D2',           fn: function(r){ var d=r.datos||{}; var idx=d.indices||{}; addPunto('d2 CON',idx.CON&&idx.CON.z,'ATENCIÓN'); addPunto('d2 TOT',idx.TOT&&idx.TOT.z,'ATENCIÓN'); } },
-        { t:'WAIS-IV',      fn: function(r){ var d=r.datos||{}; addPunto('Dígitos',d.rd_z,'ATENCIÓN'); addPunto('SLN',d.sln_z,'ATENCIÓN'); addPunto('Claves',d.cla_z,'ATENCIÓN'); } },
-        { t:'SDMT-escrita', fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Esc.)',d.z,'ATENCIÓN'); } },
-        { t:'SDMT-oral',    fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Oral)',d.z,'ATENCIÓN'); } },
-        { t:'BTA',          fn: function(r){ var d=r.datos||{}; addPunto('BTA',d.z,'ATENCIÓN'); } },
+        { t:'D2',           fn: function(r){ var d=r.datos||{}; var idx=d.indices||{}; addPunto('d2 CON',idx.CON&&idx.CON.z,'ATENCIÓN','D2'); addPunto('d2 TOT',idx.TOT&&idx.TOT.z,'ATENCIÓN','D2'); } },
+        { t:'WAIS-IV',      fn: function(r){ var d=r.datos||{}; addPunto('Dígitos',d.rd_z,'ATENCIÓN','WAIS-IV'); addPunto('SLN',d.sln_z,'ATENCIÓN','WAIS-IV'); addPunto('Claves',d.cla_z,'ATENCIÓN','WAIS-IV'); } },
+        { t:'SDMT-escrita', fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Esc.)',d.z,'ATENCIÓN','SDMT-escrita'); } },
+        { t:'SDMT-oral',    fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Oral)',d.z,'ATENCIÓN','SDMT-oral'); } },
+        { t:'BTA',          fn: function(r){ var d=r.datos||{}; addPunto('BTA',d.z,'ATENCIÓN','BTA'); } },
       ]},
       { dom: 'FUNC. EJEC.', tests: [
-        { t:'FAB',         fn: function(r){ addPunto('FAB', r.puntaje_z, 'FUNC. EJEC.'); } },
-        { t:'IFS',         fn: function(r){ addPunto('IFS', r.puntaje_z, 'FUNC. EJEC.'); } },
-        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; addPunto('TMT-A',d.tmt_a_z||r.puntaje_z,'FUNC. EJEC.'); addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.'); } },
-        { t:'Stroop',      fn: function(r){ var d=r.datos||{}; addPunto('Stroop P',d.zP,'FUNC. EJEC.'); addPunto('Stroop C',d.zC,'FUNC. EJEC.'); addPunto('Stroop PC',d.zPC,'FUNC. EJEC.'); addPunto('Stroop Int.',d.zInt,'FUNC. EJEC.'); } },
-        { t:'BADS-Zoo',    fn: function(r){ var d=r.datos||{}; addPunto('Zoo',d.z,'FUNC. EJEC.'); } },
-        { t:'BADS-Llaves', fn: function(r){ var d=r.datos||{}; addPunto('Llaves',d.z,'FUNC. EJEC.'); } },
-        { t:'BADS-Juicio', fn: function(r){ var d=r.datos||{}; addPunto('Juicio T.',d.z,'FUNC. EJEC.'); } },
-        { t:'Test del Hotel', fn: function(r){ var d=r.datos||{}; addPunto('Hotel Tareas',d.zTareas,'FUNC. EJEC.'); addPunto('Hotel Tiempo',d.zTiempo,'FUNC. EJEC.'); addPunto('Hotel Botones',d.zBotones,'FUNC. EJEC.'); } },
-        { t:'WCST-64',     fn: function(r){ var d=r.datos||{}; addPunto('WCST Cat.',d.cat_z,'FUNC. EJEC.'); addPunto('WCST Perse.',d.perse_z,'FUNC. EJEC.'); } },
+        { t:'FAB',         fn: function(r){ addPunto('FAB', r.puntaje_z, 'FUNC. EJEC.', 'FAB'); } },
+        { t:'IFS',         fn: function(r){ addPunto('IFS', r.puntaje_z, 'FUNC. EJEC.', 'IFS'); } },
+        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; addPunto('TMT-A',d.tmt_a_z||r.puntaje_z,'FUNC. EJEC.','TMT A-B'); addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.','TMT A-B'); } },
+        { t:'Stroop',      fn: function(r){ var d=r.datos||{}; addPunto('Stroop P',d.zP,'FUNC. EJEC.','Stroop'); addPunto('Stroop C',d.zC,'FUNC. EJEC.','Stroop'); addPunto('Stroop PC',d.zPC,'FUNC. EJEC.','Stroop'); addPunto('Stroop Int.',d.zInt,'FUNC. EJEC.','Stroop'); } },
+        { t:'BADS-Zoo',    fn: function(r){ var d=r.datos||{}; addPunto('Zoo',d.z,'FUNC. EJEC.','BADS-Zoo'); } },
+        { t:'BADS-Llaves', fn: function(r){ var d=r.datos||{}; addPunto('Llaves',d.z,'FUNC. EJEC.','BADS-Llaves'); } },
+        { t:'BADS-Juicio', fn: function(r){ var d=r.datos||{}; addPunto('Juicio T.',d.z,'FUNC. EJEC.','BADS-Juicio'); } },
+        { t:'Test del Hotel', fn: function(r){ var d=r.datos||{}; addPunto('Hotel Tareas',d.zTareas,'FUNC. EJEC.','Test del Hotel'); addPunto('Hotel Tiempo',d.zTiempo,'FUNC. EJEC.','Test del Hotel'); addPunto('Hotel Botones',d.zBotones,'FUNC. EJEC.','Test del Hotel'); } },
+        { t:'WCST-64',     fn: function(r){ var d=r.datos||{}; addPunto('WCST Cat.',d.cat_z,'FUNC. EJEC.','WCST-64'); addPunto('WCST Perse.',d.perse_z,'FUNC. EJEC.','WCST-64'); } },
       ]},
       { dom: 'LENGUAJE', tests: [
-        { t:'BNT-60',         fn: function(r){ addPunto('BNT-60', r.puntaje_z, 'LENGUAJE'); } },
-        { t:'BNT-12',         fn: function(r){ addPunto('BNT-12', r.puntaje_z, 'LENGUAJE'); } },
-        { t:'Fluencia Verbal',fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){addPunto(v.label.replace('Fluencia ','Fl. '),v.z,'LENGUAJE');});}else{addPunto('Fluencia',r.puntaje_z,'LENGUAJE');} } },
+        { t:'BNT-60',         fn: function(r){ addPunto('BNT-60', r.puntaje_z, 'LENGUAJE', 'BNT-60'); } },
+        { t:'BNT-12',         fn: function(r){ addPunto('BNT-12', r.puntaje_z, 'LENGUAJE', 'BNT-12'); } },
+        { t:'Fluencia Verbal',fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){addPunto(v.label.replace('Fluencia ','Fl. '),v.z,'LENGUAJE','Fluencia Verbal');});}else{addPunto('Fluencia',r.puntaje_z,'LENGUAJE','Fluencia Verbal');} } },
       ]},
       { dom: 'VISOC.', tests: [
-        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; addPunto('Fig.Rey Copia',d.zCopia,'VISOC.'); addPunto('Fig.Rey RI',d.zRI,'VISOC.'); } },
+        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; addPunto('Fig.Rey Copia',d.zCopia,'VISOC.','Figura Rey'); addPunto('Fig.Rey RI',d.zRI,'VISOC.','Figura Rey'); } },
       ]},
     ];
 
@@ -6606,6 +7055,14 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
       var x = px(i), y = zy(p.z);
       svg += '<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="#ffffff" stroke="#214b1a" stroke-width="1.5"/>';
       svg += '<circle cx="'+x+'" cy="'+y+'" r="1.6" fill="#214b1a"/>';
+    });
+
+    // Área hover para tooltip de glosario (solo tests con entrada en GLOSARIO_TESTS)
+    puntos.forEach(function(p, i){
+      if (!resolverTestGlosario(p.testGlosario || p.label)) return;
+      var x = px(i), y = zy(p.z);
+      var tn = JSON.stringify(p.testGlosario || p.label);
+      svg += '<circle cx="'+x+'" cy="'+y+'" r="11" fill="transparent" stroke="none" style="cursor:help;pointer-events:all" onmouseenter="mostrarTooltipTest(event,'+tn+','+p.z+')" onmouseleave="ocultarTooltipTest()"/>';
     });
 
     // Etiquetas eje X rotadas −50°
@@ -16401,8 +16858,11 @@ function renderPerfilZ() {
         if (fila.z === null || fila.z === undefined) return;
         hayDatos = true;
         var c = zColor(fila.z);
+        var lblCell = resolverTestGlosario(tn)
+          ? '<span class="test-nombre-glosario" onmouseenter="mostrarTooltipTest(event,' + JSON.stringify(tn) + ',' + fila.z + ')" onmouseleave="ocultarTooltipTest()">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
+          : fila.lbl;
         html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 8px;border-radius:5px;margin-bottom:2px;background:var(--surface);">';
-        html += '<span style="font-size:0.78rem;color:var(--text);">' + fila.lbl + '</span>';
+        html += '<span style="font-size:0.78rem;color:var(--text);">' + lblCell + '</span>';
         html += '<span style="font-family:monospace;font-weight:700;font-size:0.82rem;color:' + c.txt + ';background:' + c.bg + ';padding:1px 8px;border-radius:4px;min-width:48px;text-align:center;">' + fmtZ(fila.z) + '</span>';
         html += '<span style="font-size:0.72rem;color:' + c.txt + ';background:' + c.bg + ';padding:1px 8px;border-radius:4px;min-width:160px;text-align:center;">' + c.lbl + '</span>';
         html += '</div>';
@@ -16656,5 +17116,7 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+
+<div id="tooltip-glosario" role="tooltip" aria-hidden="true"></div>
 </body>
 </html>
