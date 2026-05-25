@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.75</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.76</div>
     </div>
   </aside>
 
@@ -539,6 +539,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="sector-tests">
             <span class="sector-tag">ASRS-V1.1</span>
             <span class="sector-tag">WURS-25</span>
+            <span class="sector-tag">DEX</span>
+            <span class="sector-tag">EAVA</span>
           </div>
         </div>
       </div>
@@ -4552,7 +4554,88 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         </div>
       </div>
     </div>
-    <!-- ── TEST ASRS-V1.1 ── -->
+    
+<!-- ── EAVA · Escala de Autovaloración de TDAH en Adultos ── -->
+<div class="vista" id="vista-eava">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">EAVA · Escala de Autovaloración de TDAH en Adultos</div></div>
+  <div id="eava-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="eava-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="eava-fecha"></div>
+      </div>
+    </div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);">
+      <p style="font-size:0.83rem;color:var(--muted);margin:0;">
+        <strong>Instrucciones:</strong> Indicá con qué frecuencia experimentaste estos síntomas durante los <strong>últimos 6 meses</strong>.<br>
+        <strong>0 = Nunca · 1 = Raramente · 2 = Algunas veces · 3 = A menudo · 4 = Muy a menudo</strong>
+      </p>
+    </div>
+    <div class="modo-toggle">
+      <button class="modo-btn active" id="modo-auto-eava" onclick="setModo('eava','auto')">📋 Ítem por ítem</button>
+      <button class="modo-btn" id="modo-man-eava" onclick="setModo('eava','manual')">✏ Carga manual</button>
+    </div>
+    <div id="man-area-eava" style="display:none;">
+      <div class="card">
+        <div class="card-title">Carga manual de puntajes</div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes totales por subescala. Parte A: inatención (0–36) · Parte B: hiperactividad/impulsividad (0–36). Corte clínico: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad.</p>
+        <div class="form-grid-3">
+          <div class="field"><label>Parte A — Inatención (0–36)</label><input type="number" id="man-eava-a" min="0" max="36" placeholder="0–36"></div>
+          <div class="field"><label>Parte B — Hiper./Impulsividad (0–36)</label><input type="number" id="man-eava-b" min="0" max="36" placeholder="0–36"></div>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn-primary" onclick="calcularEAVAManual()">Calcular resultado →</button>
+      </div>
+    </div>
+    <div id="auto-area-eava">
+      <div class="card">
+        <div class="card-title">Parte A · Inatención (ítems 1–9)</div>
+        <div id="eava-items-a"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Parte B · Hiperactividad / Impulsividad (ítems 10–18)</div>
+        <div id="eava-items-b"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="limpiarEAVA()">🗑 Limpiar</button>
+        <button class="btn-primary" onclick="calcularEAVA()">Calcular resultado →</button>
+      </div>
+    </div>
+  </div>
+  <div id="eava-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="eava-pts-a">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Parte A · Inatención (0–36)</div>
+          <div class="puntaje-categoria" id="eava-cat-a">—</div>
+          <span class="badge-grande" id="eava-badge-a">—</span>
+        </div>
+      </div>
+      <div class="resultado-puntaje" style="margin-top:12px;">
+        <div class="puntaje-grande" id="eava-pts-b">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Parte B · Hiper./Impuls. (0–36)</div>
+          <div class="puntaje-categoria" id="eava-cat-b">—</div>
+          <span class="badge-grande" id="eava-badge-b">—</span>
+        </div>
+      </div>
+      <div class="interp-box" style="margin-top:12px;">
+        <div class="interp-titulo">📋 Interpretación clínica</div>
+        <div class="interp-texto" id="eava-interp"></div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('eava-resultado').style.display='none';document.getElementById('eava-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarEAVA()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TEST ASRS-V1.1 ── -->
 
 <div class="vista" id="vista-asrs">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
@@ -4594,7 +4677,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="card">
           <div style="background:#fff8f0;border:1.5px solid #325c28;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;">
             <div style="font-weight:700;color:#8B3A00;margin-bottom:6px;">⚠ Punto de corte utilizado en este sistema</div>
-            <p style="margin:0 0 4px;"><strong>Sección A (Screener):</strong> ítem positivo si ítems 1–3 ≥ "A veces" (≥2) o ítems 4–6 ≥ "Frecuentemente" (≥3). <strong>Screening positivo: ≥ 4 ítems positivos.</strong> Sensibilidad 68,7% · Especificidad 99,5% (Kessler et al., 2005).</p>
+            <p style="margin:0 0 4px;"><strong>Sección A (Screener, 6 ítems):</strong> Puntaje máximo 24. <strong>Corte OMS: ≥12 → cribado positivo</strong> (Kessler et al., 2005). Método alternativo: ítems 1–3 positivos si ≥2, ítems 4–6 positivos si ≥3; ≥4 positivos = screening positivo (sens. 68,7%, esp. 99,5%). <strong>Sección B (12 ítems):</strong> permite explorar perfil predominante y distribución de síntomas. Sin punto de corte único; se interpreta en conjunto con la Sección A.</p>
             <p style="margin:0;"><strong>Sección B:</strong> sumatoria orientativa 0–48. Sin baremos oficiales.</p>
           </div>
           <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;">Marque con qué frecuencia se ha sentido y comportado de cada manera en los <strong>últimos 6 meses</strong>.</p>
@@ -4959,7 +5042,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="card">
           <div style="background:#fff8f0;border:1.5px solid #325c28;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;">
             <div style="font-weight:700;color:#8B3A00;margin-bottom:6px;">⚠ Punto de corte utilizado en este sistema</div>
-            <p style="margin:0;"><strong>0–25:</strong> sin historia infantil compatible · <strong>26–35:</strong> rasgos leves · <strong>36–45:</strong> probable TDAH infantil · <strong>≥46:</strong> altamente compatible con TDAH infantil. Rango total: 0–75. Fuentes: Rodríguez-Jiménez et al. (2001) · Scandar MG (2021, Rev Neurol, población argentina).</p>
+            <p style="margin:0;"><strong>Puntos de corte WURS-25:</strong> ≥13 (sens. 0,90, alta detección) · ≥29 (esp. 0,93, alta especificidad). <strong>Interpretación clínica orientativa:</strong> 0–12: sin indicadores retrospectivos · 13–28: probable TDAH infantil · ≥29: altamente compatible con TDAH infantil. Rango total: 0–100. Fuentes: Ward et al. (1993) · Scandar MG (2021, Rev Neurol, Argentina).</p>
           </div>
           <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;">
             Contestá las siguientes preguntas teniendo en cuenta lo que recordás de cuando eras niño/a <strong>(antes de los 12 años)</strong>.<br>
@@ -5931,7 +6014,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -7045,7 +7128,7 @@ function renderCuestionariosFam(d) {
     'SPAI-B':  {max:90, cut:40},
     'MBI-HSS': {max:66, cut:27},
     'ASRS-V1.1': {max:18, cut:14},
-    'WURS-25':   {max:75, cut:46}
+    'WURS-25':   {max:100, cut:29}
   };
 
   function clBar(val, max, cutoff) {
@@ -7270,6 +7353,24 @@ function renderCuestionariosFam(d) {
           '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">0–9 normal · 10–19 dep. leve · 20–30 dep. establecida · Yesavage et al. (1983)</div>';
+        return;
+      }
+      // ── EAVA ──
+      if (r.test === 'EAVA') {
+        html += clHeader('EAVA · Escala de Autovaloración de TDAH en Adultos');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Subescala</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
+        var eA=d.parte_a!=null?d.parte_a:'—', eB=d.parte_b!=null?d.parte_b:'—';
+        html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">Parte A · Inatención (0–36)</td>'+
+          '<td style="'+tdRC+'">'+(eA!='—'?eA+'/36':'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(d.cat_a||r.categoria||'—')+'</td></tr>';
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">Parte B · Hiper./Impulsividad (0–36)</td>'+
+          '<td style="'+tdRC+'">'+(eB!='—'?eB+'/36':'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(d.cat_b||'—')+'</td></tr>';
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad · DSM-5</div>';
         return;
       }
       // ── DEX ──
@@ -7741,6 +7842,12 @@ function irSector(s) {
         '<div class="test-nombre">DEX</div>'+
         '<div class="test-desc">Cuestionario Disejecutivo · Síntomas del síndrome disejecutivo · Autoadministrado o informante</div>'+
         '<span class="test-tag">Wilson et al. 1999 · Querejeta et al. 2015 · Argentina</span>'+
+      '</div>'+
+      '<div class="test-card" onclick="irTest(\'eava\')">'+
+        '<div class="test-icon">📝</div>'+
+        '<div class="test-nombre">EAVA</div>'+
+        '<div class="test-desc">Escala de Autovaloración de TDAH en Adultos — Síntomas actuales · Parte A (inatención) + Parte B (hiperactividad/impulsividad)</div>'+
+        '<span class="test-tag">18 ítems · DSM-5 · Tamizaje adultos</span>'+
       '</div>';
   }
 }
@@ -7778,6 +7885,7 @@ function irTest(t) {
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
   if (t === 'dex') iniciarDEX();
+  if (t === 'eava') iniciarEAVA();
   if (t === 'waisiv') iniciarWaisiv();
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
@@ -8109,7 +8217,7 @@ function _calcularWURSManual(total) {
   var M=23.5, DS=13.16;
   var z = parseFloat(((total-M)/DS).toFixed(2));
   var pc = Math.max(1,Math.min(99,Math.round(50+28.57*z)));
-  var cat = total >= 46 ? 'Compatible con TDAH retrospectivo (≥46)' : 'Sin indicadores retrospectivos de TDAH';
+  var cat = total>=29 ? 'Alta compatibilidad con TDAH infantil (≥29)' : total>=13 ? 'Probable TDAH infantil (≥13)' : 'Sin indicadores retrospectivos de TDAH (<13)';
   document.getElementById('wurs-detalle').innerHTML =
     '<div class="detalle-item"><div class="detalle-num">'+total+'</div><div class="detalle-lbl">Puntaje total</div></div>'+
     '<div class="detalle-item"><div class="detalle-num">'+(z>=0?'+':'')+z+'</div><div class="detalle-lbl">Z</div></div>'+
@@ -10551,6 +10659,140 @@ var ASRS_ITEMS = [
   {n:17,txt:'¿Con qué frecuencia interrumpe a otros cuando están ocupados?',sec:'B'},
   {n:18,txt:'¿Con qué frecuencia come en exceso o siente impulsos de comer cuando no tiene hambre?',sec:'B'}
 ];
+
+// ══ EAVA · Escala de Autovaloración de TDAH en Adultos ══════════════════════
+// DSM-5 adaptado · Parte A: inatención (ítems 1-9) · Parte B: hiper/impuls (10-18)
+// Cortes por subescala: ≥24 muy probable · 17-23 probable · 0-16 baja probabilidad
+var EAVA_ITEMS_A = [
+  {n:1,  text:'Con qué frecuencia no presta atención a los detalles o comete errores por descuido en el trabajo u otras actividades.'},
+  {n:2,  text:'Con qué frecuencia tiene dificultades para mantener la atención en tareas o actividades recreativas.'},
+  {n:3,  text:'Con qué frecuencia parece no escuchar cuando se le habla directamente.'},
+  {n:4,  text:'Con qué frecuencia no sigue instrucciones o no termina las tareas que empieza.'},
+  {n:5,  text:'Con qué frecuencia tiene dificultades para organizar tareas y actividades.'},
+  {n:6,  text:'Con qué frecuencia evita o le disgusta iniciar tareas que requieren esfuerzo mental sostenido.'},
+  {n:7,  text:'Con qué frecuencia pierde objetos necesarios para sus actividades (llaves, documentos, herramientas).'},
+  {n:8,  text:'Con qué frecuencia se distrae fácilmente por estímulos externos o pensamientos sin relación con lo que estaba haciendo.'},
+  {n:9,  text:'Con qué frecuencia es olvidadizo/a en las actividades cotidianas.'}
+];
+var EAVA_ITEMS_B = [
+  {n:10, text:'Con qué frecuencia mueve en exceso manos o pies, o se remueve en el asiento.'},
+  {n:11, text:'Con qué frecuencia se levanta o abandona situaciones en que se espera que permanezca sentado/a.'},
+  {n:12, text:'Con qué frecuencia siente una inquietud interna o sensación de estar impulsado/a por un motor.'},
+  {n:13, text:'Con qué frecuencia tiene dificultades para participar tranquilamente en actividades de ocio.'},
+  {n:14, text:'Con qué frecuencia habla en exceso.'},
+  {n:15, text:'Con qué frecuencia responde antes de que se haya terminado de formular una pregunta.'},
+  {n:16, text:'Con qué frecuencia tiene dificultades para esperar su turno.'},
+  {n:17, text:'Con qué frecuencia interrumpe a otros o se entromete en sus conversaciones o actividades.'},
+  {n:18, text:'Con qué frecuencia toma decisiones impulsivas sin evaluar las consecuencias.'}
+];
+var EAVA_OPS = ['Nunca (0)','Raramente (1)','Algunas veces (2)','A menudo (3)','Muy a menudo (4)'];
+
+function eavaCat(score) {
+  if (score >= 24) return { cat:'Muy probable TDAH adulto',   badge:'bg-grave',    lbl:'≥24' };
+  if (score >= 17) return { cat:'Probable TDAH adulto',       badge:'bg-moderada', lbl:'17–23' };
+  return                  { cat:'Baja probabilidad de TDAH',  badge:'bg-minima',   lbl:'0–16' };
+}
+
+function _mostrarResultadoEAVA(ptA, ptB) {
+  var rA = eavaCat(ptA), rB = eavaCat(ptB);
+  var perfilA = ptA >= 17 ? 'inatento' : null;
+  var perfilB = ptB >= 17 ? 'hiperactivo/impulsivo' : null;
+  var perfil = (perfilA && perfilB) ? 'combinado' : (perfilA || perfilB) || 'sin indicadores clínicos';
+
+  var interp = '<p><strong>Parte A (Inatención):</strong> '+ptA+'/36 — <strong>'+rA.cat+'</strong> ('+rA.lbl+').</p>'+
+    '<p><strong>Parte B (Hiperactividad/Impulsividad):</strong> '+ptB+'/36 — <strong>'+rB.cat+'</strong> ('+rB.lbl+').</p>';
+
+  if (ptA >= 24 || ptB >= 24) {
+    interp += '<p>La puntuación es clínicamente significativa. El perfil es compatible con un cuadro de <strong>TDAH de presentación '+perfil+'</strong>. Se recomienda evaluación clínica integral.</p>';
+  } else if (ptA >= 17 || ptB >= 17) {
+    interp += '<p>La puntuación sugiere síntomas compatibles con TDAH adulto de probabilidad moderada (presentación '+perfil+'). Puede reflejar un cuadro subclínico o compensado. Justifica evaluación complementaria.</p>';
+  } else {
+    interp += '<p>La intensidad actual de los síntomas no alcanza umbrales clínicos en ninguna subescala. Sin indicadores significativos de TDAH en la evaluación actual.</p>';
+  }
+  interp += '<p><em>EAVA basada en criterios DSM-5. No es diagnóstica por sí sola. Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad. Complementar con ASRS, WURS y entrevista clínica.</em></p>';
+
+  document.getElementById('eava-pts-a').textContent = ptA;
+  document.getElementById('eava-cat-a').textContent = rA.cat;
+  document.getElementById('eava-badge-a').textContent = rA.cat;
+  document.getElementById('eava-badge-a').className = 'badge-grande ' + rA.badge;
+  document.getElementById('eava-pts-b').textContent = ptB;
+  document.getElementById('eava-cat-b').textContent = rB.cat;
+  document.getElementById('eava-badge-b').textContent = rB.cat;
+  document.getElementById('eava-badge-b').className = 'badge-grande ' + rB.badge;
+  document.getElementById('eava-interp').innerHTML = interp;
+  document.getElementById('eava-form').style.display = 'none';
+  document.getElementById('eava-resultado').style.display = 'block';
+  window._eavaA = ptA; window._eavaB = ptB;
+}
+
+function iniciarEAVA() {
+  function renderItems(items, containerId) {
+    var wrap = document.getElementById(containerId);
+    wrap.innerHTML = items.map(function(item) {
+      var opts = EAVA_OPS.map(function(op, j) {
+        return '<label class="bdi-opcion"><input type="radio" name="eava_'+item.n+'" value="'+j+'"><span class="bdi-opcion-texto">'+op+'</span></label>';
+      }).join('');
+      return '<div class="bdi-item"><div class="bdi-pregunta">'+item.n+'. '+item.text+'</div><div class="bdi-opciones">'+opts+'</div></div>';
+    }).join('');
+  }
+  renderItems(EAVA_ITEMS_A, 'eava-items-a');
+  renderItems(EAVA_ITEMS_B, 'eava-items-b');
+  document.getElementById('eava-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('eava-form').style.display = 'block';
+  document.getElementById('eava-resultado').style.display = 'none';
+}
+
+function limpiarEAVA() {
+  if (!confirm('¿Limpiar todos los ítems?')) return;
+  for (var i = 1; i <= 18; i++) {
+    var rs = document.querySelectorAll('input[name="eava_'+i+'"]');
+    rs.forEach(function(r){ r.checked = false; });
+  }
+}
+
+function calcularEAVA() {
+  var ptA = 0, ptB = 0, sinR = 0;
+  EAVA_ITEMS_A.forEach(function(item) {
+    var s = document.querySelector('input[name="eava_'+item.n+'"]:checked');
+    if (s) ptA += parseInt(s.value); else sinR++;
+  });
+  EAVA_ITEMS_B.forEach(function(item) {
+    var s = document.querySelector('input[name="eava_'+item.n+'"]:checked');
+    if (s) ptB += parseInt(s.value); else sinR++;
+  });
+  if (sinR > 0 && !confirm('Hay '+sinR+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  _mostrarResultadoEAVA(ptA, ptB);
+}
+
+function calcularEAVAManual() {
+  var a = parseInt(document.getElementById('man-eava-a').value);
+  var b = parseInt(document.getElementById('man-eava-b').value);
+  if (isNaN(a) || isNaN(b) || a < 0 || a > 36 || b < 0 || b > 36) {
+    toast('Ingresá puntajes válidos (0–36 para cada parte)', 'error'); return;
+  }
+  _mostrarResultadoEAVA(a, b);
+}
+
+function guardarEAVA() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('eava-paciente').value;
+  var fecha = document.getElementById('eava-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  var ptA = window._eavaA != null ? window._eavaA : parseInt(document.getElementById('eava-pts-a').textContent) || 0;
+  var ptB = window._eavaB != null ? window._eavaB : parseInt(document.getElementById('eava-pts-b').textContent) || 0;
+  var rA = eavaCat(ptA), rB = eavaCat(ptB);
+  var catGlobal = (ptA >= 24 || ptB >= 24) ? 'Muy probable TDAH adulto' : (ptA >= 17 || ptB >= 17) ? 'Probable TDAH adulto' : 'Baja probabilidad';
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId, test: 'EAVA', fecha: fecha,
+    puntaje_total: ptA + ptB, categoria: catGlobal,
+    datos: { parte_a: ptA, parte_b: ptB, cat_a: rA.cat, cat_b: rB.cat }
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ EAVA guardado', 'success');
+    var btn = document.querySelector('.vista.active .btn-primary:last-child');
+    if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
 function iniciarAsrs() {
   document.getElementById('asrs-fecha').value = new Date().toISOString().split('T')[0];
   var divA = document.getElementById('asrs-items-a');
@@ -12025,7 +12267,7 @@ function guardarWurs() {
   var pc=1;
   for(var j=0;j<WURS_PCT.length;j++){if(total>=WURS_PCT[j].v)pc=WURS_PCT[j].p;else break;}
   var zW=parseFloat(((total-23.5)/13.16).toFixed(2));
-  var cat=total>=46?'Significativo para síntomas en la infancia':total>=36?'Probable historia síntomas infantiles':'Sin síntomas significativos en la infancia';
+  var cat=total>=29?'Alta compatibilidad con TDAH infantil (≥29)':total>=13?'Probable TDAH infantil (≥13)':'Sin indicadores retrospectivos de TDAH (<13)';
   supaFetch('/rest/v1/psico_resultados','POST',{
     user_id:SESSION.user.id,paciente_id:pacId,test:'WURS-25',fecha:fecha,
     puntaje_total:total,puntaje_z:zW,categoria:cat,
@@ -12932,6 +13174,7 @@ function buildPruebasRealizadasHtml(datos) {
     'Holmes-Rahe': 'Escala de Reajuste Psicosocial (Holmes & Rahe)',
     'GDS-30': 'Escala de Depresión Geriátrica de Yesavage (GDS-30)',
     'ASRS-V1.1': 'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
+    'EAVA': 'Escala de Autovaloración de TDAH en Adultos (EAVA)',
     'WURS-25': 'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX': 'Cuestionario Disejecutivo (DEX)',
     'PCS': 'Escala de Catastrofización del Dolor (PCS)',
@@ -12946,7 +13189,7 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
     { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
-    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX'] },
+    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
     { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'PSS-10', 'Holmes-Rahe', 'GDS-30'] },
     { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
     { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
@@ -15145,7 +15388,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
-  var TD_LIST=['ASRS-V1.1','WURS-25','DEX'];
+  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
   function tipoTest(t){return NP_LIST.indexOf(t)!==-1?'np':CL_LIST.indexOf(t)!==-1?'cl':TD_LIST.indexOf(t)!==-1?'td':DO_LIST.indexOf(t)!==-1?'do':'cl';}
   var testsNP    = datos.filter(function(r){return tipoTest(r.test)==='np';});
@@ -15380,6 +15623,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.scoreH!=null)addCL('ASRS — Hiper./Impulsividad',d.scoreH,d.pcH?'Pc '+d.pcH:'—');
         if(d.scoreT!=null||d.total_18!=null)addCL('ASRS — Total',d.scoreT||d.total_18,d.pcT?'Pc '+d.pcT:'—');
       } else if(r.test==='WURS-25'){addCL('WURS-25 · Síntomas TDAH en la Infancia',r.puntaje_total!=null?r.puntaje_total:r.datos&&r.datos.total!=null?r.datos.total:'—',r.categoria||'—');}
+      else if(r.test==='EAVA'){
+        var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
+        addCL('EAVA · Inatención (Parte A)',eA!='—'?eA+'/36':'—',d.cat_a||'—');
+        addCL('EAVA · Hiper./Impulsividad (Parte B)',eB!='—'?eB+'/36':'—',d.cat_b||'—');
+      }
       else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,r.categoria||'—');}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
       else if(r.test==='PSS-10'){addCL('PSS-10 · Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
