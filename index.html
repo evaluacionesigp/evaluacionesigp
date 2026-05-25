@@ -539,8 +539,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="sector-tests">
             <span class="sector-tag">ASRS-V1.1</span>
             <span class="sector-tag">WURS-25</span>
-            <span class="sector-tag">DEX</span>
-            <span class="sector-tag">EAVA</span>
           </div>
         </div>
       </div>
@@ -1228,26 +1226,39 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="form-grid-3">
             <div class="field">
               <label>Grupo de edad *</label>
-              <select id="tmt-edad">
+              <select id="tmt-edad" onchange="tmtActualizarOcup()">
                 <option value="">— Seleccionar —</option>
-                <option value="0">16–29 años</option>
-                <option value="1">30–49 años</option>
-                <option value="2">50–64 años</option>
-                <option value="3">65 o más años</option>
+                <option value="joven">15–59 años</option>
+                <option value="mayor">60–70 años</option>
               </select>
             </div>
             <div class="field">
               <label>Escolaridad *</label>
-              <select id="tmt-escol">
+              <select id="tmt-escol" onchange="tmtActualizarOcup()">
                 <option value="">— Seleccionar —</option>
-                <option value="baja">0–6 años (baja)</option>
-                <option value="media">7–10 años (media)</option>
-                <option value="alta">11 o más años (alta)</option>
+                <option value="primario">Primario (0–6 años)</option>
+                <option value="secundario">Secundario (7–12 años)</option>
+                <option value="terciario">Terciario/Universitario (≥13 años)</option>
               </select>
             </div>
-            <div class="field" style="opacity:0.5;">
-              <label>Nota</label>
-              <input type="text" disabled placeholder="Baja escolaridad: sin división por edad">
+            <div class="field" id="tmt-ocup-wrap">
+              <label>Ocupación * <span style="font-size:0.75rem;color:var(--muted);">(solo para TMT-B)</span></label>
+              <select id="tmt-ocup">
+                <option value="">— Seleccionar —</option>
+                <option value="prof">Profesional / Estudiante</option>
+                <option value="calif">Empleado calificado</option>
+                <option value="nocal">No calificado / Jubilado</option>
+              </select>
+            </div>
+          </div>
+          <div id="tmt-escol-mayor-wrap" style="display:none;" class="form-grid-3">
+            <div class="field">
+              <label>Escolaridad (60–70 años) *</label>
+              <select id="tmt-escol-mayor">
+                <option value="">— Seleccionar —</option>
+                <option value="bajo">Bajo (0–12 años)</option>
+                <option value="alto">Alto (más de 12 años)</option>
+              </select>
             </div>
           </div>
         </div>
@@ -1265,7 +1276,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             </div>
           </div>
           <div style="background:#fef5ec;border:1px solid #f0d4b0;border-radius:8px;padding:10px 14px;font-size:0.8rem;color:var(--muted);margin-top:4px;">
-            ⏱ Recordá: el tiempo se carga en segundos. Ej: 1 minuto 30 segundos = 90 segundos.
+            ⏱ Recordá: el tiempo se carga en segundos. Ej: 1 minuto 30 segundos = 90 segundos.<br>
+            <strong>TMT-A</strong> baremo por educación · <strong>TMT-B</strong> baremo por educación × ocupación (grupo 15–59) o educación (60–70).
           </div>
           <div class="btn-row" style="margin-top:16px;">
             <button class="btn-secondary" onclick="limpiarTMT()">🗑 Limpiar</button>
@@ -4554,88 +4566,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         </div>
       </div>
     </div>
-    
-<!-- ── EAVA · Escala de Autovaloración de TDAH en Adultos ── -->
-<div class="vista" id="vista-eava">
-  <div class="back-btn" onclick="volverSector()">← Volver</div>
-  <div class="vista-header"><div class="vista-titulo">EAVA · Escala de Autovaloración de TDAH en Adultos</div></div>
-  <div id="eava-form">
-    <div class="card">
-      <div class="card-title">Datos de la evaluación</div>
-      <div class="form-grid-3">
-        <div class="field"><label>Paciente *</label><select id="eava-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="eava-fecha"></div>
-      </div>
-    </div>
-    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);">
-      <p style="font-size:0.83rem;color:var(--muted);margin:0;">
-        <strong>Instrucciones:</strong> Indicá con qué frecuencia experimentaste estos síntomas durante los <strong>últimos 6 meses</strong>.<br>
-        <strong>0 = Nunca · 1 = Raramente · 2 = Algunas veces · 3 = A menudo · 4 = Muy a menudo</strong>
-      </p>
-    </div>
-    <div class="modo-toggle">
-      <button class="modo-btn active" id="modo-auto-eava" onclick="setModo('eava','auto')">📋 Ítem por ítem</button>
-      <button class="modo-btn" id="modo-man-eava" onclick="setModo('eava','manual')">✏ Carga manual</button>
-    </div>
-    <div id="man-area-eava" style="display:none;">
-      <div class="card">
-        <div class="card-title">Carga manual de puntajes</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes totales por subescala. Parte A: inatención (0–36) · Parte B: hiperactividad/impulsividad (0–36). Corte clínico: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad.</p>
-        <div class="form-grid-3">
-          <div class="field"><label>Parte A — Inatención (0–36)</label><input type="number" id="man-eava-a" min="0" max="36" placeholder="0–36"></div>
-          <div class="field"><label>Parte B — Hiper./Impulsividad (0–36)</label><input type="number" id="man-eava-b" min="0" max="36" placeholder="0–36"></div>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:8px;">
-        <button class="btn-primary" onclick="calcularEAVAManual()">Calcular resultado →</button>
-      </div>
-    </div>
-    <div id="auto-area-eava">
-      <div class="card">
-        <div class="card-title">Parte A · Inatención (ítems 1–9)</div>
-        <div id="eava-items-a"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Parte B · Hiperactividad / Impulsividad (ítems 10–18)</div>
-        <div id="eava-items-b"></div>
-      </div>
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="limpiarEAVA()">🗑 Limpiar</button>
-        <button class="btn-primary" onclick="calcularEAVA()">Calcular resultado →</button>
-      </div>
-    </div>
-  </div>
-  <div id="eava-resultado" style="display:none;">
-    <div class="resultado-box">
-      <div class="resultado-puntaje">
-        <div class="puntaje-grande" id="eava-pts-a">0</div>
-        <div class="puntaje-info">
-          <div class="puntaje-label">Parte A · Inatención (0–36)</div>
-          <div class="puntaje-categoria" id="eava-cat-a">—</div>
-          <span class="badge-grande" id="eava-badge-a">—</span>
-        </div>
-      </div>
-      <div class="resultado-puntaje" style="margin-top:12px;">
-        <div class="puntaje-grande" id="eava-pts-b">0</div>
-        <div class="puntaje-info">
-          <div class="puntaje-label">Parte B · Hiper./Impuls. (0–36)</div>
-          <div class="puntaje-categoria" id="eava-cat-b">—</div>
-          <span class="badge-grande" id="eava-badge-b">—</span>
-        </div>
-      </div>
-      <div class="interp-box" style="margin-top:12px;">
-        <div class="interp-titulo">📋 Interpretación clínica</div>
-        <div class="interp-texto" id="eava-interp"></div>
-      </div>
-    </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn-secondary" onclick="document.getElementById('eava-resultado').style.display='none';document.getElementById('eava-form').style.display='block';">← Modificar</button>
-      <button class="btn-primary" onclick="guardarEAVA()">💾 Guardar resultado</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── TEST ASRS-V1.1 ── -->
+    <!-- ── TEST ASRS-V1.1 ── -->
 
 <div class="vista" id="vista-asrs">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
@@ -4677,7 +4608,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="card">
           <div style="background:#fff8f0;border:1.5px solid #325c28;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;">
             <div style="font-weight:700;color:#8B3A00;margin-bottom:6px;">⚠ Punto de corte utilizado en este sistema</div>
-            <p style="margin:0 0 4px;"><strong>Sección A (Screener, 6 ítems):</strong> Puntaje máximo 24. <strong>Corte OMS: ≥12 → cribado positivo</strong> (Kessler et al., 2005). Método alternativo: ítems 1–3 positivos si ≥2, ítems 4–6 positivos si ≥3; ≥4 positivos = screening positivo (sens. 68,7%, esp. 99,5%). <strong>Sección B (12 ítems):</strong> permite explorar perfil predominante y distribución de síntomas. Sin punto de corte único; se interpreta en conjunto con la Sección A.</p>
+            <p style="margin:0 0 4px;"><strong>Sección A (Screener):</strong> ítem positivo si ítems 1–3 ≥ "A veces" (≥2) o ítems 4–6 ≥ "Frecuentemente" (≥3). <strong>Screening positivo: ≥ 4 ítems positivos.</strong> Sensibilidad 68,7% · Especificidad 99,5% (Kessler et al., 2005).</p>
             <p style="margin:0;"><strong>Sección B:</strong> sumatoria orientativa 0–48. Sin baremos oficiales.</p>
           </div>
           <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;">Marque con qué frecuencia se ha sentido y comportado de cada manera en los <strong>últimos 6 meses</strong>.</p>
@@ -5042,7 +4973,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="card">
           <div style="background:#fff8f0;border:1.5px solid #325c28;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;">
             <div style="font-weight:700;color:#8B3A00;margin-bottom:6px;">⚠ Punto de corte utilizado en este sistema</div>
-            <p style="margin:0;"><strong>Puntos de corte WURS-25:</strong> ≥13 (sens. 0,90, alta detección) · ≥29 (esp. 0,93, alta especificidad). <strong>Interpretación clínica orientativa:</strong> 0–12: sin indicadores retrospectivos · 13–28: probable TDAH infantil · ≥29: altamente compatible con TDAH infantil. Rango total: 0–100. Fuentes: Ward et al. (1993) · Scandar MG (2021, Rev Neurol, Argentina).</p>
+            <p style="margin:0;"><strong>0–25:</strong> sin historia infantil compatible · <strong>26–35:</strong> rasgos leves · <strong>36–45:</strong> probable TDAH infantil · <strong>≥46:</strong> altamente compatible con TDAH infantil. Rango total: 0–75. Fuentes: Rodríguez-Jiménez et al. (2001) · Scandar MG (2021, Rev Neurol, población argentina).</p>
           </div>
           <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px;">
             Contestá las siguientes preguntas teniendo en cuenta lo que recordás de cuando eras niño/a <strong>(antes de los 12 años)</strong>.<br>
@@ -5963,7 +5894,7 @@ function aplicarPacienteActivoATest(testId) {
 
   if (edad !== null) {
     pacSetVal('rey-edad', grupoRey(edad));
-    pacSetVal('tmt-edad', grupoTmt(edad));
+    pacSetVal('tmt-edad', edad && edad >= 60 ? 'mayor' : 'joven');
     pacSetVal('flv-edad', grupoFlv(edad));
     pacSetVal('stroop-edad', grupoStroop(edad));
     pacSetVal('spaib-edad', grupoSpaib(edad));
@@ -5987,7 +5918,12 @@ function aplicarPacienteActivoATest(testId) {
   pacSetVal('rey-sexo', sexoARey(p.sexo));
 
   if (anios !== null) {
-    pacSetVal('tmt-escol', escolTmt(anios));
+    var escolVal = anios <= 6 ? 'primario' : anios <= 12 ? 'secundario' : 'terciario';
+    pacSetVal('tmt-escol', escolVal);
+    // Para grupo mayor, también actualizar tmt-escol-mayor
+    var escolMayorVal = anios <= 12 ? 'bajo' : 'alto';
+    pacSetVal('tmt-escol-mayor', escolMayorVal);
+    tmtActualizarOcup();
     pacSetVal('flv-ne', neFlv(anios));
     pacSetVal('ifs-ne', neIfs(anios));
     pacSetVal('wcst-ne', neAltoBajo(anios));
@@ -6014,7 +5950,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -7128,7 +7064,7 @@ function renderCuestionariosFam(d) {
     'SPAI-B':  {max:90, cut:40},
     'MBI-HSS': {max:66, cut:27},
     'ASRS-V1.1': {max:18, cut:14},
-    'WURS-25':   {max:100, cut:29}
+    'WURS-25':   {max:75, cut:46}
   };
 
   function clBar(val, max, cutoff) {
@@ -7353,24 +7289,6 @@ function renderCuestionariosFam(d) {
           '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">0–9 normal · 10–19 dep. leve · 20–30 dep. establecida · Yesavage et al. (1983)</div>';
-        return;
-      }
-      // ── EAVA ──
-      if (r.test === 'EAVA') {
-        html += clHeader('EAVA · Escala de Autovaloración de TDAH en Adultos');
-        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
-          '<th style="'+thDark+'min-width:200px;">Subescala</th>'+
-          '<th style="'+thDarkC+'">Puntaje</th>'+
-          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
-        var eA=d.parte_a!=null?d.parte_a:'—', eB=d.parte_b!=null?d.parte_b:'—';
-        html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">Parte A · Inatención (0–36)</td>'+
-          '<td style="'+tdRC+'">'+(eA!='—'?eA+'/36':'—')+'</td>'+
-          '<td style="'+tdRI+'">'+(d.cat_a||r.categoria||'—')+'</td></tr>';
-        html += '<tr style="background:#fff;"><td style="'+tdR+'">Parte B · Hiper./Impulsividad (0–36)</td>'+
-          '<td style="'+tdRC+'">'+(eB!='—'?eB+'/36':'—')+'</td>'+
-          '<td style="'+tdRI+'">'+(d.cat_b||'—')+'</td></tr>';
-        html += '</tbody></table>';
-        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad · DSM-5</div>';
         return;
       }
       // ── DEX ──
@@ -7842,12 +7760,6 @@ function irSector(s) {
         '<div class="test-nombre">DEX</div>'+
         '<div class="test-desc">Cuestionario Disejecutivo · Síntomas del síndrome disejecutivo · Autoadministrado o informante</div>'+
         '<span class="test-tag">Wilson et al. 1999 · Querejeta et al. 2015 · Argentina</span>'+
-      '</div>'+
-      '<div class="test-card" onclick="irTest(\'eava\')">'+
-        '<div class="test-icon">📝</div>'+
-        '<div class="test-nombre">EAVA</div>'+
-        '<div class="test-desc">Escala de Autovaloración de TDAH en Adultos — Síntomas actuales · Parte A (inatención) + Parte B (hiperactividad/impulsividad)</div>'+
-        '<span class="test-tag">18 ítems · DSM-5 · Tamizaje adultos</span>'+
       '</div>';
   }
 }
@@ -7885,7 +7797,6 @@ function irTest(t) {
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
   if (t === 'dex') iniciarDEX();
-  if (t === 'eava') iniciarEAVA();
   if (t === 'waisiv') iniciarWaisiv();
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
@@ -8217,7 +8128,7 @@ function _calcularWURSManual(total) {
   var M=23.5, DS=13.16;
   var z = parseFloat(((total-M)/DS).toFixed(2));
   var pc = Math.max(1,Math.min(99,Math.round(50+28.57*z)));
-  var cat = total>=29 ? 'Alta compatibilidad con TDAH infantil (≥29)' : total>=13 ? 'Probable TDAH infantil (≥13)' : 'Sin indicadores retrospectivos de TDAH (<13)';
+  var cat = total >= 46 ? 'Compatible con TDAH retrospectivo (≥46)' : 'Sin indicadores retrospectivos de TDAH';
   document.getElementById('wurs-detalle').innerHTML =
     '<div class="detalle-item"><div class="detalle-num">'+total+'</div><div class="detalle-lbl">Puntaje total</div></div>'+
     '<div class="detalle-item"><div class="detalle-num">'+(z>=0?'+':'')+z+'</div><div class="detalle-lbl">Z</div></div>'+
@@ -8713,104 +8624,120 @@ function guardarResultadoRey() {
 }
 
 // ══ TMT — BAREMOS ════════════════════════════════════════════════════════════
-// Tablas de percentiles del artículo (Margulis et al., 2018)
-// Formato: arrays de {p, tA, tB} — tiempo en segundos
-// Para baja escolaridad: sin división por edad
-// Para media/alta: 4 grupos edad x 2 niveles escolaridad
-// En TMT: más tiempo = peor rendimiento → Z = (bruto - M) / DS (Z positivo = peor)
+// ══ TMT · Trail Making Test ══════════════════════════════════════════════════
+// Baremos: Fernández, Marino & Alderete (2002). Rev Neurológica Argentina 27:83-88
+// Muestra: n=251 adultos, 15-70 años, Córdoba, Argentina
+// ─────────────────────────────────────────────────────────────────────────────
+// ESTRUCTURA DE BAREMOS (M y DS en segundos):
+//
+// PARTE A — solo por educación (15–59 años); por educación dicotómica (60–70 años)
+//   15–59: Primario N=25 M=62 DS=14.98 | Secundario N=69 M=44.47 DS=17.32 | Terciario N=117 M=37.4 DS=10.77
+//   60–70: Bajo (0-12 años) N=31 M=73.68 DS=30.84 | Alto (>12 años) N=9 M=47.89 DS=11.33
+//
+// PARTE B — por educación × ocupación (15–59 años); por educación dicotómica (60–70 años)
+//   15–59 Primario: Cal N=6 M=112.2 DS=48 | NoCal N=19 M=128.9 DS=23.1
+//   15–59 Secundario: Prof N=27 M=73.4 DS=16.9 | Cal N=31 M=91.5 DS=26.5 | NoCal N=12 M=108 DS=55.5
+//   15–59 Terciario: Prof N=94 M=66.4 DS=18.14 | Cal N=22 M=74.4 DS=16.4
+//   60–70: Bajo N=30 M=160.5 DS=59.72 | Alto N=9 M=103.67 DS=29.92
 
-var TMT_M_DS = {
-  baja: {
-    a: {m:67.2, ds:42.0},
-    b: {m:212.9, ds:140.1}
+var TMT_BAR = {
+  // Parte A: [M, DS]
+  a: {
+    joven: {
+      primario:    {m:62.0,   ds:14.98},
+      secundario:  {m:44.47,  ds:17.32},
+      terciario:   {m:37.4,   ds:10.77}
+    },
+    mayor: {
+      bajo: {m:73.68, ds:30.84},
+      alto: {m:47.89, ds:11.33}
+    }
   },
-  media: [
-    {a:{m:39.9,ds:11.7}, b:{m:94.1,ds:53.3}},   // 16-29
-    {a:{m:43.5,ds:16.9}, b:{m:99.2,ds:36.5}},   // 30-49
-    {a:{m:52.0,ds:21.6}, b:{m:142.5,ds:64.6}},  // 50-64
-    {a:{m:55.8,ds:24.5}, b:{m:129.2,ds:55.4}}   // 65+
-  ],
-  alta: [
-    {a:{m:29.5,ds:10.2}, b:{m:71.3,ds:25.7}},   // 16-29
-    {a:{m:30.6,ds:10.5}, b:{m:67.9,ds:39.9}},   // 30-49
-    {a:{m:36.1,ds:11.2}, b:{m:85.3,ds:28.2}},   // 50-64
-    {a:{m:55.8,ds:24.5}, b:{m:129.2,ds:55.4}}   // 65+ (unificado media+alta)
-  ]
+  // Parte B: [M, DS] — joven: {escol: {ocup: ...}}
+  b: {
+    joven: {
+      primario: {
+        calif:  {m:112.2, ds:48.0},
+        nocal:  {m:128.9, ds:23.1}
+        // prof: no disponible para primario
+      },
+      secundario: {
+        prof:   {m:73.4,  ds:16.9},
+        calif:  {m:91.5,  ds:26.5},
+        nocal:  {m:108.0, ds:55.5}
+      },
+      terciario: {
+        prof:   {m:66.4,  ds:18.14},
+        calif:  {m:74.4,  ds:16.4}
+        // nocal: no disponible para terciario
+      }
+    },
+    mayor: {
+      bajo: {m:160.5,  ds:59.72},
+      alto: {m:103.67, ds:29.92}
+    }
+  }
 };
 
-// Percentiles TMT-A: {escol, edad_idx} → array [{p, val}]
-// Baja escolaridad (sin edad)
-var TMT_PC_BAJA_A = [
-  {p:95,v:33},{p:90,v:36},{p:85,v:38},{p:80,v:43},{p:75,v:46},
-  {p:70,v:47},{p:65,v:50},{p:60,v:51},{p:55,v:56},{p:50,v:57},
-  {p:45,v:60},{p:40,v:61},{p:35,v:64},{p:30,v:68},{p:25,v:85},
-  {p:20,v:99},{p:15,v:126},{p:10,v:129},{p:6,v:169},{p:2,v:230}
-];
-var TMT_PC_BAJA_B = [
-  {p:95,v:85},{p:90,v:112},{p:85,v:120},{p:80,v:123},{p:75,v:125},
-  {p:70,v:126},{p:65,v:126},{p:60,v:128},{p:55,v:152},{p:50,v:166},
-  {p:45,v:205},{p:40,v:215},{p:35,v:237},{p:30,v:265},{p:25,v:284},
-  {p:20,v:409},{p:15,v:494},{p:10,v:550},{p:6,v:582},{p:2,v:632}
-];
+function tmtActualizarOcup() {
+  var edad = document.getElementById('tmt-edad').value;
+  var escol = document.getElementById('tmt-escol').value;
+  var ocupWrap = document.getElementById('tmt-ocup-wrap');
+  var mayorWrap = document.getElementById('tmt-escol-mayor-wrap');
+  var escolSelects = document.getElementById('tmt-escol').parentElement.parentElement;
 
-// Media/Alta escolaridad — TMT-A
-// [edad0..edad3][escol: 0=media, 1=alta]
-var TMT_PC_A = [
-  // 16-29
-  [[{p:95,v:23},{p:90,v:27},{p:85,v:29},{p:80,v:30},{p:75,v:31},{p:70,v:32},{p:65,v:33},{p:60,v:34},{p:55,v:38},{p:50,v:39},{p:45,v:40},{p:40,v:41},{p:35,v:42},{p:30,v:46},{p:25,v:49},{p:20,v:51},{p:15,v:52},{p:10,v:57},{p:6,v:62},{p:2,v:74}],
-   [{p:95,v:18},{p:90,v:19},{p:85,v:21},{p:80,v:22},{p:75,v:23},{p:70,v:23},{p:65,v:24},{p:60,v:25},{p:55,v:26},{p:50,v:28},{p:45,v:29},{p:40,v:29},{p:35,v:31},{p:30,v:32},{p:25,v:34},{p:20,v:37},{p:15,v:41},{p:10,v:43},{p:6,v:48},{p:2,v:63}]],
-  // 30-49
-  [[{p:95,v:25},{p:90,v:28},{p:85,v:29},{p:80,v:30},{p:75,v:31},{p:70,v:32},{p:65,v:33},{p:60,v:36},{p:55,v:37},{p:50,v:38},{p:45,v:42},{p:40,v:43},{p:35,v:49},{p:30,v:51},{p:25,v:57},{p:20,v:60},{p:15,v:68},{p:10,v:91},{p:6,v:100},{p:2,v:101}],
-   [{p:95,v:18},{p:90,v:20},{p:85,v:21},{p:80,v:22},{p:75,v:23},{p:70,v:24},{p:65,v:25},{p:60,v:26},{p:55,v:28},{p:50,v:29},{p:45,v:29},{p:40,v:30},{p:35,v:33},{p:30,v:34},{p:25,v:39},{p:20,v:40},{p:15,v:44},{p:10,v:54},{p:6,v:59},{p:2,v:62}]],
-  // 50-64
-  [[{p:95,v:30},{p:90,v:31},{p:85,v:31},{p:80,v:32},{p:75,v:34},{p:70,v:39},{p:65,v:40},{p:60,v:41},{p:55,v:43},{p:50,v:45},{p:45,v:47},{p:40,v:55},{p:35,v:61},{p:30,v:62},{p:25,v:64},{p:20,v:65},{p:15,v:86},{p:10,v:95},{p:6,v:120},{p:2,v:130}],
-   [{p:95,v:22},{p:90,v:24},{p:85,v:25},{p:80,v:27},{p:75,v:30},{p:70,v:31},{p:65,v:31},{p:60,v:32},{p:55,v:32},{p:50,v:34},{p:45,v:36},{p:40,v:37},{p:35,v:39},{p:30,v:40},{p:25,v:40},{p:20,v:43},{p:15,v:45},{p:10,v:58},{p:6,v:80},{p:2,v:90}]],
-  // 65+
-  [[{p:95,v:27},{p:90,v:30},{p:85,v:33},{p:80,v:36},{p:75,v:38},{p:70,v:39},{p:65,v:45},{p:60,v:48},{p:55,v:49},{p:50,v:51},{p:45,v:55},{p:40,v:64},{p:35,v:69},{p:30,v:71},{p:25,v:79},{p:20,v:81},{p:15,v:84},{p:10,v:100},{p:6,v:124},{p:2,v:125}],
-   [{p:95,v:27},{p:90,v:30},{p:85,v:33},{p:80,v:36},{p:75,v:38},{p:70,v:39},{p:65,v:45},{p:60,v:48},{p:55,v:49},{p:50,v:51},{p:45,v:55},{p:40,v:64},{p:35,v:69},{p:30,v:71},{p:25,v:79},{p:20,v:81},{p:15,v:84},{p:10,v:100},{p:6,v:124},{p:2,v:125}]]
-];
-
-// Media/Alta escolaridad — TMT-B
-var TMT_PC_B = [
-  // 16-29
-  [[{p:95,v:48},{p:90,v:51},{p:85,v:55},{p:80,v:61},{p:75,v:67},{p:70,v:69},{p:65,v:70},{p:60,v:73},{p:55,v:80},{p:50,v:84},{p:45,v:87},{p:40,v:91},{p:35,v:96},{p:30,v:106},{p:25,v:136},{p:20,v:145},{p:15,v:150},{p:10,v:169},{p:6,v:200},{p:2,v:353}],
-   [{p:95,v:47},{p:90,v:50},{p:85,v:51},{p:80,v:53},{p:75,v:54},{p:70,v:56},{p:65,v:59},{p:60,v:60},{p:55,v:62},{p:50,v:64},{p:45,v:68},{p:40,v:71},{p:35,v:78},{p:30,v:86},{p:25,v:89},{p:20,v:100},{p:15,v:106},{p:10,v:114},{p:6,v:187},{p:2,v:200}]],
-  // 30-49
-  [[{p:95,v:57},{p:90,v:63},{p:85,v:65},{p:80,v:68},{p:75,v:71},{p:70,v:74},{p:65,v:81},{p:60,v:86},{p:55,v:90},{p:50,v:99},{p:45,v:100},{p:40,v:110},{p:35,v:113},{p:30,v:118},{p:25,v:126},{p:20,v:139},{p:15,v:156},{p:10,v:189},{p:6,v:192},{p:2,v:208}],
-   [{p:95,v:40},{p:90,v:41},{p:85,v:44},{p:80,v:46},{p:75,v:47},{p:70,v:49},{p:65,v:54},{p:60,v:56},{p:55,v:57},{p:50,v:58},{p:45,v:61},{p:40,v:63},{p:35,v:67},{p:30,v:73},{p:25,v:87},{p:20,v:97},{p:15,v:104},{p:10,v:121},{p:6,v:247},{p:2,v:288}]],
-  // 50-64
-  [[{p:95,v:88},{p:90,v:95},{p:85,v:101},{p:80,v:106},{p:75,v:115},{p:70,v:118},{p:65,v:119},{p:60,v:120},{p:55,v:120},{p:50,v:120},{p:45,v:123},{p:40,v:132},{p:35,v:133},{p:30,v:160},{p:25,v:187},{p:20,v:199},{p:15,v:269},{p:10,v:344},{p:6,v:350},{p:2,v:360}],
-   [{p:95,v:59},{p:90,v:60},{p:85,v:60},{p:80,v:63},{p:75,v:67},{p:70,v:70},{p:65,v:73},{p:60,v:75},{p:55,v:77},{p:50,v:82},{p:45,v:86},{p:40,v:90},{p:35,v:94},{p:30,v:99},{p:25,v:102},{p:20,v:105},{p:15,v:117},{p:10,v:150},{p:6,v:175},{p:2,v:180}]],
-  // 65+ (unificado)
-  [[{p:95,v:69},{p:90,v:76},{p:85,v:78},{p:80,v:82},{p:75,v:90},{p:70,v:98},{p:65,v:105},{p:60,v:111},{p:55,v:121},{p:50,v:123},{p:45,v:135},{p:40,v:138},{p:35,v:146},{p:30,v:149},{p:25,v:172},{p:20,v:191},{p:15,v:214},{p:10,v:238},{p:6,v:274},{p:2,v:275}],
-   [{p:95,v:69},{p:90,v:76},{p:85,v:78},{p:80,v:82},{p:75,v:90},{p:70,v:98},{p:65,v:105},{p:60,v:111},{p:55,v:121},{p:50,v:123},{p:45,v:135},{p:40,v:138},{p:35,v:146},{p:30,v:149},{p:25,v:172},{p:20,v:191},{p:15,v:214},{p:10,v:238},{p:6,v:274},{p:2,v:275}]]
-];
-
-function buscarPercentilTMT(tabla, bruto) {
-  // tabla ordenada p95→p2, valores crecientes (más seg = peor = menor percentil)
-  // recorremos de mejor a peor: si bruto <= valor del pc actual, ese es su percentil
-  for (var i = 0; i < tabla.length; i++) {
-    if (bruto <= tabla[i].v) return tabla[i].p;
+  if (edad === 'mayor') {
+    // mostrar escolaridad dicotómica para 60–70
+    mayorWrap.style.display = 'block';
+    // ocultar escol/ocup del grupo joven
+    document.getElementById('tmt-escol').closest('.field').style.opacity = '0.4';
+    ocupWrap.style.display = 'none';
+  } else {
+    mayorWrap.style.display = 'none';
+    document.getElementById('tmt-escol').closest('.field').style.opacity = '1';
+    // Mostrar ocupación solo si hay escolaridad seleccionada para parte B
+    ocupWrap.style.display = escol ? 'block' : 'block';
+    // Para terciario, ocultar la opción "no calificado"
+    var selectOcup = document.getElementById('tmt-ocup');
+    for (var i = 0; i < selectOcup.options.length; i++) {
+      if (selectOcup.options[i].value === 'nocal') {
+        selectOcup.options[i].disabled = (escol === 'terciario');
+      }
+      if (selectOcup.options[i].value === 'prof') {
+        selectOcup.options[i].disabled = false; // siempre disponible
+      }
+    }
   }
-  return 1; // más lento que el p2 → p1
+}
+
+function tmtGetBarA(edad, escol, escolMayor) {
+  if (edad === 'mayor') return TMT_BAR.a.mayor[escolMayor] || null;
+  return TMT_BAR.a.joven[escol] || null;
+}
+
+function tmtGetBarB(edad, escol, ocup, escolMayor) {
+  if (edad === 'mayor') return TMT_BAR.b.mayor[escolMayor] || null;
+  var grup = TMT_BAR.b.joven[escol];
+  if (!grup) return null;
+  return grup[ocup] || null;
 }
 
 function clasificarTMT(z) {
-  // Z INVERTIDO: negativo = más lento = déficit (igual que el resto de los tests)
-  if (z >= -1.0)       return {clf:'Normal',          col:'var(--green)',  badge:'bg-minima'};
-  else if (z >= -1.5)  return {clf:'Leve ↓',          col:'var(--yellow)', badge:'bg-leve'};
-  else if (z >= -2.0)  return {clf:'Moderado ↓',      col:'var(--orange)', badge:'bg-moderada'};
-  else                 return {clf:'Bajo ↓ (déficit)', col:'var(--red)',    badge:'bg-grave'};
+  // Z invertido: negativo = más lento = déficit
+  if (z >= -1.0)      return {clf:'Normal',            col:'var(--green)',  badge:'bg-minima'};
+  else if (z >= -1.5) return {clf:'Leve ↓',            col:'var(--yellow)', badge:'bg-leve'};
+  else if (z >= -2.0) return {clf:'Moderado ↓',        col:'var(--orange)', badge:'bg-moderada'};
+  else                return {clf:'Bajo ↓ (déficit)',   col:'var(--red)',    badge:'bg-grave'};
 }
 
 function iniciarTMT() {
   document.getElementById('tmt-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('tmt-form').style.display = 'block';
   document.getElementById('tmt-resultado').style.display = 'none';
-  // llenar select pacientes
   var opts = '<option value="">— Seleccionar paciente —</option>' +
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   document.getElementById('tmt-paciente').innerHTML = opts;
+  tmtActualizarOcup();
 }
 
 function limpiarTMT() {
@@ -8819,32 +8746,37 @@ function limpiarTMT() {
 }
 
 function calcularTMT() {
-  var escol  = document.getElementById('tmt-escol').value;
-  var edadI  = document.getElementById('tmt-edad').value;
-  var tA     = document.getElementById('tmt-a').value;
-  var tB     = document.getElementById('tmt-b').value;
+  var edad       = document.getElementById('tmt-edad').value;
+  var escol      = document.getElementById('tmt-edad').value === 'joven' ? document.getElementById('tmt-escol').value : '';
+  var ocup       = document.getElementById('tmt-ocup').value;
+  var escolMayor = document.getElementById('tmt-escol-mayor').value;
+  var tA         = document.getElementById('tmt-a').value;
+  var tB         = document.getElementById('tmt-b').value;
 
-  if (!escol) { alert('Seleccioná el nivel de escolaridad.'); return; }
-  if (escol !== 'baja' && edadI === '') { alert('Seleccioná el grupo de edad.'); return; }
-  if (!tA && !tB) { alert('Ingresá al menos uno de los tiempos.'); return; }
+  if (!edad) { toast('Seleccioná el grupo de edad.','error'); return; }
+  if (edad === 'joven' && !escol) { toast('Seleccioná el nivel de escolaridad.','error'); return; }
+  if (edad === 'mayor' && !escolMayor) { toast('Seleccioná el nivel educativo (grupo 60–70).','error'); return; }
+  if (!tA && !tB) { toast('Ingresá al menos uno de los tiempos.','error'); return; }
 
-  var gi = parseInt(edadI);
-  var escolIdx = escol === 'media' ? 0 : 1;
-  var edadLabel = edadI !== '' ? document.getElementById('tmt-edad').selectedOptions[0].text : '—';
-  var escolLabel = document.getElementById('tmt-escol').selectedOptions[0].text;
+  var barA = tmtGetBarA(edad, escol, escolMayor);
+  var barB = tmtGetBarB(edad, escol, ocup, escolMayor);
+
+  var edadLabel = document.getElementById('tmt-edad').selectedOptions[0].text;
+  var escolLabel = edad === 'joven' ? document.getElementById('tmt-escol').selectedOptions[0].text :
+                   document.getElementById('tmt-escol-mayor').selectedOptions[0].text;
+  var ocupLabel  = ocup ? document.getElementById('tmt-ocup').selectedOptions[0].text : '—';
 
   document.getElementById('tmt-res-meta').textContent =
-    (escol === 'baja' ? 'Baja escolaridad (sin división por edad)' : edadLabel + ' · ' + escolLabel);
+    edadLabel + ' · ' + escolLabel + (ocup && edad==='joven' ? ' · ' + ocupLabel : '');
 
   var cards = '';
   var interpA = '', interpB = '';
 
   // ── TMT-A ──
   if (tA !== '') {
+    if (!barA) { toast('Sin baremo disponible para este grupo en TMT-A','error'); return; }
     var brutoA = parseFloat(tA);
-    var mdsA   = escol === 'baja' ? TMT_M_DS.baja.a : TMT_M_DS[escol][gi].a;
-    var zA     = (mdsA.m - brutoA) / mdsA.ds;  // invertido: negativo = más lento = peor
-    var pcA    = escol === 'baja' ? buscarPercentilTMT(TMT_PC_BAJA_A, brutoA) : buscarPercentilTMT(TMT_PC_A[gi][escolIdx], brutoA);
+    var zA     = (barA.m - brutoA) / barA.ds;
     var clfA   = clasificarTMT(zA);
 
     cards += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;">' +
@@ -8854,31 +8786,31 @@ function calcularTMT() {
         '<span style="font-size:0.82rem;color:var(--muted);">seg</span>' +
       '</div>' +
       '<div style="display:flex;gap:16px;margin-bottom:10px;">' +
-        '<div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Percentil</div>' +
-        '<div style="font-family:\'DM Mono\',monospace;font-size:1.5rem;font-weight:600;color:var(--text);">' + pcA + '</div></div>' +
         '<div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Z</div>' +
         '<div style="font-family:\'DM Mono\',monospace;font-size:1.5rem;font-weight:600;color:' + clfA.col + ';">' + (zA >= 0 ? '+' : '') + zA.toFixed(2) + '</div></div>' +
       '</div>' +
       '<span class="badge-grande ' + clfA.badge + '">' + clfA.clf + '</span>' +
-      '<div style="font-size:0.76rem;color:var(--muted);margin-top:8px;">M=' + mdsA.m + ' · DS=' + mdsA.ds + '</div>' +
+      '<div style="font-size:0.76rem;color:var(--muted);margin-top:8px;">M=' + barA.m + ' · DS=' + barA.ds + '</div>' +
       '</div>';
 
     if (zA >= -1.0)
-      interpA = 'TMT-A: El tiempo de ejecución (' + brutoA + ' seg, PC=' + pcA + ') se encuentra dentro de los parámetros esperados para su grupo. No se observan indicadores de compromiso en la velocidad de procesamiento ni en la atención sostenida.';
+      interpA = 'TMT-A: El tiempo de ejecución (' + brutoA + ' seg) se encuentra dentro de los parámetros esperados para su grupo (Z=' + zA.toFixed(2) + '). No se observan indicadores de compromiso en la velocidad de procesamiento ni en la atención sostenida.';
     else if (zA >= -1.5)
-      interpA = 'TMT-A: El tiempo de ejecución (' + brutoA + ' seg, PC=' + pcA + ') es levemente más lento de lo esperado, sugiriendo un posible compromiso leve en la velocidad de procesamiento o la atención sostenida.';
+      interpA = 'TMT-A: El tiempo de ejecución (' + brutoA + ' seg, Z=' + zA.toFixed(2) + ') es levemente más lento de lo esperado, sugiriendo un posible compromiso leve en la velocidad de procesamiento o la atención sostenida.';
     else if (zA >= -2.0)
-      interpA = 'TMT-A: Se observa un tiempo de ejecución moderadamente elevado (' + brutoA + ' seg, PC=' + pcA + '), indicando dificultades en la velocidad de procesamiento y/o la atención sostenida.';
+      interpA = 'TMT-A: Se observa un tiempo de ejecución moderadamente elevado (' + brutoA + ' seg, Z=' + zA.toFixed(2) + '), indicando desafíos en la velocidad de procesamiento y/o la atención sostenida.';
     else
-      interpA = 'TMT-A: El tiempo de ejecución es significativamente alto (' + brutoA + ' seg, PC=' + pcA + '), indicando un déficit marcado en la velocidad de procesamiento y la atención sostenida.';
+      interpA = 'TMT-A: El tiempo de ejecución es significativamente alto (' + brutoA + ' seg, Z=' + zA.toFixed(2) + '), indicando un rendimiento por debajo de lo esperado en velocidad de procesamiento y atención sostenida.';
+
+    window._tmtZA = zA; window._tmtMA = barA.m; window._tmtDSA = barA.ds; window._tmtBrutoA = brutoA;
   }
 
   // ── TMT-B ──
   if (tB !== '') {
+    if (!ocup && edad === 'joven') { toast('Seleccioná la ocupación para calcular TMT-B.','error'); return; }
+    if (!barB) { toast('Sin baremo disponible para esta combinación educación/ocupación en TMT-B','error'); return; }
     var brutoB = parseFloat(tB);
-    var mdsB   = escol === 'baja' ? TMT_M_DS.baja.b : TMT_M_DS[escol][gi].b;
-    var zB     = (mdsB.m - brutoB) / mdsB.ds;  // invertido: negativo = más lento = peor
-    var pcB    = escol === 'baja' ? buscarPercentilTMT(TMT_PC_BAJA_B, brutoB) : buscarPercentilTMT(TMT_PC_B[gi][escolIdx], brutoB);
+    var zB     = (barB.m - brutoB) / barB.ds;
     var clfB   = clasificarTMT(zB);
 
     cards += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;">' +
@@ -8888,30 +8820,30 @@ function calcularTMT() {
         '<span style="font-size:0.82rem;color:var(--muted);">seg</span>' +
       '</div>' +
       '<div style="display:flex;gap:16px;margin-bottom:10px;">' +
-        '<div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Percentil</div>' +
-        '<div style="font-family:\'DM Mono\',monospace;font-size:1.5rem;font-weight:600;color:var(--text);">' + pcB + '</div></div>' +
         '<div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Z</div>' +
         '<div style="font-family:\'DM Mono\',monospace;font-size:1.5rem;font-weight:600;color:' + clfB.col + ';">' + (zB >= 0 ? '+' : '') + zB.toFixed(2) + '</div></div>' +
       '</div>' +
       '<span class="badge-grande ' + clfB.badge + '">' + clfB.clf + '</span>' +
-      '<div style="font-size:0.76rem;color:var(--muted);margin-top:8px;">M=' + mdsB.m + ' · DS=' + mdsB.ds + '</div>' +
+      '<div style="font-size:0.76rem;color:var(--muted);margin-top:8px;">M=' + barB.m + ' · DS=' + barB.ds + '</div>' +
       '</div>';
 
     if (zB >= -1.0)
-      interpB = 'TMT-B: El tiempo de ejecución (' + brutoB + ' seg, PC=' + pcB + ') es normal para su grupo. No se evidencian compromisos en la atención alternante ni en la flexibilidad cognitiva.';
+      interpB = 'TMT-B: El tiempo de ejecución (' + brutoB + ' seg, Z=' + zB.toFixed(2) + ') es compatible con lo esperado para su grupo. No se evidencian compromisos en la atención alternante ni en la flexibilidad cognitiva.';
     else if (zB >= -1.5)
-      interpB = 'TMT-B: El tiempo es levemente más lento de lo esperado (' + brutoB + ' seg, PC=' + pcB + '), sugiriendo una posible dificultad leve en la atención alternante y/o la flexibilidad cognitiva.';
+      interpB = 'TMT-B: El tiempo es levemente más lento de lo esperado (' + brutoB + ' seg, Z=' + zB.toFixed(2) + '), sugiriendo una posible dificultad leve en la atención alternante y/o la flexibilidad cognitiva.';
     else if (zB >= -2.0)
-      interpB = 'TMT-B: Se observa lentitud moderada en la ejecución (' + brutoB + ' seg, PC=' + pcB + '), indicando compromisos en la flexibilidad cognitiva y la atención alternante.';
+      interpB = 'TMT-B: Se observa lentitud moderada en la ejecución (' + brutoB + ' seg, Z=' + zB.toFixed(2) + '), indicando desafíos en la flexibilidad cognitiva y la atención alternante.';
     else
-      interpB = 'TMT-B: El tiempo de ejecución es significativamente elevado (' + brutoB + ' seg, PC=' + pcB + '), sugiriendo un déficit marcado en la atención alternante, la flexibilidad cognitiva y/o las funciones ejecutivas.';
+      interpB = 'TMT-B: El tiempo de ejecución es significativamente elevado (' + brutoB + ' seg, Z=' + zB.toFixed(2) + '), sugiriendo desafíos marcados en la atención alternante, la flexibilidad cognitiva y/o las funciones ejecutivas.';
+
+    window._tmtZB = zB; window._tmtMB = barB.m; window._tmtDSB = barB.ds; window._tmtBrutoB = brutoB;
   }
 
   document.getElementById('tmt-res-cards').innerHTML = cards;
   var interp = '';
   if (interpA) interp += '<p>' + interpA + '</p>';
   if (interpB) interp += '<p>' + interpB + '</p>';
-  interp += '<p><em>Baremo: Margulis, Squillace & Ferreres (2018) — Población CABA y Gran Buenos Aires. Esta interpretación es orientativa y debe integrarse con el juicio clínico del profesional.</em></p>';
+  interp += '<p><em>Baremo: Fernández, Marino & Alderete (2002) — Rev Neurológica Argentina 27:83-88 · n=251 adultos argentinos, 15-70 años, Córdoba. Clasificación por edad, educación y ocupación (TMT-B). Esta interpretación es orientativa y debe integrarse con el juicio clínico del profesional.</em></p>';
   document.getElementById('tmt-interp').innerHTML = interp;
 
   document.getElementById('tmt-form').style.display = 'none';
@@ -8924,26 +8856,19 @@ function guardarResultadoTMT() {
   var fecha = document.getElementById('tmt-fecha').value;
   var tA    = document.getElementById('tmt-a').value;
   var tB    = document.getElementById('tmt-b').value;
-  var escol = document.getElementById('tmt-escol').value;
-  var edadI = document.getElementById('tmt-edad').value;
-  if (!pacId) { toast('Seleccioná un paciente primero'); return; }
+  if (!pacId) { toast('Seleccioná un paciente primero','error'); return; }
   var cat = 'A:' + (tA||'—') + 's / B:' + (tB||'—') + 's';
-  var datosObj = { tmt_a_seg: tA ? parseFloat(tA) : null, tmt_b_seg: tB ? parseFloat(tB) : null };
-  // Calcular Z si hay baremos disponibles
-  if (escol && edadI !== '') {
-    var gi = parseInt(edadI);
-    if (tA !== '') {
-      var mdsA = escol === 'baja' ? TMT_M_DS.baja.a : TMT_M_DS[escol][gi].a;
-      datosObj.tmt_a_z = parseFloat(((mdsA.m - parseFloat(tA)) / mdsA.ds).toFixed(2));
-      datosObj.tmt_a_m = mdsA.m; datosObj.tmt_a_ds = mdsA.ds;
-    }
-    if (tB !== '') {
-      var mdsB = escol === 'baja' ? TMT_M_DS.baja.b : TMT_M_DS[escol][gi].b;
-      datosObj.tmt_b_z = parseFloat(((mdsB.m - parseFloat(tB)) / mdsB.ds).toFixed(2));
-      datosObj.tmt_b_m = mdsB.m; datosObj.tmt_b_ds = mdsB.ds;
-    }
-  }
-  var zPrincipal = datosObj.tmt_b_z !== undefined ? datosObj.tmt_b_z : (datosObj.tmt_a_z !== undefined ? datosObj.tmt_a_z : null);
+  var datosObj = {
+    tmt_a_seg: tA ? parseFloat(tA) : null,
+    tmt_b_seg: tB ? parseFloat(tB) : null,
+    tmt_a_z:   window._tmtZA != null ? parseFloat(window._tmtZA.toFixed(2)) : null,
+    tmt_b_z:   window._tmtZB != null ? parseFloat(window._tmtZB.toFixed(2)) : null,
+    tmt_a_m:   window._tmtMA || null,
+    tmt_a_ds:  window._tmtDSA || null,
+    tmt_b_m:   window._tmtMB || null,
+    tmt_b_ds:  window._tmtDSB || null
+  };
+  var zPrincipal = datosObj.tmt_b_z != null ? datosObj.tmt_b_z : (datosObj.tmt_a_z != null ? datosObj.tmt_a_z : null);
   var body = { user_id: SESSION.user.id, paciente_id: pacId, test: 'TMT A-B', fecha: fecha,
     puntaje_total: null, categoria: cat,
     puntaje_z: zPrincipal,
@@ -10659,140 +10584,6 @@ var ASRS_ITEMS = [
   {n:17,txt:'¿Con qué frecuencia interrumpe a otros cuando están ocupados?',sec:'B'},
   {n:18,txt:'¿Con qué frecuencia come en exceso o siente impulsos de comer cuando no tiene hambre?',sec:'B'}
 ];
-
-// ══ EAVA · Escala de Autovaloración de TDAH en Adultos ══════════════════════
-// DSM-5 adaptado · Parte A: inatención (ítems 1-9) · Parte B: hiper/impuls (10-18)
-// Cortes por subescala: ≥24 muy probable · 17-23 probable · 0-16 baja probabilidad
-var EAVA_ITEMS_A = [
-  {n:1,  text:'Con qué frecuencia no presta atención a los detalles o comete errores por descuido en el trabajo u otras actividades.'},
-  {n:2,  text:'Con qué frecuencia tiene dificultades para mantener la atención en tareas o actividades recreativas.'},
-  {n:3,  text:'Con qué frecuencia parece no escuchar cuando se le habla directamente.'},
-  {n:4,  text:'Con qué frecuencia no sigue instrucciones o no termina las tareas que empieza.'},
-  {n:5,  text:'Con qué frecuencia tiene dificultades para organizar tareas y actividades.'},
-  {n:6,  text:'Con qué frecuencia evita o le disgusta iniciar tareas que requieren esfuerzo mental sostenido.'},
-  {n:7,  text:'Con qué frecuencia pierde objetos necesarios para sus actividades (llaves, documentos, herramientas).'},
-  {n:8,  text:'Con qué frecuencia se distrae fácilmente por estímulos externos o pensamientos sin relación con lo que estaba haciendo.'},
-  {n:9,  text:'Con qué frecuencia es olvidadizo/a en las actividades cotidianas.'}
-];
-var EAVA_ITEMS_B = [
-  {n:10, text:'Con qué frecuencia mueve en exceso manos o pies, o se remueve en el asiento.'},
-  {n:11, text:'Con qué frecuencia se levanta o abandona situaciones en que se espera que permanezca sentado/a.'},
-  {n:12, text:'Con qué frecuencia siente una inquietud interna o sensación de estar impulsado/a por un motor.'},
-  {n:13, text:'Con qué frecuencia tiene dificultades para participar tranquilamente en actividades de ocio.'},
-  {n:14, text:'Con qué frecuencia habla en exceso.'},
-  {n:15, text:'Con qué frecuencia responde antes de que se haya terminado de formular una pregunta.'},
-  {n:16, text:'Con qué frecuencia tiene dificultades para esperar su turno.'},
-  {n:17, text:'Con qué frecuencia interrumpe a otros o se entromete en sus conversaciones o actividades.'},
-  {n:18, text:'Con qué frecuencia toma decisiones impulsivas sin evaluar las consecuencias.'}
-];
-var EAVA_OPS = ['Nunca (0)','Raramente (1)','Algunas veces (2)','A menudo (3)','Muy a menudo (4)'];
-
-function eavaCat(score) {
-  if (score >= 24) return { cat:'Muy probable TDAH adulto',   badge:'bg-grave',    lbl:'≥24' };
-  if (score >= 17) return { cat:'Probable TDAH adulto',       badge:'bg-moderada', lbl:'17–23' };
-  return                  { cat:'Baja probabilidad de TDAH',  badge:'bg-minima',   lbl:'0–16' };
-}
-
-function _mostrarResultadoEAVA(ptA, ptB) {
-  var rA = eavaCat(ptA), rB = eavaCat(ptB);
-  var perfilA = ptA >= 17 ? 'inatento' : null;
-  var perfilB = ptB >= 17 ? 'hiperactivo/impulsivo' : null;
-  var perfil = (perfilA && perfilB) ? 'combinado' : (perfilA || perfilB) || 'sin indicadores clínicos';
-
-  var interp = '<p><strong>Parte A (Inatención):</strong> '+ptA+'/36 — <strong>'+rA.cat+'</strong> ('+rA.lbl+').</p>'+
-    '<p><strong>Parte B (Hiperactividad/Impulsividad):</strong> '+ptB+'/36 — <strong>'+rB.cat+'</strong> ('+rB.lbl+').</p>';
-
-  if (ptA >= 24 || ptB >= 24) {
-    interp += '<p>La puntuación es clínicamente significativa. El perfil es compatible con un cuadro de <strong>TDAH de presentación '+perfil+'</strong>. Se recomienda evaluación clínica integral.</p>';
-  } else if (ptA >= 17 || ptB >= 17) {
-    interp += '<p>La puntuación sugiere síntomas compatibles con TDAH adulto de probabilidad moderada (presentación '+perfil+'). Puede reflejar un cuadro subclínico o compensado. Justifica evaluación complementaria.</p>';
-  } else {
-    interp += '<p>La intensidad actual de los síntomas no alcanza umbrales clínicos en ninguna subescala. Sin indicadores significativos de TDAH en la evaluación actual.</p>';
-  }
-  interp += '<p><em>EAVA basada en criterios DSM-5. No es diagnóstica por sí sola. Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad. Complementar con ASRS, WURS y entrevista clínica.</em></p>';
-
-  document.getElementById('eava-pts-a').textContent = ptA;
-  document.getElementById('eava-cat-a').textContent = rA.cat;
-  document.getElementById('eava-badge-a').textContent = rA.cat;
-  document.getElementById('eava-badge-a').className = 'badge-grande ' + rA.badge;
-  document.getElementById('eava-pts-b').textContent = ptB;
-  document.getElementById('eava-cat-b').textContent = rB.cat;
-  document.getElementById('eava-badge-b').textContent = rB.cat;
-  document.getElementById('eava-badge-b').className = 'badge-grande ' + rB.badge;
-  document.getElementById('eava-interp').innerHTML = interp;
-  document.getElementById('eava-form').style.display = 'none';
-  document.getElementById('eava-resultado').style.display = 'block';
-  window._eavaA = ptA; window._eavaB = ptB;
-}
-
-function iniciarEAVA() {
-  function renderItems(items, containerId) {
-    var wrap = document.getElementById(containerId);
-    wrap.innerHTML = items.map(function(item) {
-      var opts = EAVA_OPS.map(function(op, j) {
-        return '<label class="bdi-opcion"><input type="radio" name="eava_'+item.n+'" value="'+j+'"><span class="bdi-opcion-texto">'+op+'</span></label>';
-      }).join('');
-      return '<div class="bdi-item"><div class="bdi-pregunta">'+item.n+'. '+item.text+'</div><div class="bdi-opciones">'+opts+'</div></div>';
-    }).join('');
-  }
-  renderItems(EAVA_ITEMS_A, 'eava-items-a');
-  renderItems(EAVA_ITEMS_B, 'eava-items-b');
-  document.getElementById('eava-fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('eava-form').style.display = 'block';
-  document.getElementById('eava-resultado').style.display = 'none';
-}
-
-function limpiarEAVA() {
-  if (!confirm('¿Limpiar todos los ítems?')) return;
-  for (var i = 1; i <= 18; i++) {
-    var rs = document.querySelectorAll('input[name="eava_'+i+'"]');
-    rs.forEach(function(r){ r.checked = false; });
-  }
-}
-
-function calcularEAVA() {
-  var ptA = 0, ptB = 0, sinR = 0;
-  EAVA_ITEMS_A.forEach(function(item) {
-    var s = document.querySelector('input[name="eava_'+item.n+'"]:checked');
-    if (s) ptA += parseInt(s.value); else sinR++;
-  });
-  EAVA_ITEMS_B.forEach(function(item) {
-    var s = document.querySelector('input[name="eava_'+item.n+'"]:checked');
-    if (s) ptB += parseInt(s.value); else sinR++;
-  });
-  if (sinR > 0 && !confirm('Hay '+sinR+' ítem(s) sin respuesta. ¿Continuar?')) return;
-  _mostrarResultadoEAVA(ptA, ptB);
-}
-
-function calcularEAVAManual() {
-  var a = parseInt(document.getElementById('man-eava-a').value);
-  var b = parseInt(document.getElementById('man-eava-b').value);
-  if (isNaN(a) || isNaN(b) || a < 0 || a > 36 || b < 0 || b > 36) {
-    toast('Ingresá puntajes válidos (0–36 para cada parte)', 'error'); return;
-  }
-  _mostrarResultadoEAVA(a, b);
-}
-
-function guardarEAVA() {
-  if (!SESSION) return;
-  var pacId = document.getElementById('eava-paciente').value;
-  var fecha = document.getElementById('eava-fecha').value;
-  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
-  var ptA = window._eavaA != null ? window._eavaA : parseInt(document.getElementById('eava-pts-a').textContent) || 0;
-  var ptB = window._eavaB != null ? window._eavaB : parseInt(document.getElementById('eava-pts-b').textContent) || 0;
-  var rA = eavaCat(ptA), rB = eavaCat(ptB);
-  var catGlobal = (ptA >= 24 || ptB >= 24) ? 'Muy probable TDAH adulto' : (ptA >= 17 || ptB >= 17) ? 'Probable TDAH adulto' : 'Baja probabilidad';
-  supaFetch('/rest/v1/psico_resultados', 'POST', {
-    user_id: SESSION.user.id, paciente_id: pacId, test: 'EAVA', fecha: fecha,
-    puntaje_total: ptA + ptB, categoria: catGlobal,
-    datos: { parte_a: ptA, parte_b: ptB, cat_a: rA.cat, cat_b: rB.cat }
-  }, SESSION.access_token).then(function() {
-    cargarResultados(); toast('✓ EAVA guardado', 'success');
-    var btn = document.querySelector('.vista.active .btn-primary:last-child');
-    if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function() { toast('Error al guardar', 'error'); });
-}
-
 function iniciarAsrs() {
   document.getElementById('asrs-fecha').value = new Date().toISOString().split('T')[0];
   var divA = document.getElementById('asrs-items-a');
@@ -12267,7 +12058,7 @@ function guardarWurs() {
   var pc=1;
   for(var j=0;j<WURS_PCT.length;j++){if(total>=WURS_PCT[j].v)pc=WURS_PCT[j].p;else break;}
   var zW=parseFloat(((total-23.5)/13.16).toFixed(2));
-  var cat=total>=29?'Alta compatibilidad con TDAH infantil (≥29)':total>=13?'Probable TDAH infantil (≥13)':'Sin indicadores retrospectivos de TDAH (<13)';
+  var cat=total>=46?'Significativo para síntomas en la infancia':total>=36?'Probable historia síntomas infantiles':'Sin síntomas significativos en la infancia';
   supaFetch('/rest/v1/psico_resultados','POST',{
     user_id:SESSION.user.id,paciente_id:pacId,test:'WURS-25',fecha:fecha,
     puntaje_total:total,puntaje_z:zW,categoria:cat,
@@ -13174,7 +12965,6 @@ function buildPruebasRealizadasHtml(datos) {
     'Holmes-Rahe': 'Escala de Reajuste Psicosocial (Holmes & Rahe)',
     'GDS-30': 'Escala de Depresión Geriátrica de Yesavage (GDS-30)',
     'ASRS-V1.1': 'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
-    'EAVA': 'Escala de Autovaloración de TDAH en Adultos (EAVA)',
     'WURS-25': 'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX': 'Cuestionario Disejecutivo (DEX)',
     'PCS': 'Escala de Catastrofización del Dolor (PCS)',
@@ -13189,7 +12979,7 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
     { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
-    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
+    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX'] },
     { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'PSS-10', 'Holmes-Rahe', 'GDS-30'] },
     { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
     { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
@@ -15388,7 +15178,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
-  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
+  var TD_LIST=['ASRS-V1.1','WURS-25','DEX'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
   function tipoTest(t){return NP_LIST.indexOf(t)!==-1?'np':CL_LIST.indexOf(t)!==-1?'cl':TD_LIST.indexOf(t)!==-1?'td':DO_LIST.indexOf(t)!==-1?'do':'cl';}
   var testsNP    = datos.filter(function(r){return tipoTest(r.test)==='np';});
@@ -15623,11 +15413,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.scoreH!=null)addCL('ASRS — Hiper./Impulsividad',d.scoreH,d.pcH?'Pc '+d.pcH:'—');
         if(d.scoreT!=null||d.total_18!=null)addCL('ASRS — Total',d.scoreT||d.total_18,d.pcT?'Pc '+d.pcT:'—');
       } else if(r.test==='WURS-25'){addCL('WURS-25 · Síntomas TDAH en la Infancia',r.puntaje_total!=null?r.puntaje_total:r.datos&&r.datos.total!=null?r.datos.total:'—',r.categoria||'—');}
-      else if(r.test==='EAVA'){
-        var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
-        addCL('EAVA · Inatención (Parte A)',eA!='—'?eA+'/36':'—',d.cat_a||'—');
-        addCL('EAVA · Hiper./Impulsividad (Parte B)',eB!='—'?eB+'/36':'—',d.cat_b||'—');
-      }
       else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,r.categoria||'—');}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
       else if(r.test==='PSS-10'){addCL('PSS-10 · Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
