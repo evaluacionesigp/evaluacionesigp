@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.65</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.66</div>
     </div>
   </aside>
 
@@ -1433,9 +1433,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-phq" onclick="setModo('phq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-phq" onclick="setModo('phq','manual')">✏ Carga manual</button></div>
         <div id="man-area-phq" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes brutos. El sistema calcula Z, Pc e interpretación automáticamente.</p><div class="form-grid-3"><div class="field"><label>Puntaje total (0–27)</label><input type="number" id="man-phq-total" min="0" max="27" placeholder="0–27"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularManual('phq')">Calcular resultado →</button></div></div>
         <div id="auto-area-phq">
-        <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-gad" onclick="setModo('gad','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-gad" onclick="setModo('gad','manual')">✏ Carga manual</button></div>
-        <div id="man-area-gad" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes brutos. El sistema calcula Z, Pc e interpretación automáticamente.</p><div class="form-grid-3"><div class="field"><label>Puntaje total (0–21)</label><input type="number" id="man-gad-total" min="0" max="21" placeholder="0–21"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularManual('gad')">Calcular resultado →</button></div></div>
-        <div id="auto-area-gad">
         <div class="card">
           <div class="card-title">Ítems del cuestionario</div>
           <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Durante las últimas 2 semanas, ¿con qué frecuencia le han molestado los siguientes problemas?</p>
@@ -1484,6 +1481,9 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <div class="field"><label>Fecha</label><input type="date" id="gad-fecha"></div>
           </div>
         </div>
+        <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-gad" onclick="setModo('gad','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-gad" onclick="setModo('gad','manual')">✏ Carga manual</button></div>
+        <div id="man-area-gad" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes brutos. El sistema calcula Z, Pc e interpretación automáticamente.</p><div class="form-grid-3"><div class="field"><label>Puntaje total (0–21)</label><input type="number" id="man-gad-total" min="0" max="21" placeholder="0–21"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularManual('gad')">Calcular resultado →</button></div></div>
+        <div id="auto-area-gad">
         <div class="card">
           <div class="card-title">Ítems del cuestionario</div>
           <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Durante las últimas 2 semanas, ¿con qué frecuencia le han molestado los siguientes problemas?</p>
@@ -1492,6 +1492,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <button class="btn-secondary" onclick="limpiarGAD()">🗑 Limpiar</button>
             <button class="btn-primary" onclick="calcularGAD()">Calcular resultado →</button>
           </div>
+        </div>
         </div>
       </div>
       </div>
