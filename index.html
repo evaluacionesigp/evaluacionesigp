@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.67</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.68</div>
     </div>
   </aside>
 
@@ -625,6 +625,31 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="vista-header">
         <div class="vista-titulo">Informe Neuropsicológico · <span id="informe-pac-nombre">—</span></div>
         <button class="btn-primary" onclick="guardarInforme()">💾 Guardar informe</button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Logos institucionales del informe</div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Subí los logos que aparecerán en el encabezado de cada página del informe PDF y Word. Se guardan en este navegador para no volver a cargarlos.</p>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:8px;">Logo González Palau</label>
+            <input type="file" id="inf-logo-gp-input" accept="image/*" onchange="logoGpPreview(event)" style="display:none;">
+            <button type="button" class="btn-secondary" onclick="document.getElementById('inf-logo-gp-input').click()">📎 Subir logo González Palau</button>
+            <div id="inf-logo-gp-preview-wrap" style="display:none;margin-top:10px;">
+              <img id="inf-logo-gp-preview" alt="Logo González Palau" style="max-height:80px;max-width:220px;border:1px solid var(--border);border-radius:6px;padding:4px;background:#fff;">
+              <button type="button" onclick="borrarLogoGp()" style="display:block;margin-top:6px;font-size:0.78rem;color:#c0392b;background:none;border:none;cursor:pointer;">✕ Quitar</button>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:8px;">Logo Fundación CIATEC</label>
+            <input type="file" id="inf-logo-ct-input" accept="image/*" onchange="logoCtPreview(event)" style="display:none;">
+            <button type="button" class="btn-secondary" onclick="document.getElementById('inf-logo-ct-input').click()">📎 Subir logo Fundación CIATEC</button>
+            <div id="inf-logo-ct-preview-wrap" style="display:none;margin-top:10px;">
+              <img id="inf-logo-ct-preview" alt="Logo CIATEC" style="max-height:80px;max-width:220px;border:1px solid var(--border);border-radius:6px;padding:4px;background:#fff;">
+              <button type="button" onclick="borrarLogoCt()" style="display:block;margin-top:6px;font-size:0.78rem;color:#c0392b;background:none;border:none;cursor:pointer;">✕ Quitar</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
@@ -7081,19 +7106,12 @@ function renderCuestionariosFam(d) {
     '.ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;font-family:Arial,sans-serif;font-size:11pt;}'+
     '.ficha-item{display:flex;gap:6px;padding:2px 0;}'+
     '.ficha-lbl{font-weight:700;white-space:nowrap;color:#2a6e6e;}'+
-    '@media print{body{padding:0;}@page{margin:15mm 15mm 15mm 20mm;size:A4 portrait;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}}'+
+    '@media print{body{padding:0;}@page{margin:18mm 15mm 15mm 20mm;size:A4 portrait;}thead{display:table-header-group;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}}'+
+    '.informe-print-wrap{width:100%;border-collapse:collapse;}'+
     '</style></head><body><div class="pg">'+
-
-    // ── Header ──
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:14px;">'+
-    '<div style="font-family:Arial,sans-serif;">'+
-    '<div style="font-size:15px;font-weight:700;color:#111;letter-spacing:0.5px;">Lic. Erwin Müller Gudiño</div>'+
-    '<div style="font-size:10px;color:#444;margin-top:2px;">M.P. 13920</div>'+
-    '<div style="font-size:10px;color:#444;">27 de Abril 424 7C</div>'+
-    '<div style="font-size:10px;color:#444;">Tel. 351 350-0540</div>'+
-    '</div>'+
-    '<div style="text-align:right;font-family:Arial,sans-serif;font-size:9px;color:#666;">'+
-    '<div>Generado: '+new Date().toLocaleDateString('es-AR')+'</div></div></div>'+
+    '<table class="informe-print-wrap"><thead><tr><td style="border:none;padding:0 0 8px;vertical-align:top;background:#fff;">'+
+    buildInformeEncabezadoHtml()+
+    '</td></tr></thead><tbody><tr><td style="border:none;padding:0;vertical-align:top;">'+
 
     // ── Ficha del paciente (con datos del informe) ──
     '<div class="sec-titulo">1. Datos Personales</div>'+
@@ -7153,9 +7171,8 @@ function renderCuestionariosFam(d) {
     // ── Nota y pie ──
 
     '<div style="margin-top:8px;border-top:0.5px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-family:Arial,sans-serif;font-size:8px;color:#888;">'+
-    '<div>Lic. Erwin Müller Gudiño · M.P. 13920 · Tel. 351 350-0540</div>'+
-    '<div>'+new Date().toLocaleDateString('es-AR')+'</div></div>'+
-    '</div></body></html>';
+    '<div>Generado: '+new Date().toLocaleDateString('es-AR')+'</div></div>'+
+    '</td></tr></tbody></table></div></body></html>';
 
   var win = window.open('','_blank','width=1000,height=750');
   if (!win) { toast('Bloqueador de popups activo. Permitir ventanas emergentes.','error'); return; }
@@ -12291,6 +12308,7 @@ function abrirInforme() {
   if(prev) prev.style.display='none';
   var exist = document.getElementById('inf-firma-existente');
   if(exist) exist.style.display='none';
+  cargarLogosUI();
   // Cargar datos existentes
   cargarInforme(pacId);
   irVista('informe');
@@ -12373,6 +12391,185 @@ function guardarInforme() {
     .catch(function(){ toast('Error al guardar informe', 'error'); });
 }
 
+
+// ── Logos institucionales (localStorage) ───────────────
+var LOGO_GP_LS_KEY = 'igp_logo_gp';
+var LOGO_CT_LS_KEY = 'igp_logo_ct';
+var LOGO_MAX_H_CM = 2.5;
+var LOGO_EMU_PER_CM = 360000;
+
+function parseDataUrl(dataUrl) {
+  if (!dataUrl) return null;
+  var m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+  if (!m) return null;
+  var mime = m[1];
+  var ext = mime.indexOf('png') !== -1 ? 'png' : (mime.indexOf('jpeg') !== -1 || mime.indexOf('jpg') !== -1 ? 'jpeg' : 'png');
+  return { mime: mime, b64: m[2], ext: ext };
+}
+
+function getLogosInforme() {
+  var gp = window._logoGpBase64 || null;
+  var ct = window._logoCtBase64 || null;
+  try {
+    if (!gp) gp = localStorage.getItem(LOGO_GP_LS_KEY);
+    if (!ct) ct = localStorage.getItem(LOGO_CT_LS_KEY);
+  } catch (e) {}
+  return { gp: gp || null, ct: ct || null };
+}
+
+function guardarLogoLocalStorage(key, dataUrl) {
+  try { localStorage.setItem(key, dataUrl); } catch (e) {
+    toast('No se pudo guardar el logo en este navegador (espacio insuficiente).', 'error');
+  }
+}
+
+function mostrarLogoPreview(which, dataUrl) {
+  var wrap = document.getElementById(which === 'gp' ? 'inf-logo-gp-preview-wrap' : 'inf-logo-ct-preview-wrap');
+  var img = document.getElementById(which === 'gp' ? 'inf-logo-gp-preview' : 'inf-logo-ct-preview');
+  if (img) img.src = dataUrl;
+  if (wrap) wrap.style.display = 'block';
+}
+
+function cargarLogosUI() {
+  var logos = getLogosInforme();
+  if (logos.gp) {
+    window._logoGpBase64 = logos.gp;
+    mostrarLogoPreview('gp', logos.gp);
+  }
+  if (logos.ct) {
+    window._logoCtBase64 = logos.ct;
+    mostrarLogoPreview('ct', logos.ct);
+  }
+}
+
+function logoGpPreview(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    window._logoGpBase64 = e.target.result;
+    guardarLogoLocalStorage(LOGO_GP_LS_KEY, e.target.result);
+    mostrarLogoPreview('gp', e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function logoCtPreview(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    window._logoCtBase64 = e.target.result;
+    guardarLogoLocalStorage(LOGO_CT_LS_KEY, e.target.result);
+    mostrarLogoPreview('ct', e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function borrarLogoGp() {
+  window._logoGpBase64 = null;
+  try { localStorage.removeItem(LOGO_GP_LS_KEY); } catch (e) {}
+  var wrap = document.getElementById('inf-logo-gp-preview-wrap');
+  var input = document.getElementById('inf-logo-gp-input');
+  if (wrap) wrap.style.display = 'none';
+  if (input) input.value = '';
+}
+
+function borrarLogoCt() {
+  window._logoCtBase64 = null;
+  try { localStorage.removeItem(LOGO_CT_LS_KEY); } catch (e) {}
+  var wrap = document.getElementById('inf-logo-ct-preview-wrap');
+  var input = document.getElementById('inf-logo-ct-input');
+  if (wrap) wrap.style.display = 'none';
+  if (input) input.value = '';
+}
+
+function buildInformeEncabezadoHtml() {
+  var logos = getLogosInforme();
+  var hasGp = !!(logos.gp && logos.gp.length > 50);
+  var hasCt = !!(logos.ct && logos.ct.length > 50);
+  var maxH = LOGO_MAX_H_CM + 'cm';
+  var sep = '<div style="border-bottom:1.5px solid #3a8f8f;margin:10px 0 14px;background:#fff;"></div>';
+  if (hasGp || hasCt) {
+    return '<div style="background:#fff;">' +
+      '<table style="width:100%;border-collapse:collapse;background:#fff;"><tr>' +
+      '<td style="width:50%;text-align:left;vertical-align:middle;padding:4px 8px 4px 0;">' +
+      (hasGp ? '<img src="' + logos.gp + '" alt="González Palau" style="max-height:' + maxH + ';max-width:100%;width:auto;height:auto;display:block;image-rendering:auto;">' : '') +
+      '</td><td style="width:50%;text-align:right;vertical-align:middle;padding:4px 0 4px 8px;">' +
+      (hasCt ? '<img src="' + logos.ct + '" alt="Fundación CIATEC" style="max-height:' + maxH + ';max-width:100%;width:auto;height:auto;display:block;margin-left:auto;image-rendering:auto;">' : '') +
+      '</td></tr></table>' + sep + '</div>';
+  }
+  return '<div style="background:#fff;text-align:center;padding:10px 0 4px;font-family:Arial,sans-serif;">' +
+    '<div style="font-size:12pt;font-weight:700;color:#2a6e6e;letter-spacing:0.3px;">CENTRO DE REHABILITACIÓN GONZÁLEZ PALAU</div>' +
+    '<div style="font-size:10pt;color:#444;margin-top:3px;">Fundación CIATEC</div>' +
+    sep + '</div>';
+}
+
+function wordLogoDrawing(rEmbed, cx, cy, docId, name, descr) {
+  return '<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">' +
+    '<wp:extent cx="' + cx + '" cy="' + cy + '"/>' +
+    '<wp:effectExtent l="0" t="0" r="0" b="0"/>' +
+    '<wp:docPr id="' + docId + '" name="' + name + '" descr="' + descr + '"/>' +
+    '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+    '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
+    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+    '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+    '<pic:nvPicPr><pic:cNvPr id="' + docId + '" name="' + name + '"/>' +
+    '<pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr>' +
+    '<pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="' + rEmbed + '">' +
+    '<a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst></a:blip>' +
+    '<a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+    '<pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm>' +
+    '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing>';
+}
+
+function buildWordHeaderXml(hasGp, hasCt) {
+  var hdrNs = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:hdr xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"' +
+    ' xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"' +
+    ' xmlns:o="urn:schemas-microsoft-com:office:office"' +
+    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"' +
+    ' xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"' +
+    ' xmlns:v="urn:schemas-microsoft-com:vml"' +
+    ' xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"' +
+    ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"' +
+    ' xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"' +
+    ' xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"' +
+    ' xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"' +
+    ' xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"' +
+    ' xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"' +
+    ' xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"' +
+    ' mc:Ignorable="w14 wp14">';
+  var sep = '<w:p><w:pPr><w:spacing w:before="60" w:after="0"/>' +
+    '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="3a8f8f"/></w:pBdr></w:pPr></w:p>';
+  var logoH = Math.round(LOGO_MAX_H_CM * LOGO_EMU_PER_CM);
+  var logoW = Math.round(logoH * 1.35);
+  if (hasGp || hasCt) {
+    var gpCell = hasGp
+      ? '<w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgGP', logoW, logoH, 1, 'LogoGP', 'Logo González Palau') + '</w:r></w:p>'
+      : '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>';
+    var ctCell = hasCt
+      ? '<w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr><w:r><w:rPr/>' + wordLogoDrawing('rImgCT', logoW, logoH, 2, 'LogoCT', 'Logo CIATEC') + '</w:r></w:p>'
+      : '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>';
+    return hdrNs +
+      '<w:tbl><w:tblPr><w:tblW w:w="13398" w:type="dxa"/><w:tblBorders>' +
+      '<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>' +
+      '<w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr>' +
+      '<w:tblGrid><w:gridCol w:w="6699"/><w:gridCol w:w="6699"/></w:tblGrid>' +
+      '<w:tr><w:tc><w:tcPr><w:tcW w:w="6699" w:type="dxa"/></w:tcPr>' + gpCell + '</w:tc>' +
+      '<w:tc><w:tcPr><w:tcW w:w="6699" w:type="dxa"/></w:tcPr>' + ctCell + '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
+  }
+  return hdrNs +
+    '<w:tbl><w:tblPr><w:tblW w:w="13398" w:type="dxa"/><w:tblBorders>' +
+    '<w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>' +
+    '<w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders></w:tblPr>' +
+    '<w:tr><w:tc><w:tcPr><w:tcW w:w="13398" w:type="dxa"/></w:tcPr>' +
+    '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
+    '<w:r><w:rPr><w:b/><w:sz w:val="18"/><w:szCs w:val="18"/><w:color w:val="2a6e6e"/>' +
+    '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>' +
+    '<w:t>CENTRO DE REHABILITACIÓN GONZÁLEZ PALAU — FUNDACIÓN CIATEC</w:t></w:r></w:p>' +
+    '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
+}
 
 // ── Firma del profesional ──────────────────────────────
 function firmaPreview(event) {
@@ -14745,146 +14942,14 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '</w:body></w:document>';
 
   // ── Header (logos) y Footer (pie institucional) ──
-  // Imágenes en base64 — González Palau (izq) y CIATEC (der)
-  var GP_B64 = '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';
-  var CT_B64 = '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';
+  var logosInforme = getLogosInforme();
+  var gpParsed = logosInforme.gp ? parseDataUrl(logosInforme.gp) : null;
+  var ctParsed = logosInforme.ct ? parseDataUrl(logosInforme.ct) : null;
+  var hasLogoGp = !!gpParsed;
+  var hasLogoCt = !!ctParsed;
+  var headerXml = buildWordHeaderXml(hasLogoGp, hasLogoCt);
 
-  // image1.png = GP, image2.png = CT — referenciadas desde header
-  var img1Xml = GP_B64; // PNG bytes como base64
-  var img2Xml = CT_B64;
 
-  // Tamaño logos en EMU (1 cm = 360000 EMU): 2cm alto ≈ 720000, ancho proporcional ~720000
-  var IMG_H = 720000; // 2 cm
-  var IMG_W = 720000; // 2 cm
-
-  // Header XML — tabla 1 fila 3 celdas: logo GP | centro vacío | logo CIATEC
-  // Header: tabla 1 fila, 3 celdas — logo GP izq | espacio | logo CT der
-  // Imágenes via drawingML inline con namespaces completos
-  var headerXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
-    '<w:hdr'+
-    ' xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"'+
-    ' xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"'+
-    ' xmlns:o="urn:schemas-microsoft-com:office:office"'+
-    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'+
-    ' xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"'+
-    ' xmlns:v="urn:schemas-microsoft-com:vml"'+
-    ' xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"'+
-    ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"'+
-    ' xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'+
-    ' xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"'+
-    ' xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"'+
-    ' xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"'+
-    ' xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"'+
-    ' xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"'+
-    ' mc:Ignorable="w14 wp14">'+
-    // Tabla para posicionar logos: izq | centro | der
-    '<w:tbl>'+
-      '<w:tblPr>'+
-        '<w:tblW w:w="13398" w:type="dxa"/>'+
-        '<w:tblBorders>'+
-          '<w:top w:val="none"/><w:left w:val="none"/>'+
-          '<w:bottom w:val="none"/><w:right w:val="none"/>'+
-          '<w:insideH w:val="none"/><w:insideV w:val="none"/>'+
-        '</w:tblBorders>'+
-        '<w:tblLayout w:type="fixed"/>'+
-      '</w:tblPr>'+
-      '<w:tblGrid>'+
-        '<w:gridCol w:w="1800"/>'+
-        '<w:gridCol w:w="5760"/>'+
-        '<w:gridCol w:w="1800"/>'+
-      '</w:tblGrid>'+
-      '<w:tr>'+
-        // Celda izquierda: logo GP
-        '<w:tc>'+
-          '<w:tcPr><w:tcW w:w="1800" w:type="dxa"/></w:tcPr>'+
-          '<w:p>'+
-            '<w:pPr><w:jc w:val="left"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-            '<w:r><w:rPr/>'+
-              '<w:drawing>'+
-                '<wp:inline distT="0" distB="0" distL="0" distR="0">'+
-                  '<wp:extent cx="576000" cy="576000"/>'+
-                  '<wp:effectExtent l="0" t="0" r="0" b="0"/>'+
-                  '<wp:docPr id="1" name="LogoGP" descr="Logo González Palau"/>'+
-                  '<wp:cNvGraphicFramePr>'+
-                    '<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>'+
-                  '</wp:cNvGraphicFramePr>'+
-                  '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
-                    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-                      '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-                        '<pic:nvPicPr>'+
-                          '<pic:cNvPr id="1" name="LogoGP"/>'+
-                          '<pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr>'+
-                        '</pic:nvPicPr>'+
-                        '<pic:blipFill>'+
-                          '<a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rImgGP">'+
-                            '<a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst>'+
-                          '</a:blip>'+
-                          '<a:stretch><a:fillRect/></a:stretch>'+
-                        '</pic:blipFill>'+
-                        '<pic:spPr bwMode="auto">'+
-                          '<a:xfrm><a:off x="0" y="0"/><a:ext cx="576000" cy="576000"/></a:xfrm>'+
-                          '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'+
-                        '</pic:spPr>'+
-                      '</pic:pic>'+
-                    '</a:graphicData>'+
-                  '</a:graphic>'+
-                '</wp:inline>'+
-              '</w:drawing>'+
-            '</w:r>'+
-          '</w:p>'+
-        '</w:tc>'+
-        // Celda central: vacía
-        '<w:tc>'+
-          '<w:tcPr><w:tcW w:w="5760" w:type="dxa"/></w:tcPr>'+
-          '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr></w:p>'+
-        '</w:tc>'+
-        // Celda derecha: logo CIATEC
-        '<w:tc>'+
-          '<w:tcPr><w:tcW w:w="1800" w:type="dxa"/></w:tcPr>'+
-          '<w:p>'+
-            '<w:pPr><w:jc w:val="right"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-            '<w:r><w:rPr/>'+
-              '<w:drawing>'+
-                '<wp:inline distT="0" distB="0" distL="0" distR="0">'+
-                  '<wp:extent cx="576000" cy="576000"/>'+
-                  '<wp:effectExtent l="0" t="0" r="0" b="0"/>'+
-                  '<wp:docPr id="2" name="LogoCT" descr="Logo CIATEC"/>'+
-                  '<wp:cNvGraphicFramePr>'+
-                    '<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>'+
-                  '</wp:cNvGraphicFramePr>'+
-                  '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'+
-                    '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-                      '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'+
-                        '<pic:nvPicPr>'+
-                          '<pic:cNvPr id="2" name="LogoCT"/>'+
-                          '<pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr>'+
-                        '</pic:nvPicPr>'+
-                        '<pic:blipFill>'+
-                          '<a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rImgCT">'+
-                            '<a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}"><a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/></a:ext></a:extLst>'+
-                          '</a:blip>'+
-                          '<a:stretch><a:fillRect/></a:stretch>'+
-                        '</pic:blipFill>'+
-                        '<pic:spPr bwMode="auto">'+
-                          '<a:xfrm><a:off x="0" y="0"/><a:ext cx="576000" cy="576000"/></a:xfrm>'+
-                          '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'+
-                        '</pic:spPr>'+
-                      '</pic:pic>'+
-                    '</a:graphicData>'+
-                  '</a:graphic>'+
-                '</wp:inline>'+
-              '</w:drawing>'+
-            '</w:r>'+
-          '</w:p>'+
-        '</w:tc>'+
-      '</w:tr>'+
-    '</w:tbl>'+
-    // Línea separadora
-    '<w:p>'+
-      '<w:pPr><w:spacing w:before="60" w:after="0"/>'+
-      '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="3a8f8f"/></w:pBdr></w:pPr>'+
-    '</w:p>'+
-  '</w:hdr>';
 
   // Footer XML — pie institucional centrado — texto institucional centrado
   var footerXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
@@ -14920,8 +14985,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
     '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>'+
     '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>'+
-    '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>'+
-    '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.png"/>'+
+    (hasLogoGp ? '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.'+(gpParsed.ext)+'"/>' : '')+
+    (hasLogoCt ? '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.'+(ctParsed.ext)+'"/>' : '')+
     '</Relationships>';
 
   var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
@@ -14942,7 +15007,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
     '<Default Extension="xml" ContentType="application/xml"/>'+
-    '<Default Extension="png" ContentType="image/png"/>'+
+    '<Default Extension="png" ContentType="image/png"/>'+'<Default Extension="jpeg" ContentType="image/jpeg"/>'+
     '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
     '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'+
     '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>'+
@@ -14964,7 +15029,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return arr;
   }
 
-  var zipData=_makeZip([
+  var zipEntries=[
     {name:'[Content_Types].xml',             data:enc.encode(contentTypes)},
     {name:'_rels/.rels',                     data:enc.encode(topRels)},
     {name:'word/document.xml',               data:enc.encode(docXml)},
@@ -14972,11 +15037,12 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {name:'word/styles.xml',                 data:enc.encode(stylesXml)},
     {name:'word/header1.xml',                data:enc.encode(headerXml)},
     {name:'word/footer1.xml',                data:enc.encode(footerXml)},
-    {name:'word/media/image1.png',           data:b64ToBytes(GP_B64)},
-    {name:'word/media/image2.png',           data:b64ToBytes(CT_B64)},
+    (hasLogoGp ? {name:'word/media/image1.'+gpParsed.ext, data:b64ToBytes(gpParsed.b64)} : null),
+    (hasLogoCt ? {name:'word/media/image2.'+ctParsed.ext, data:b64ToBytes(ctParsed.b64)} : null),
     {name:'docProps/app.xml',                data:enc.encode(appXml)},
     {name:'docProps/core.xml',               data:enc.encode(coreXml)},
-  ]);
+  ].filter(function(e){ return e && e.data; });
+  var zipData=_makeZip(zipEntries);
 
   var blob=new Blob([zipData],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
   var url=URL.createObjectURL(blob);
@@ -15575,6 +15641,7 @@ function guardarFamiliar() {
 
 window.addEventListener('DOMContentLoaded', function() {
   actualizarSaludo();
+  cargarLogosUI();
   // Siempre arrancar en el login — nunca restaurar sesión automáticamente
   try { localStorage.removeItem('psico_session'); } catch(e) {}
   var login = document.getElementById('screen-login');
