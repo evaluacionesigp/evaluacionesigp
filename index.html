@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.79</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.80</div>
     </div>
   </aside>
 
@@ -7258,24 +7258,13 @@ function renderCuestionariosFam(d) {
         } else if (testNombre === 'TAVEC') {
           var gi2t = d.gi ? d.gi - 1 : null;
           var notaTAVEC = 'TAVEC · ' + (d.grupoLabel || '');
-          var tavecVars = [
-            ['RI-A1 · 1er ensayo',   d.v1,  gi2t!==null?TAVEC_BAR.v1[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v1[gi2t].d:null,  d.zA1],
-            ['RI-A5 · 5to ensayo',   d.v2,  gi2t!==null?TAVEC_BAR.v2[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v2[gi2t].d:null,  d.zA5],
-            ['RI-AT · Total 5 ensayos', d.v3,  gi2t!==null?TAVEC_BAR.v3[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v3[gi2t].d:null,  d.zAT],
-            ['RI-B · Lista B',        d.v4,  gi2t!==null?TAVEC_BAR.v4[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v4[gi2t].d:null,  d.zRIB],
-            ['RL-CP · Rec. libre CP', d.v8,  gi2t!==null?TAVEC_BAR.v8[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v8[gi2t].d:null,  d.zRLCP],
-            ['RCL-CP · Claves CP',    d.v9,  gi2t!==null?TAVEC_BAR.v9[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v9[gi2t].d:null,  d.zRCLCP],
-            ['RL-LP · Rec. libre LP', d.v10, gi2t!==null?TAVEC_BAR.v10[gi2t].m:null, gi2t!==null?TAVEC_BAR.v10[gi2t].d:null, d.zRLLP],
-            ['RCL-LP · Claves LP',    d.v11, gi2t!==null?TAVEC_BAR.v11[gi2t].m:null, gi2t!==null?TAVEC_BAR.v11[gi2t].d:null, d.zRCLLP],
-            ['P · Perseveraciones',   d.v20, gi2t!==null?TAVEC_BAR.v20[gi2t].m:null, gi2t!==null?TAVEC_BAR.v20[gi2t].d:null, d.zP],
-            ['I-RL · Intrusiones recuerdo libre', d.v21, gi2t!==null?TAVEC_BAR.v21[gi2t].m:null, gi2t!==null?TAVEC_BAR.v21[gi2t].d:null, d.zIRL],
-            ['I-RCL · Intrusiones con claves', d.v22, gi2t!==null?TAVEC_BAR.v22[gi2t].m:null, gi2t!==null?TAVEC_BAR.v22[gi2t].d:null, d.zIRCL],
-            ['Recon-Ac · Aciertos reconocimiento', d.v23, gi2t!==null?TAVEC_BAR.v23[gi2t].m:null, gi2t!==null?TAVEC_BAR.v23[gi2t].d:null, d.zRecon],
-            ['FP · Falsos positivos',  d.v24, gi2t!==null?TAVEC_BAR.v24[gi2t].m:null, gi2t!==null?TAVEC_BAR.v24[gi2t].d:null, d.zFP],
-            ['Discrim · Discriminabilidad', d.v25, gi2t!==null?TAVEC_BAR.v25[gi2t].m:null, gi2t!==null?TAVEC_BAR.v25[gi2t].d:null, d.zDiscrim]
-          ];
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)</td></tr>';
-          tavecVars.forEach(function(tv){ rows += filaTabla(tv[0], tv[1], tv[2], tv[3], tv[4], r.fecha, notaTAVEC); });
+          TAVEC_VARS_ORDER.forEach(function(td) {
+            var pb = d[td[1]], z = d[td[2]];
+            if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
+            var bar = (gi2t !== null && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2t] : null;
+            rows += filaTabla(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC);
+          });
 
         } else if (testNombre === 'BEM 144 Signoret') {
           // Calcular Z desde baremos + grupo edad del paciente
@@ -15790,7 +15779,7 @@ var _ZGRILLA_W2 = 540;
 var COL_WIDTHS_HDR = [2200, 460, 460, 460, 540].concat(ZCOLS.map(function(){return _ZGRILLA_W2;})).concat([1258]);
 var _TOTAL_HDR = 13398;
 
-function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr) {
+function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom) {
   var bg = isEven ? 'F2F2F2' : 'FFFFFF';
 
   if (isSubhdr) {
@@ -15862,9 +15851,10 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr) {
       : _wPar('',{before:40,after:40});
     cells.push(_wCell(content, {w:COL_WIDTHS_HDR[5+i], fill:cellFill, noWrap:true}));
   });
-  // Interpretación
-  var interpTxt = zInterp(z);
-  cells.push(_wCell(_wPar(_wRun(interpTxt,{sz:20,bold:false,color:'000000',font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[18],fill:bg}));
+  // Interpretación (opcional: criterio TAVEC con color)
+  var interpTxt = interpCustom && interpCustom.label ? interpCustom.label : zInterp(z);
+  var interpCol = interpCustom && interpCustom.color ? interpCustom.color : '000000';
+  cells.push(_wCell(_wPar(_wRun(interpTxt,{sz:20,bold:!!(interpCustom&&interpCustom.label),color:interpCol,font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[18],fill:bg}));
 
   return _wRow(cells);
 }
@@ -15896,9 +15886,6 @@ function _zHdrRow() {
   return _wRow(cells, {hdr:true});
 }
 
-// ── Tabla TAVEC en Word (6 columnas, sin grilla Z) ─────────────────────
-var TAVEC_WORD_COLS = [3600, 1000, 1000, 1000, 1000, 4800];
-
 function tavecInterpWord(z, isError) {
   if (z === null || z === undefined || isNaN(parseFloat(z))) return { label: '—', color: '888780' };
   var zf = parseFloat(z);
@@ -15917,70 +15904,6 @@ function tavecInterpWord(z, isError) {
   if (zf >= -1.5)    return { label: 'Dificultad leve', color: 'BA7517' };
   if (zf >= -2)      return { label: 'Dificultad moderada', color: 'E07B00' };
   return { label: 'Dificultad elevada', color: 'C53030' };
-}
-
-function _tavecWordHdr() {
-  var hdrFill = 'E8F4E0';
-  function hc(txt, w) {
-    return _wCell(_wPar(_wRun(txt, { sz: 18, bold: true, color: '214B1A', font: 'Arial' }), { align: 'center', before: 20, after: 20 }), { w: w, fill: hdrFill, hdrBorder: true });
-  }
-  return _wRow([
-    hc('Variable', TAVEC_WORD_COLS[0]),
-    hc('PB', TAVEC_WORD_COLS[1]),
-    hc('M', TAVEC_WORD_COLS[2]),
-    hc('DS', TAVEC_WORD_COLS[3]),
-    hc('Z', TAVEC_WORD_COLS[4]),
-    hc('Interpretación', TAVEC_WORD_COLS[5])
-  ], { hdr: true });
-}
-
-function _tavecWordDataRow(label, pb, m, ds, z, isError, isEven) {
-  var bg = isEven ? 'F2F2F2' : 'FFFFFF';
-  var interp = tavecInterpWord(z, isError);
-  var pbStr = pb !== null && pb !== undefined ? String(pb) : '—';
-  var mStr = m !== null && m !== undefined ? parseFloat(m).toFixed(2) : '—';
-  var dsStr = ds !== null && ds !== undefined ? parseFloat(ds).toFixed(2) : '—';
-  var zStr = z !== null && z !== undefined ? parseFloat(z).toFixed(2) : '—';
-  return _wRow([
-    _wCell(_wPar(_wRun(label, { sz: 20, font: 'Arial', color: '000000' }), { before: 20, after: 20 }), { w: TAVEC_WORD_COLS[0], fill: bg }),
-    _wCell(_wPar(_wRun(pbStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[1], fill: bg }),
-    _wCell(_wPar(_wRun(mStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[2], fill: bg }),
-    _wCell(_wPar(_wRun(dsStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[3], fill: bg }),
-    _wCell(_wPar(_wRun(zStr, { sz: 20, bold: true, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[4], fill: bg }),
-    _wCell(_wPar(_wRun(interp.label, { sz: 20, bold: true, font: 'Arial', color: interp.color }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[5], fill: bg })
-  ]);
-}
-
-function _tavecWordNestedRow(d, gi2tw) {
-  var defs = [
-    ['RI-A1 · 1er ensayo', 'v1', 'zA1', false],
-    ['RI-A5 · 5to ensayo', 'v2', 'zA5', false],
-    ['RI-AT · Total 5 ensayos', 'v3', 'zAT', false],
-    ['RI-B · Lista B', 'v4', 'zRIB', false],
-    ['RL-CP · Rec. libre CP', 'v8', 'zRLCP', false],
-    ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false],
-    ['RL-LP · Rec. libre LP', 'v10', 'zRLLP', false],
-    ['RCL-LP · Claves LP', 'v11', 'zRCLLP', false],
-    ['P · Perseveraciones', 'v20', 'zP', true],
-    ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true],
-    ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true],
-    ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false],
-    ['FP · Falsos positivos', 'v24', 'zFP', true],
-    ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false]
-  ];
-  var innerRows = [_tavecWordHdr()];
-  defs.forEach(function(def, idx) {
-    var vk = def[1], zk = def[2];
-    var pb = d[vk];
-    var z = d[zk];
-    var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[vk]) ? TAVEC_BAR[vk][gi2tw] : null;
-    innerRows.push(_tavecWordDataRow(def[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, def[3], idx % 2 === 0));
-  });
-  var innerTable = _wTable(innerRows, TAVEC_WORD_COLS);
-  var totalW = COL_WIDTHS_HDR.reduce(function(a, b) { return a + b; }, 0);
-  return _wRow([
-    _wCell(innerTable, { w: totalW, span: COL_WIDTHS_HDR.length, fill: 'FFFFFF' })
-  ]);
 }
 
 // ── Generador principal ───────────────────────────────────────────────
@@ -16124,8 +16047,14 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});
         } else if(tn==='TAVEC'){
           var gi2tw = (d.gi != null && d.gi !== undefined) ? d.gi - 1 : null;
-          rows.push(_zGrillaRows('TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)', null, null, null, null, null, false, true));
-          rows.push(_tavecWordNestedRow(d, gi2tw));
+          TAVEC_VARS_ORDER.forEach(function(td) {
+            var pb = d[td[1]], z = d[td[2]];
+            if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
+            var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2tw] : null;
+            var interp = tavecInterpWord(z, td[3]);
+            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, interp));
+            rowCount++;
+          });
 
         } else if(tn==='BEM 144 Signoret'){
           var gi=d.grupo_edad!=null?d.grupo_edad:bemGrupo;
@@ -16703,6 +16632,37 @@ var TAVEC_BAR = {
 // Variables de error: Z positivo = más errores = peor rendimiento
 var TAVEC_ERRORES = ['v20','v21','v22','v24'];
 
+// [etiqueta, clave PB, clave Z, esVariableError, claveGlosario opcional]
+var TAVEC_VARS_ORDER = [
+  ['RI-A1 · 1er ensayo', 'v1', 'zA1', false, null],
+  ['RI-A5 · 5to ensayo', 'v2', 'zA5', false, null],
+  ['RI-AT · Total 5 ensayos', 'v3', 'zAT', false, 'TAVEC·RI-AT'],
+  ['RI-B · Lista B', 'v4', 'zRIB', false, null],
+  ['RL-CP · Rec. libre CP', 'v8', 'zRLCP', false, null],
+  ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false, null],
+  ['RL-LP · Rec. libre LP', 'v10', 'zRLLP', false, 'TAVEC·RL-LP'],
+  ['RCL-LP · Claves LP', 'v11', 'zRCLLP', false, 'TAVEC·RCL-LP'],
+  ['P · Perseveraciones', 'v20', 'zP', true, null],
+  ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true, null],
+  ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true, null],
+  ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false, null],
+  ['FP · Falsos positivos', 'v24', 'zFP', true, null],
+  ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
+];
+
+function tavecPerfilEstilo(interp) {
+  var map = {
+    '2563EB': { bg: '#d8f0fa', txt: '#1565c0' },
+    '2E7A4F': { bg: '#e8f4e0', txt: '#2e7a4f' },
+    '639922': { bg: '#e8f4e0', txt: '#639922' },
+    'BA7517': { bg: '#fdf0c4', txt: '#7a5c00' },
+    'E07B00': { bg: '#fde8d0', txt: '#a04000' },
+    'C53030': { bg: '#fad8d8', txt: '#a00000' },
+    '888780': { bg: 'transparent', txt: 'var(--muted)' }
+  };
+  return map[interp.color] || { bg: '#e8f4e0', txt: '#325c28' };
+}
+
 var TAVEC_VARS = [
   {k:'v1',  lbl:'RI-A1 · Recuerdo inmediato 1er ensayo',      max:16},
   {k:'v2',  lbl:'RI-A5 · Recuerdo inmediato 5to ensayo',      max:16},
@@ -16994,10 +16954,16 @@ function renderPerfilZ() {
       } else if (tn === 'Rey Verbal' && d.variables && d.variables.length) {
         d.variables.forEach(function(v){ filas.push({lbl: v.label, z: v.z}); });
       } else if (tn === 'TAVEC') {
-        if (d.zAT != null) filas.push({lbl:'TAVEC·RI-AT', z: d.zAT, glosario: 'TAVEC·RI-AT'});
-        if (d.zRLLP != null) filas.push({lbl:'TAVEC·RL-LP', z: d.zRLLP, glosario: 'TAVEC·RL-LP'});
-        if (d.zRCLLP != null) filas.push({lbl:'TAVEC·RCL-LP', z: d.zRCLLP, glosario: 'TAVEC·RCL-LP'});
-        if (d.zDiscrim != null) filas.push({lbl:'TAVEC·Discrim', z: d.zDiscrim, glosario: 'TAVEC·Discrim'});
+        TAVEC_VARS_ORDER.forEach(function(td) {
+          var pb = d[td[1]], z = d[td[2]];
+          if (z === null && z === undefined && (pb === null || pb === undefined)) return;
+          filas.push({
+            lbl: td[4] || td[0],
+            z: z,
+            glosario: td[4],
+            isError: td[3]
+          });
+        });
       } else if (tn === 'D2') {
         var idx = d.indices || {};
         if (idx.CON && idx.CON.z != null) filas.push({lbl:'D2 CON', z: idx.CON.z});
@@ -17017,9 +16983,15 @@ function renderPerfilZ() {
       }
 
       filas.forEach(function(fila) {
-        if (fila.z === null || fila.z === undefined) return;
+        if ((fila.z === null || fila.z === undefined) && tn !== 'TAVEC') return;
         hayDatos = true;
-        var c = zColor(fila.z);
+        var interp = (tn === 'TAVEC')
+          ? tavecInterpWord(fila.z, fila.isError)
+          : null;
+        var c = (tn === 'TAVEC' && (fila.z === null || fila.z === undefined))
+          ? { bg: 'transparent', txt: 'var(--muted)' }
+          : (interp ? tavecPerfilEstilo(interp) : zColor(fila.z));
+        var lblInterp = (tn === 'TAVEC') ? interp.label : c.lbl;
         var gKey = fila.glosario || tn;
         var lblCell = resolverTestGlosario(gKey)
           ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(gKey) + '" data-glosario-z="' + fila.z + '">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
@@ -17027,7 +16999,7 @@ function renderPerfilZ() {
         html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 8px;border-radius:5px;margin-bottom:2px;background:var(--surface);">';
         html += '<span style="font-size:0.78rem;color:var(--text);">' + lblCell + '</span>';
         html += '<span style="font-family:monospace;font-weight:700;font-size:0.82rem;color:' + c.txt + ';background:' + c.bg + ';padding:1px 8px;border-radius:4px;min-width:48px;text-align:center;">' + fmtZ(fila.z) + '</span>';
-        html += '<span style="font-size:0.72rem;color:' + c.txt + ';background:' + c.bg + ';padding:1px 8px;border-radius:4px;min-width:160px;text-align:center;">' + c.lbl + '</span>';
+        html += '<span style="font-size:0.72rem;color:' + c.txt + ';background:' + c.bg + ';padding:1px 8px;border-radius:4px;min-width:160px;text-align:center;">' + lblInterp + '</span>';
         html += '</div>';
       });
     });
