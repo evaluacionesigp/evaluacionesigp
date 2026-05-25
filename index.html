@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.81</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.82</div>
     </div>
   </aside>
 
@@ -6170,78 +6170,247 @@ var GLOSARIO_TESTS = {
     }
   },
   'TAVEC': {
-    mide: 'Evalúa aprendizaje serial, curva de adquisición, recuerdo libre y con clave a corto y largo plazo y reconocimiento. Diferencia perfil hipocámpico vs. estratégico.',
+    dominio: 'Memoria episódica verbal',
+    mide: 'Batería TAVEC (Benedet y Alejandre, 1998). Evalúa codificación, aprendizaje serial, interferencia, retención a corto y largo plazo, recuperación con claves semánticas y reconocimiento. Permite contrastar déficits de almacenamiento (sistema hipocámpico) frente a déficits de recuperación o estrategia (procesador central/frontal), según el modelo modular de Moscovitch.',
     interpretacion: {
-      bajo: 'Compatible con compromiso significativo de la memoria episódica verbal. El patrón de errores orienta hacia el sustrato comprometido.',
-      limite: 'Posibles dificultades en consolidación o evocación verbal. Requiere análisis cualitativo de la curva de aprendizaje.',
-      normal: 'Memoria verbal episódica preservada.',
-      alto: 'Adecuada capacidad de aprendizaje y evocación verbal.'
+      bajo: 'Perfil compatible con compromiso global de la memoria episódica verbal. Integrar curva de aprendizaje, beneficio de clave RL vs RCL, intrusiones/perseveraciones y discriminabilidad antes de inferir etiología.',
+      limite: 'Rendimiento verbal episódico límite. Requiere análisis cualitativo de la curva, de la interferencia de la lista B y del patrón libre vs claves.',
+      normal: 'Memoria episódica verbal global dentro del rango esperado para edad y escolaridad.',
+      alto: 'Rendimiento verbal episódico por encima del rango normativo; verificar nivel educativo y consistencia con queja subjetiva.'
     },
     preguntas: {
-      bajo: ['¿Hay beneficio de clave semántica en el recuerdo diferido?', '¿La curva de aprendizaje es plana o muestra algún aprendizaje?', '¿Hay intrusiones o perseveraciones que sugieran componente ejecutivo?'],
-      limite: ['¿La curva de aprendizaje es ascendente o irregular?', '¿El recuerdo diferido está más afectado que el inmediato?', '¿La clave semántica mejora el rendimiento en el recuerdo con clave?'],
-      normal: ['¿La preservación de memoria verbal es consistente con el resto del perfil?', '¿El paciente tiene queja de memoria a pesar del rendimiento normal?'],
-      alto: ['¿El rendimiento elevado es consistente con el nivel educativo y la reserva cognitiva?']
+      bajo: ['¿El patrón conjunto sugiere déficit de almacenamiento (RL y RCL igualmente bajos) o de recuperación (mejoría con clave)?', '¿La curva RI-A1 a RI-A5 es plana o hay aprendizaje?', '¿Hay intrusiones, perseveraciones o falsos positivos elevados que indiquen fallo de discriminación?'],
+      limite: ['¿Qué fase del TAVEC está más afectada: adquisición, interferencia, retención o reconocimiento?', '¿El recuerdo con claves mejora respecto al libre en CP y LP?'],
+      normal: ['¿El perfil TAVEC es coherente con el resto del dominio memoria (Rey, BEM)?', '¿Existe queja mnésica discordante con el rendimiento?'],
+      alto: ['¿El rendimiento elevado es estable en todas las fases o concentrado en adquisición?']
+    }
+  },
+  'TAVEC·RI-A1': {
+    dominio: 'Memoria · Adquisición',
+    mide: 'Recuerdo inmediato del primer ensayo de la lista A (máx. 16). Refleja codificación inicial y capacidad de entrar en la tarea antes de la repetición. Curva plana con RI-A1 bajo sugiere dificultad de codificación o de “entrar” en tareas nuevas (ansiedad, rigidez prefrontal).',
+    interpretacion: {
+      bajo: 'Codificación verbal inicial muy limitada. Pocos ítems entran al sistema de memoria de trabajo; la curva de aprendizaje tenderá a ser plana si no hay mejora en ensayos siguientes.',
+      limite: 'Entrada en la tarea por debajo de lo esperado. Conviene contrastar con RI-A5 y RI-AT antes de concluir déficit de aprendizaje estable.',
+      normal: 'Adecuada codificación en el primer contacto con el material; base razonable para aprendizaje en ensayos posteriores.',
+      alto: 'Codificación inicial eficaz; favorable para curva de aprendizaje ascendente si se mantienen estrategias semánticas.'
+    },
+    preguntas: {
+      bajo: ['¿Mejora el rendimiento entre RI-A1 y RI-A5 o la curva permanece plana?', '¿Hubo dificultad para comprender la consigna o ansiedad al inicio?', '¿RI-AT y RL-CP están igualmente comprometidos?'],
+      limite: ['¿El bajo RI-A1 se explica por desconocimiento de la tarea más que por déficit mnésico?', '¿Hay mejora marcada ya en el segundo ensayo?'],
+      normal: ['¿La curva es ascendente de RI-A1 a RI-A5?', '¿El paciente usa categorías semánticas desde los primeros ensayos?'],
+      alto: ['¿La codificación inicial alta es coherente con escolaridad y queja subjetiva?']
+    }
+  },
+  'TAVEC·RI-A5': {
+    dominio: 'Memoria · Adquisición',
+    mide: 'Recuerdo inmediato del quinto ensayo (máx. 16). Indica nivel de aprendizaje tras exposición repetida. En normales suele acercarse al máximo entre ensayo 3 y 5. Descenso respecto a ensayos previos puede indicar fatiga o pérdida de estrategia.',
+    interpretacion: {
+      bajo: 'Aprendizaje tras cinco exposiciones insuficiente. Compatible con curva plana o con abandono de estrategia semántica.',
+      limite: 'Rendimiento final de adquisición límite. Revisar si hubo mejora progresiva o estancamiento desde ensayo 3.',
+      normal: 'Aprendizaje inmediato adecuado al cierre de la fase de adquisición.',
+      alto: 'Buen aprendizaje al quinto ensayo; verificar si RI-AT confirma consolidación en la sesión.'
+    },
+    preguntas: {
+      bajo: ['¿La curva fue plana, con valles o descendente hacia el ensayo 5?', '¿RI-A1 también estaba bajo o solo se deterioró al final?', '¿Tras lista B (RI-B) se mantiene algún recuerdo en RL-CP?'],
+      limite: ['¿Hubo estancamiento desde el ensayo 3?', '¿El paciente “perdió” la estrategia de agrupación semántica?'],
+      normal: ['¿RI-A5 es coherente con RI-AT?', '¿Las palabras recordadas se mantienen tras la interferencia de lista B?'],
+      alto: ['¿Alcanzó techo de lista (16) o queda margen de aprendizaje?']
     }
   },
   'TAVEC·RI-AT': {
-    mide: 'Total de palabras recordadas en los 5 ensayos de aprendizaje (máximo 80). Refleja la capacidad global de adquisición de material verbal a lo largo de la tarea.',
+    dominio: 'Memoria · Adquisición',
+    mide: 'Total de palabras correctas en los cinco ensayos (máx. 80). Resume la eficacia global de adquisición y uso de estrategias (serial vs semántica). Curva ascendente esperada en sujetos normales; plana sugiere fallo de codificación profunda o estrategia ineficaz.',
     interpretacion: {
-      bajo: 'Curva de aprendizaje muy limitada. Compatible con compromiso significativo de la memoria de trabajo y la codificación verbal. Considerar perfil hipocámpico.',
-      limite: 'Adquisición verbal por debajo del rango esperado. Evaluar si la curva ensayo a ensayo es plana o ascendente.',
-      normal: 'Adquisición verbal dentro del rango normativo.',
-      alto: 'Capacidad de aprendizaje verbal por encima del rango esperado.'
+      bajo: 'Adquisición global deficiente. Patrón compatible con procesamiento superficial o con disfunción hipocámpica si el recuerdo diferido también colapsa sin beneficio de clave.',
+      limite: 'Aprendizaje total por debajo de la norma. Analizar estabilidad ensayo a ensayo y efecto de lista B.',
+      normal: 'Capacidad global de aprendizaje verbal en rango esperado.',
+      alto: 'Adquisición verbal superior; confirmar con retención LP y reconocimiento.'
     },
     preguntas: {
-      bajo: ['¿La curva de aprendizaje es completamente plana o hay alguna mejora entre ensayos?', '¿El total bajo refleja dificultad desde el primer ensayo o fatiga progresiva?', '¿Es consistente con el rendimiento en RL-LP y RCL-LP?'],
-      limite: ['¿La curva es ascendente aunque por debajo de la norma?', '¿El rendimiento mejora en los ensayos finales?'],
-      normal: ['¿La curva de adquisición es homogénea a lo largo de los ensayos?'],
-      alto: ['¿El aprendizaje rápido es consistente con la reserva cognitiva del paciente?']
+      bajo: ['¿RI-A1 y RI-A5 están ambos bajos o hay algún ensayo con mejoría?', '¿Tras RI-B, cuánto retiene en RL-CP?', '¿RCL mejora respecto a RL en LP?'],
+      limite: ['¿La curva es irregular (cambios de estrategia) o homogéneamente baja?', '¿Influyeron perseveraciones o intrusiones en el total?'],
+      normal: ['¿El total es coherente con estrategia semántica en protocolo cualitativo?', '¿Se mantiene el material en RL-LP?'],
+      alto: ['¿El aprendizaje elevado se traduce en buena retención diferida?']
+    }
+  },
+  'TAVEC·RI-B': {
+    dominio: 'Memoria · Interferencia',
+    mide: 'Recuerdo inmediato de la lista B (interferencia proactiva). Compara con RI-A1: un RI-B muy inferior al primer ensayo de A sugiere que el material de A bloquea la entrada de información nueva; RI-B similar o superior puede reflejar familiarización con la tarea más que interferencia.',
+    interpretacion: {
+      bajo: 'Dificultad para codificar lista nueva tras aprender A. Sugiere interferencia proactiva marcada o rigidez cognitiva; integrar con curva de aprendizaje de A.',
+      limite: 'Rendimiento en lista B límite. Matizar con progresión RI-A1–A5 antes de atribuir solo a interferencia.',
+      normal: 'Aprendizaje de lista B en rango esperado; interferencia proactiva no destacada.',
+      alto: 'Buen rendimiento en B; poco indicio de bloqueo por lista A.'
+    },
+    preguntas: {
+      bajo: ['¿RI-B es mucho menor que RI-A1 (índice de interferencia)?', '¿RL-CP cae respecto al ensayo 5 de A?', '¿Persisten palabras de lista B en recuerdos posteriores (intrusiones)?'],
+      limite: ['¿El paciente ya dominaba la tarea en el ensayo 5 y por eso B no es menor?', '¿Cuántas intrusiones de B aparecen en RL/RCL?'],
+      normal: ['¿La caída de A a RL-CP es explicable por tiempo e interferencia combinados?', '¿RI-B es comparable a RI-A1?'],
+      alto: ['¿Hay intrusión de ítems de B en recuerdos de A pese al buen RI-B?']
+    }
+  },
+  'TAVEC·RL-CP': {
+    dominio: 'Memoria · Retención corto plazo',
+    mide: 'Recuerdo libre de lista A tras lista B y breve intervalo (máx. 16). Contrasta con RI-A5: la caída puede deberse a interferencia retroactiva de B, desvanecimiento o a que palabras de recencia no fueron consolidadas.',
+    interpretacion: {
+      bajo: 'Evocación libre inmediata muy baja tras interferencia. Si RCL-CP también es bajo, predominan problemas de almacenamiento/consolidación; si RCL mejora, déficit de recuperación espontánea.',
+      limite: 'Retención a corto plazo límite. Comparar con RI-A5 y con RL-LP.',
+      normal: 'Retención libre a corto plazo preservada tras interferencia.',
+      alto: 'Buena evocación libre inmediata; favorable para consolidación en LP.'
+    },
+    preguntas: {
+      bajo: ['¿Cuánto cayó respecto a RI-A5?', '¿RCL-CP es mejor que RL-CP?', '¿Hay intrusiones de lista B en el recuerdo?'],
+      limite: ['¿La pérdida es mayor en palabras de recencia producidas primero?', '¿El intervalo fue estándar?'],
+      normal: ['¿RL-LP mantiene o mejora este nivel?', '¿Beneficia RCL en CP?'],
+      alto: ['¿Se sostiene el nivel en RL-LP tras 20 minutos?']
+    }
+  },
+  'TAVEC·RCL-CP': {
+    dominio: 'Memoria · Retención corto plazo',
+    mide: 'Recuerdo con claves semánticas tras el mismo intervalo corto (máx. 16). Si mejora respecto a RL-CP, el material pudo estar almacenado pero no recuperado espontáneamente (déficit de recuperación/estrategia).',
+    interpretacion: {
+      bajo: 'Pobre evocación incluso con apoyo semántico a corto plazo. Sugiere déficit de almacenamiento o de organización semántica del material.',
+      limite: 'Recuperación con clave límite. Valorar si el paciente no usó estrategia semántica en adquisición.',
+      normal: 'Recuperación guiada por categorías adecuada en CP.',
+      alto: 'Buen rendimiento con claves en CP.'
+    },
+    preguntas: {
+      bajo: ['¿RCL-CP supera a RL-CP?', '¿Las intrusiones en categorías incorrectas son frecuentes?', '¿Hubo uso de estrategia semántica en los ensayos?'],
+      limite: ['¿Mejora parcial con clave pero no normaliza?', '¿Confunde categorías (especias vs frutas)?'],
+      normal: ['¿El beneficio de clave se mantiene en RCL-LP?', '¿Coherente con RI-AT?'],
+      alto: ['¿RCL-CP ≈ RL-CP sugiere buen almacenamiento y recuperación?']
     }
   },
   'TAVEC·RL-LP': {
-    mide: 'Palabras recordadas libremente tras un intervalo largo (aprox. 20 minutos). Refleja la consolidación y retención de material verbal en memoria episódica.',
+    dominio: 'Memoria · Retención largo plazo',
+    mide: 'Recuerdo libre tras ~20 minutos (máx. 16). Evalúa consolidación y retención episódica. Caída marcada respecto a RL-CP sugiere desvanecimiento o consolidación incompleta; patrón tipo Alzheimer: bajo en libre y poco beneficio de clave.',
     interpretacion: {
-      bajo: 'Compromiso significativo de la consolidación mnésica verbal. Sin beneficio de clave sugiere perfil hipocámpico (tipo Alzheimer). Con beneficio de clave sugiere perfil estratégico (subcortical o ejecutivo).',
-      limite: 'Posible dificultad en la retención diferida. Evaluar el beneficio de clave para orientar el perfil.',
-      normal: 'Retención verbal a largo plazo preservada.',
-      alto: 'Excelente retención verbal diferida.'
+      bajo: 'Retención diferida libre gravemente comprometida. Sin beneficio de RCL-LP orienta a déficit hipocámpico/de almacenamiento; con beneficio de clave, perfil más estratégico o frontal.',
+      limite: 'Evocación diferida límite. Revisar curva de aprendizaje y comparación RL vs RCL en LP.',
+      normal: 'Consolidación y evocación diferida libre preservadas.',
+      alto: 'Excelente retención a largo plazo en recuerdo libre.'
     },
     preguntas: {
-      bajo: ['¿Hay beneficio de clave semántica respecto al recuerdo libre?', '¿La pérdida diferida es mayor que en el recuerdo a corto plazo?', '¿El patrón sugiere perfil hipocámpico (sin beneficio de clave) o estratégico?'],
-      limite: ['¿El rendimiento en LP es peor que en CP sugiriendo consolidación deficiente?', '¿La clave semántica mejora el recuerdo diferido?'],
-      normal: ['¿La retención diferida es consistente con el aprendizaje inicial?'],
-      alto: ['¿La excelente retención diferida es consistente con el RI-AT?']
+      bajo: ['¿RCL-LP mejora respecto a RL-LP?', '¿La caída CP→LP es mayor que la esperada por tiempo?', '¿Reconocimiento y discriminación están preservados?'],
+      limite: ['¿Hubo beneficio parcial de clave en LP?', '¿Queja familiar de memoria reciente concuerda?'],
+      normal: ['¿El recuerdo LP es coherente con aprendizaje (RI-AT)?', '¿Discriminación en reconocimiento es adecuada?'],
+      alto: ['¿Mantiene ventaja sin claves también en CP?']
     }
   },
   'TAVEC·RCL-LP': {
-    mide: 'Palabras recordadas con clave semántica tras intervalo largo. La comparación con RL-LP permite distinguir déficit de acceso (mejora con clave) vs. déficit de almacenamiento (no mejora).',
+    dominio: 'Memoria · Retención largo plazo',
+    mide: 'Recuerdo con claves semánticas a largo plazo (máx. 16). Comparación clave con RL-LP (manual TAVEC, índice 7): igual rendimiento pobre → almacenamiento; RCL > RL → recuperación/espontaneidad comprometidas.',
     interpretacion: {
-      bajo: 'Sin beneficio de clave: déficit de almacenamiento, compatible con perfil hipocámpico. Con beneficio relativo: déficit de acceso, perfil más estratégico o subcortical.',
-      limite: 'Posible dificultad en la recuperación con apoyo semántico.',
-      normal: 'Recuperación con clave semántica preservada.',
-      alto: 'Excelente recuperación con clave semántica.'
+      bajo: 'Evocación diferida con clave muy baja. Si no supera a RL-LP, déficit de almacenamiento/consolidación (perfil hipocámpico). Si supera claramente a RL-LP, déficit de acceso recuperativo.',
+      limite: 'Recuperación semántica diferida límite. Cuantificar beneficio de clave (RCL − RL).',
+      normal: 'Recuperación con organización semántica preservada a largo plazo.',
+      alto: 'Buena evocación categorial diferida.'
     },
     preguntas: {
-      bajo: ['¿El RCL-LP es mejor que el RL-LP (beneficio de clave)?', '¿La ausencia de beneficio de clave orienta hacia perfil hipocámpico?', '¿El rendimiento en reconocimiento también está comprometido?'],
-      limite: ['¿La clave semántica mejora el rendimiento respecto al RL-LP?', '¿La diferencia RL-LP vs RCL-LP es clínicamente significativa?'],
-      normal: ['¿La recuperación con clave es consistente con el RL-LP?'],
-      alto: ['¿El excelente rendimiento con clave refleja estrategias de codificación eficaces?']
+      bajo: ['¿Cuál es el beneficio de clave (puntos RCL-LP menos RL-LP)?', '¿Intrusiones en categorías no pertenecientes (I-RCL)?', '¿Discriminación en reconocimiento está caída?'],
+      limite: ['¿El paciente no organizó semánticamente en adquisición pero sí con clave?', '¿RL-LP peor que RL-CP?'],
+      normal: ['¿Patrón estable con reconocimiento?', '¿Coherente con dominio memoria global?'],
+      alto: ['¿RCL-LP alinea con Recon-Ac alto?']
+    }
+  },
+  'TAVEC·P': {
+    dominio: 'Memoria · Calidad del recuerdo',
+    invertirZ: true,
+    mide: 'Total de perseveraciones en recuerdos libres y con clave (cada repetición = 1 punto). Perseveraciones tempranas en la producción sugieren fallo de supervisión (prefrontal); repetición de respuestas previas desde el inicio puede asociarse a dificultad inhibitoria temporal-parietal.',
+    interpretacion: {
+      bajo: 'Perseveraciones elevadas para la norma. Indican control deficiente del output o dificultad inhibitoria; integrar con disfunción ejecutiva y con intrusiones.',
+      limite: 'Perseveraciones por encima de lo esperado. Revisar si aparecen más en listas largas o bajo fatiga.',
+      normal: 'Frecuencia de perseveraciones dentro de límites esperados.',
+      alto: 'Escasas perseveraciones; control del recuerdo adecuado.'
+    },
+    preguntas: {
+      bajo: ['¿Las perseveraciones son de repetición de palabras correctas o de intrusiones?', '¿Aparecen desde el primer ensayo?', '¿Coinciden con desinhibición en entrevista o en FAB/IFS?'],
+      limite: ['¿El paciente verbaliza “no sé si ya lo dije”?', '¿Se concentran al final de cada prueba?'],
+      normal: ['¿Perseveraciones aisladas sin patrón patológico?', '¿Coherente con edad?'],
+      alto: ['¿Control atencional del output preservado en toda la batería?']
+    }
+  },
+  'TAVEC·I-RL': {
+    dominio: 'Memoria · Calidad del recuerdo',
+    invertirZ: true,
+    mide: 'Intrusiones en recuerdo libre (palabras no pertenecientes a la lista). Reflejan fallo en discriminar el conjunto aprendido; pueden ser semánticas (lista B u otras categorías) o fonéticas. Elevadas en demencia y en algunos cuadros frontales.',
+    interpretacion: {
+      bajo: 'Intrusiones frecuentes en evocación libre. Compromiso de discriminación mnésica; analizar si provienen de lista B o del léxico semántico.',
+      limite: 'Intrusiones por encima de lo habitual. Relacionar con FP y con discriminabilidad.',
+      normal: 'Pocas intrusiones en recuerdo libre.',
+      alto: 'Muy escasas intrusiones; buena discriminación del conjunto aprendido.'
+    },
+    preguntas: {
+      bajo: ['¿Las intrusiones son de lista B, semánticas o fonéticas?', '¿Aumentan de CP a LP?', '¿Hay confabulación en entrevista?'],
+      limite: ['¿Intrusiones solo en una fase (CP vs LP)?', '¿Perseveraciones co-ocurren?'],
+      normal: ['¿Patrón limpio en RCL e reconocimiento?', '¿Coherente con edad y escolaridad?'],
+      alto: ['¿Discriminación verbal preservada en contexto clínico?']
+    }
+  },
+  'TAVEC·I-RCL': {
+    dominio: 'Memoria · Calidad del recuerdo',
+    invertirZ: true,
+    mide: 'Intrusiones en recuerdo con claves semánticas. Especial valor clínico: palabras fuera de la categoría cebada (p. ej. frutas en “especias”) indican desorganización del sistema semántico o fallo de control de categoría.',
+    interpretacion: {
+      bajo: 'Intrusiones elevadas con claves. Sugiere confusión categorial o supervisión deficiente pese al apoyo semántico.',
+      limite: 'Intrusiones con clave por encima de lo esperado. Comparar con I-RL y con estrategia en adquisición.',
+      normal: 'Uso de categorías con pocas intrusiones.',
+      alto: 'Evocación categorial limpia.'
+    },
+    preguntas: {
+      bajo: ['¿Intrusiones en categoría incorrecta son el hallazgo principal?', '¿Mejora el total de palabras aun con intrusiones?', '¿Es consistente con desorganización semántica en fluencias?'],
+      limite: ['¿Solo algunas categorías están contaminadas?', '¿I-RL también está elevado?'],
+      normal: ['¿Organización semántica coherente en CP y LP?', '¿Beneficio de clave sin ruido intrusivo?'],
+      alto: ['¿Control categorial preservado bajo demanda?']
+    }
+  },
+  'TAVEC·Recon-Ac': {
+    dominio: 'Memoria · Reconocimiento',
+    mide: 'Aciertos en reconocimiento de ítems de lista A (máx. 16). Aprender implica discriminar el conjunto estudiado, no solo almacenar palabras aisladas. Reconocimiento superior a RL-LP sugiere material almacenado con dificultad de evocación libre.',
+    interpretacion: {
+      bajo: 'Reconocimiento de ítems estudiados deficiente. Si también hay RL-LP bajo, compromiso de almacenamiento; si RL es peor que reconocimiento, problema de recuperación.',
+      limite: 'Aciertos de reconocimiento límite. Integrar con FP y discriminabilidad.',
+      normal: 'Reconocimiento de estímulos de lista A en rango esperado.',
+      alto: 'Alto reconocimiento de ítems originales.'
+    },
+    preguntas: {
+      bajo: ['¿Recon-Ac es mejor que RL-LP (almacenado pero no evocado)?', '¿Omisiones elevadas (16 − aciertos)?', '¿FP y discriminación cómo están?'],
+      limite: ['¿Reconocimiento mejor que recuerdo libre?', '¿Sesgo de respuesta “sí” en el paciente?'],
+      normal: ['¿Patrón reconocimiento ≥ recuerdo libre como en normales?', '¿Discriminabilidad acorde?'],
+      alto: ['¿Reconocimiento máximo con discriminación preservada?']
+    }
+  },
+  'TAVEC·FP': {
+    dominio: 'Memoria · Reconocimiento',
+    invertirZ: true,
+    mide: 'Falsos positivos en reconocimiento (ítems no de lista A respondidos “sí”). Indican fallo de discriminación, sesgo de respuesta afirmativa o confabulación; elevados en Alzheimer (manual: sesgo “sí” con discriminabilidad baja).',
+    interpretacion: {
+      bajo: 'Falsos positivos elevados. El paciente acepta distractores como estudiados; revisar índice de discriminabilidad y RL-LP.',
+      limite: 'Más falsos positivos de lo esperado. ¿Proceden de lista B, categorías compartidas o no relacionadas?',
+      normal: 'Tasa de falsos positivos en rango esperado.',
+      alto: 'Escasos falsos positivos; discriminación conservadora.'
+    },
+    preguntas: {
+      bajo: ['¿FP provienen de ítems de lista B o semánticamente relacionados?', '¿Hay sesgo sistemático a responder “sí”?', '¿Discriminabilidad colapsa?'],
+      limite: ['¿FP concentrados en un tipo de distractor (BC, PR, NR)?', '¿Recon-Ac está preservado?'],
+      normal: ['¿Discriminación acorde con aciertos?', '¿Estilo conservador de respuesta?'],
+      alto: ['¿Perfil de reconocimiento preciso y sin confabulación?']
     }
   },
   'TAVEC·Discrim': {
-    mide: 'Índice de discriminabilidad en el reconocimiento. Refleja la capacidad de identificar correctamente las palabras de la lista original distinguiéndolas de distractores. Combina aciertos y falsos positivos.',
+    dominio: 'Memoria · Reconocimiento',
+    mide: 'Índice de discriminabilidad: capacidad de distinguir ítems de lista A de distractores, combinando aciertos, omisiones y falsos positivos. Aprender es almacenar de modo discriminativo (manual y clase IGP).',
     interpretacion: {
-      bajo: 'Dificultad significativa para discriminar palabras aprendidas de distractores. Compatible con compromiso de la memoria de reconocimiento.',
-      limite: 'Posible dificultad en la discriminación mnésica.',
-      normal: 'Discriminabilidad en el reconocimiento preservada.',
-      alto: 'Excelente capacidad de reconocimiento y discriminación.'
+      bajo: 'Discriminación mnésica muy pobre. Compatible con almacenamiento frágil del conjunto; frecuente con FP elevados y RL-LP bajo.',
+      limite: 'Discriminabilidad límite. Descomponer si predominan omisiones o falsos positivos.',
+      normal: 'Adecuada discriminación del material aprendido en reconocimiento.',
+      alto: 'Excelente discriminación; el conjunto estudiado está bien diferenciado del léxico competidor.'
     },
     preguntas: {
-      bajo: ['¿El índice bajo se debe a pocos aciertos, muchos falsos positivos, o ambos?', '¿El reconocimiento deficiente con recuerdo libre también deficiente sugiere compromiso de almacenamiento?', '¿Los falsos positivos son elevados (tendencia a la confabulación)?'],
-      limite: ['¿El índice está afectado principalmente por falsos positivos o por bajo número de aciertos?', '¿La discriminabilidad mejora con más tiempo de respuesta?'],
-      normal: ['¿El reconocimiento preservado contrasta con el recuerdo libre?'],
-      alto: ['¿La excelente discriminabilidad es consistente con el perfil general de memoria?']
+      bajo: ['¿El índice bajo se debe a FP, a omisiones o a ambos?', '¿Recon-Ac y RL-LP están alineados con este hallazgo?', '¿Intrusiones en libre explican mala discriminación?'],
+      limite: ['¿Mejora la discriminación si se controla sesgo de respuesta?', '¿Qué tipo de distractores genera más errores?'],
+      normal: ['¿Reconocimiento preservado aunque el libre sea regular?', '¿Patrón global de memoria coherente?'],
+      alto: ['¿Alta discriminación con recuerdo libre también alto o solo en reconocimiento?']
     }
   },
   'Rey Verbal': {
@@ -6516,7 +6685,8 @@ var GLOSARIO_ALIAS = {
   'SDMT (Oral)': 'SDMT-oral'
 };
 
-function categoriaZGlosario(z) {
+function categoriaZGlosario(z, invertirZ) {
+  if (invertirZ) z = -z;
   if (z < -2) return 'bajo';
   if (z < -1) return 'limite';
   if (z <= 1) return 'normal';
@@ -6571,7 +6741,7 @@ function mostrarTooltipTest(event, testNombre, zScore) {
   if (!g) return;
   if (zScore === null || zScore === undefined || zScore === '' || isNaN(parseFloat(zScore))) return;
   var z = parseFloat(zScore);
-  var cat = categoriaZGlosario(z);
+  var cat = categoriaZGlosario(z, g.invertirZ);
   var tip = document.getElementById('tooltip-glosario');
   if (!tip) return;
   var preguntas = (g.preguntas[cat] || []).map(function(q) {
@@ -16633,19 +16803,19 @@ var TAVEC_ERRORES = ['v20','v21','v22','v24'];
 
 // [etiqueta, clave PB, clave Z, esVariableError, claveGlosario opcional]
 var TAVEC_VARS_ORDER = [
-  ['RI-A1 · 1er ensayo', 'v1', 'zA1', false, null],
-  ['RI-A5 · 5to ensayo', 'v2', 'zA5', false, null],
+  ['RI-A1 · 1er ensayo', 'v1', 'zA1', false, 'TAVEC·RI-A1'],
+  ['RI-A5 · 5to ensayo', 'v2', 'zA5', false, 'TAVEC·RI-A5'],
   ['RI-AT · Total 5 ensayos', 'v3', 'zAT', false, 'TAVEC·RI-AT'],
-  ['RI-B · Lista B', 'v4', 'zRIB', false, null],
-  ['RL-CP · Rec. libre CP', 'v8', 'zRLCP', false, null],
-  ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false, null],
+  ['RI-B · Lista B', 'v4', 'zRIB', false, 'TAVEC·RI-B'],
+  ['RL-CP · Rec. libre CP', 'v8', 'zRLCP', false, 'TAVEC·RL-CP'],
+  ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false, 'TAVEC·RCL-CP'],
   ['RL-LP · Rec. libre LP', 'v10', 'zRLLP', false, 'TAVEC·RL-LP'],
   ['RCL-LP · Claves LP', 'v11', 'zRCLLP', false, 'TAVEC·RCL-LP'],
-  ['P · Perseveraciones', 'v20', 'zP', true, null],
-  ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true, null],
-  ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true, null],
-  ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false, null],
-  ['FP · Falsos positivos', 'v24', 'zFP', true, null],
+  ['P · Perseveraciones', 'v20', 'zP', true, 'TAVEC·P'],
+  ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true, 'TAVEC·I-RL'],
+  ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true, 'TAVEC·I-RCL'],
+  ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false, 'TAVEC·Recon-Ac'],
+  ['FP · Falsos positivos', 'v24', 'zFP', true, 'TAVEC·FP'],
   ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
 ];
 
@@ -16957,7 +17127,7 @@ function renderPerfilZ() {
           var pb = d[td[1]], z = d[td[2]];
           if (z === null && z === undefined && (pb === null || pb === undefined)) return;
           filas.push({
-            lbl: td[4] || td[0],
+            lbl: td[0],
             z: z,
             glosario: td[4],
             isError: td[3]
