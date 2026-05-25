@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.77</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.78</div>
     </div>
   </aside>
 
@@ -6474,6 +6474,32 @@ function resolverTestGlosario(testNombre) {
   return null;
 }
 
+function escGlosarioAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;');
+}
+
+function initGlosarioDelegacion() {
+  if (window._glosarioDelegacion) return;
+  window._glosarioDelegacion = true;
+  document.body.addEventListener('mouseover', function(e) {
+    var el = e.target.closest('[data-glosario-test]');
+    if (!el) return;
+    if (el === window._glosarioHoverEl) return;
+    window._glosarioHoverEl = el;
+    var zRaw = el.getAttribute('data-glosario-z');
+    var z = (zRaw === 'null' || zRaw === '' || zRaw == null) ? null : parseFloat(zRaw);
+    mostrarTooltipTest(e, el.getAttribute('data-glosario-test'), z);
+  });
+  document.body.addEventListener('mouseout', function(e) {
+    var el = e.target.closest('[data-glosario-test]');
+    if (!el) return;
+    var rel = e.relatedTarget;
+    if (rel && el.contains(rel)) return;
+    if (window._glosarioHoverEl === el) window._glosarioHoverEl = null;
+    ocultarTooltipTest();
+  });
+}
+
 function ocultarTooltipTest() {
   var tip = document.getElementById('tooltip-glosario');
   if (tip) tip.style.display = 'none';
@@ -6535,7 +6561,7 @@ function renderHistorial() {
       var zColor = r.puntaje_z===null ? 'var(--muted)' : r.puntaje_z >= -1.0 ? 'var(--green)' : r.puntaje_z >= -1.5 ? 'var(--yellow)' : r.puntaje_z >= -2.0 ? 'var(--orange)' : 'var(--red)';
       var zArg = (r.puntaje_z !== null && r.puntaje_z !== undefined) ? r.puntaje_z : 'null';
       var testCell = resolverTestGlosario(r.test)
-        ? '<span class="test-nombre-glosario" onmouseenter="mostrarTooltipTest(event,' + JSON.stringify(r.test) + ',' + zArg + ')" onmouseleave="ocultarTooltipTest()">' + r.test + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
+        ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(r.test) + '" data-glosario-z="' + zArg + '">' + r.test + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
         : r.test;
       return '<tr style="border-bottom:1px solid var(--border);">' +
         '<td style="padding:10px 12px;font-size:0.84rem;">' + nomPac + '</td>' +
@@ -7059,10 +7085,10 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
 
     // Área hover para tooltip de glosario (solo tests con entrada en GLOSARIO_TESTS)
     puntos.forEach(function(p, i){
-      if (!resolverTestGlosario(p.testGlosario || p.label)) return;
+      var gTest = p.testGlosario || p.label;
+      if (!resolverTestGlosario(gTest)) return;
       var x = px(i), y = zy(p.z);
-      var tn = JSON.stringify(p.testGlosario || p.label);
-      svg += '<circle cx="'+x+'" cy="'+y+'" r="11" fill="transparent" stroke="none" style="cursor:help;pointer-events:all" onmouseenter="mostrarTooltipTest(event,'+tn+','+p.z+')" onmouseleave="ocultarTooltipTest()"/>';
+      svg += '<circle class="glosario-hover-punto" cx="'+x+'" cy="'+y+'" r="11" fill="transparent" stroke="none" style="cursor:help;pointer-events:all" data-glosario-test="'+escGlosarioAttr(gTest)+'" data-glosario-z="'+p.z+'"/>';
     });
 
     // Etiquetas eje X rotadas −50°
@@ -16859,7 +16885,7 @@ function renderPerfilZ() {
         hayDatos = true;
         var c = zColor(fila.z);
         var lblCell = resolverTestGlosario(tn)
-          ? '<span class="test-nombre-glosario" onmouseenter="mostrarTooltipTest(event,' + JSON.stringify(tn) + ',' + fila.z + ')" onmouseleave="ocultarTooltipTest()">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
+          ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(tn) + '" data-glosario-z="' + fila.z + '">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
           : fila.lbl;
         html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 8px;border-radius:5px;margin-bottom:2px;background:var(--surface);">';
         html += '<span style="font-size:0.78rem;color:var(--text);">' + lblCell + '</span>';
@@ -17106,6 +17132,7 @@ function guardarFamiliar() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+  initGlosarioDelegacion();
   actualizarSaludo();
   cargarLogosUI();
   // Siempre arrancar en el login — nunca restaurar sesión automáticamente
