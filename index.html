@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.66</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.67</div>
     </div>
   </aside>
 
@@ -6874,45 +6874,37 @@ function renderCuestionariosFam(d) {
         return;
       }
 
-      // ── SCL-90-R (mantiene su tabla interna con colores) ──
+      // ── SCL-90-R (solo escalas globales: IGS, TSP, IMSP) ──
       if (r.test === 'SCL-90-R') {
-        var subs = d.subescalas || {};
-        var dimFull = ['som','obs','sen','dep','ans','hos','fob','par','psi'];
-        var dimNombres = {som:'Somatizaciones',obs:'Obsesiones y Compulsiones',sen:'Sensitividad Interpersonal',dep:'Depresión',ans:'Ansiedad',hos:'Hostilidad',fob:'Ansiedad Fóbica',par:'Ideación Paranoide',psi:'Psicoticismo'};
-        function sclCelBg(t) { if(t==null)return'#f5f5f5';if(t>=80)return'#e74c3c';if(t>=65)return'#f39c12';return'#f5f5f5'; }
-        function sclCelColor(t) { if(t==null)return'#aaa';if(t>=65)return'#fff';return'#1a2e16'; }
-        html += clHeader('SCL-90-R · Inventario de Síntomas de Derogatis');
+        html += clHeader('SCL-90-R');
         html += '<table style="border-collapse:collapse;width:100%;font-size:10px;margin-bottom:4px;">';
-        html += '<tr><td colspan="3" style="background:#d8ecd0;color:#2a6e6e;font-size:8px;font-weight:700;padding:3px 8px;text-transform:uppercase;letter-spacing:1px;border:0.5px solid #a8c4a0;">Dimensiones primarias</td>'+
-          '<th style="padding:4px 6px;font-size:8px;font-weight:700;color:#eef6ea;background:#325c28;border:0.5px solid #214b1a;text-align:center;">Ptos brutos</th>'+
-          '<th style="padding:4px 6px;font-size:8px;font-weight:700;color:#eef6ea;background:#325c28;border:0.5px solid #214b1a;text-align:center;">T</th>'+
-          '<th style="padding:4px 6px;font-size:8px;font-weight:700;color:#eef6ea;background:#325c28;border:0.5px solid #214b1a;text-align:center;">Estado</th></tr>';
-        dimFull.forEach(function(k,i) {
-          var t = subs[k] ? subs[k].t : null;
-          var bg = sclCelBg(t); var fc = sclCelColor(t);
-          var avg = subs[k] && subs[k].avg != null ? parseFloat(subs[k].avg).toFixed(2) : '—';
-          var estado = t==null?'—': t>=80?'Muy elevado': t>=65?'Elevado': t>=55?'Moderado':'Normal';
-          html += '<tr style="background:'+rowBg(i)+'">'+
-            '<td colspan="3" style="padding:3px 8px;border:0.5px solid #ddd;font-size:9px;">'+dimNombres[k]+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-family:monospace;">'+avg+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-family:monospace;font-weight:700;background:'+bg+';color:'+fc+';">'+(t!=null?t:'—')+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-size:9px;font-weight:700;color:#222;">'+estado+'</td></tr>';
-        });
-        html += '<tr><td colspan="6" style="background:#d8ecd0;color:#2a6e6e;font-size:8px;font-weight:700;padding:3px 8px;text-transform:uppercase;letter-spacing:1px;border:0.5px solid #a8c4a0;">Escalas globales</td></tr>';
+        html += '<thead><tr>'+
+          '<th style="'+thDark+';text-align:left;">SCL-90-R Escalas Globales</th>'+
+          '<th style="'+thDarkC+'">PB / PT</th>'+
+          '<th style="'+thDarkC+'">Resultado</th></tr></thead><tbody>';
         var igt = d.igt != null ? Math.round(parseFloat(d.igt)) : null;
-        [['IGS — Índice de Severidad Global', d.igs_avg!=null?parseFloat(d.igs_avg).toFixed(2):'—', igt],
-         ['TSP — Total Síntomas Positivos', d.tsp!=null?d.tsp:'—', d.tsp_t!=null?d.tsp_t:null],
-         ['IMSP — Índice Malestar Positivo', d.imsp!=null?parseFloat(d.imsp).toFixed(2):'—', d.imsp_t!=null?d.imsp_t:null]
+        function sclSig(t) { return (t!=null && t>=65) ? 'Significativo' : 'No significativo'; }
+        function sclSigBg(t) { return (t!=null && t>=65) ? '#e74c3c' : '#f5f5f5'; }
+        function sclSigFc(t) { return (t!=null && t>=65) ? '#fff' : '#1a2e16'; }
+        var igsVal = d.igs_avg!=null ? parseFloat(d.igs_avg).toFixed(2) : '—';
+        var tspVal = d.tsp!=null ? d.tsp : '—';
+        var imspVal = d.imsp!=null ? parseFloat(d.imsp).toFixed(2) : '—';
+        var igsPB = igsVal + (igt!=null ? ' / T'+igt : '');
+        var tspPB = tspVal + (d.tsp_t!=null ? ' / T'+d.tsp_t : '');
+        var imspPB = imspVal + (d.imsp_t!=null ? ' / T'+d.imsp_t : '');
+        [
+          ['Índice de severidad global (IGS)',    igsPB,   igt],
+          ['Total de síntomas positivos (TSP)',   tspPB,   d.tsp_t],
+          ['Índice de Malestar Positivo (IMSP)', imspPB,  d.imsp_t]
         ].forEach(function(row,i) {
-          var t = row[2]; var bg = sclCelBg(t); var fc = sclCelColor(t);
-          var estado = t==null?'—': t>=80?'Muy elevado': t>=65?'Elevado': t>=55?'Moderado':'Normal';
+          var tScore = row[2];
+          var bg = sclSigBg(tScore); var fc = sclSigFc(tScore);
           html += '<tr style="background:'+rowBg(i)+'">'+
-            '<td colspan="3" style="padding:3px 8px;border:0.5px solid #ddd;font-size:9px;font-weight:600;">'+row[0]+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-family:monospace;">'+row[1]+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-family:monospace;font-weight:700;background:'+bg+';color:'+fc+';">'+(t!=null?t:'—')+'</td>'+
-            '<td style="padding:3px 6px;border:0.5px solid #ddd;text-align:center;font-size:9px;font-weight:700;color:#222;">'+estado+'</td></tr>';
+            '<td style="'+tdR+'">'+row[0]+'</td>'+
+            '<td style="'+tdRC+'">'+row[1]+'</td>'+
+            '<td style="padding:3px 8px;border:0.5px solid #ddd;text-align:center;font-size:9px;font-weight:700;background:'+bg+';color:'+fc+';">'+sclSig(tScore)+'</td></tr>';
         });
-        html += '</table>';
+        html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">T≥65 clínicamente significativo · Baremos: Casullo & Pérez (2008)</div>';
         return;
       }
@@ -14413,7 +14405,18 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       else if(r.test==='Birleson'){addCL('Birleson (PACES) — Total',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='AAA'){addCL('AAA — Total',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='SPAI-B'){addCL('SPAI-B — Total',r.puntaje_total,r.categoria||'—');}
-      else if(r.test==='SCL-90-R'){addCL('SCL-90-R — IGS',d.igs_avg!=null?parseFloat(d.igs_avg).toFixed(2):'—',r.categoria||'—');}
+      else if(r.test==='SCL-90-R'){
+        var igsT=d.igt!=null?Math.round(parseFloat(d.igt)):null;
+        var tspT=d.tsp_t!=null?d.tsp_t:null;
+        var imspT=d.imsp_t!=null?d.imsp_t:null;
+        function sclSigLabel(t){return(t!=null&&t>=65)?'Significativo':'No significativo';}
+        var igsV=d.igs_avg!=null?parseFloat(d.igs_avg).toFixed(2):'—';
+        var tspV=d.tsp!=null?d.tsp:'—';
+        var imspV=d.imsp!=null?parseFloat(d.imsp).toFixed(2):'—';
+        addCL('SCL-90-R — Índice de Severidad Global (IGS)', igsV+'/30', sclSigLabel(igsT));
+        addCL('SCL-90-R — Total Síntomas Positivos (TSP)', tspV+'/30', sclSigLabel(tspT));
+        addCL('SCL-90-R — Índice Malestar Positivo (IMSP)', imspV+'/45', sclSigLabel(imspT));
+      }
       else if(r.test==='MBI-HSS'){
         if(d.CE!=null)addCL('Cansancio Emocional',d.CE,d.CE_cat||'—');
         if(d.DP!=null)addCL('Despersonalización',d.DP,d.DP_cat||'—');
