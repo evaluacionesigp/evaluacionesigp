@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.73</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.74</div>
     </div>
   </aside>
 
@@ -2169,6 +2169,180 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn-secondary" onclick="document.getElementById('csi-resultado').style.display='none';document.getElementById('csi-form').style.display='block';">← Modificar</button>
       <button class="btn-primary" onclick="guardarCSI()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── CRC · Cuestionario de Reserva Cognitiva ── -->
+<div class="vista" id="vista-crc">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">CRC · Cuestionario de Reserva Cognitiva</div></div>
+  <div id="crc-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="crc-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="crc-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ítems del cuestionario</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Seleccione la opción que mejor describe cada aspecto del paciente. Máximo 25 puntos.</p>
+      <div id="crc-items-wrap"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarCRC()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularCRC()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="crc-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="crc-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Puntaje total CRC (0–25)</div>
+          <div class="puntaje-categoria" id="crc-cat">—</div>
+          <div class="puntaje-rango" id="crc-rango">—</div>
+          <span class="badge-grande" id="crc-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="crc-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('crc-resultado').style.display='none';document.getElementById('crc-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarCRC()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PSS-10 · Escala de Estrés Percibido ── -->
+<div class="vista" id="vista-pss">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">PSS-10 · Escala de Estrés Percibido</div></div>
+  <div id="pss-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="pss-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="pss-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ítems del cuestionario</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Las preguntas se refieren al <strong>mes pasado</strong>. Para cada pregunta indique con qué frecuencia se sintió o pensó de determinada manera.<br><strong>0 = Nunca · 1 = Casi nunca · 2 = A veces · 3 = Casi a menudo · 4 = Muy a menudo</strong></p>
+      <div id="pss-items-wrap"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarPSS()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularPSS()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="pss-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="pss-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Puntaje total PSS-10 (0–40)</div>
+          <div class="puntaje-categoria" id="pss-cat">—</div>
+          <div class="puntaje-rango" id="pss-rango">—</div>
+          <span class="badge-grande" id="pss-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="pss-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('pss-resultado').style.display='none';document.getElementById('pss-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarPSS()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HOLMES & RAHE · Escala de Reajuste Psicosocial ── -->
+<div class="vista" id="vista-holmes">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">Holmes & Rahe · Escala de Reajuste Psicosocial</div></div>
+  <div id="holmes-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="holmes-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="holmes-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Eventos vitales</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Marque los eventos que le hayan ocurrido durante el <strong>último año</strong>. El puntaje de cada evento se suma automáticamente.</p>
+      <div id="holmes-items-wrap"></div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;display:flex;align-items:center;gap:16px;">
+        <div style="font-size:0.85rem;color:var(--muted);">Total acumulado:</div>
+        <div id="holmes-live" style="font-family:monospace;font-size:1.4rem;font-weight:700;color:var(--accent);">0</div>
+        <div id="holmes-live-cat" style="font-size:0.82rem;font-weight:600;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarHolmes()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularHolmes()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="holmes-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="holmes-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Puntaje total Holmes & Rahe</div>
+          <div class="puntaje-categoria" id="holmes-cat">—</div>
+          <div class="puntaje-rango" id="holmes-rango">—</div>
+          <span class="badge-grande" id="holmes-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="holmes-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('holmes-resultado').style.display='none';document.getElementById('holmes-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarHolmes()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── YESAVAGE GDS-30 · Escala de Depresión Geriátrica ── -->
+<div class="vista" id="vista-yesavage">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">GDS-30 · Escala de Depresión Geriátrica de Yesavage</div></div>
+  <div id="yesavage-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="yesavage-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="yesavage-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ítems del cuestionario</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Responda <strong>Sí</strong> o <strong>No</strong> según cómo se ha sentido en la última semana.</p>
+      <div id="yesavage-items-wrap"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarYesavage()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularYesavage()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="yesavage-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="yesavage-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Puntaje total GDS-30 (0–30)</div>
+          <div class="puntaje-categoria" id="yesavage-cat">—</div>
+          <div class="puntaje-rango" id="yesavage-rango">—</div>
+          <span class="badge-grande" id="yesavage-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="yesavage-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('yesavage-resultado').style.display='none';document.getElementById('yesavage-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarYesavage()">💾 Guardar resultado</button>
     </div>
   </div>
 </div>
@@ -5736,7 +5910,7 @@ function llenarSelectPacientes() {
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
-   'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente',
+   'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
    'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
@@ -5905,6 +6079,10 @@ var PDF_BLANK_MAP = {
   'aaa':   { vistaId:'vista-aaa',   titulo:'AAA · Autoreporte de Ansiedad para Adolescentes' },
   'spai':  { vistaId:'vista-spaib', titulo:'SPAI-B · Inventario de Fobia y Ansiedad Social' },
   'scl90': { vistaId:'vista-scl90', titulo:'SCL-90-R · Inventario de Síntomas de Derogatis' },
+  'crc':    { vistaId:'vista-crc',   titulo:'CRC · Cuestionario de Reserva Cognitiva' },
+  'pss':    { vistaId:'vista-pss',   titulo:'PSS-10 · Escala de Estrés Percibido' },
+  'holmes': { vistaId:'vista-holmes',titulo:'Holmes & Rahe · Escala de Reajuste Psicosocial' },
+  'yesavage':{ vistaId:'vista-yesavage', titulo:'GDS-30 · Escala de Depresión Geriátrica de Yesavage' },
   'asrs':  { vistaId:'vista-asrs',  titulo:'ASRS-V1.1 · Escala de Autodetección de TDAH' },
   'wurs':  { vistaId:'vista-wurs',  titulo:'WURS-25 · Escala de Wender-Utah' },
   'mbi':   { vistaId:'vista-mbi',   titulo:'MBI-HSS · Inventario de Burnout de Maslach' },
@@ -6048,7 +6226,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   var famHtml = famResults2.length ? renderCuestionariosFam(famResults2[famResults2.length-1].datos||{}) : '';
   var testsDo = datos.filter(function(r){ return tipo(r.test)==='do'; });
   // Orden fijo para clínica: BDI → STAI → GAD-7 → PHQ-9 → SPAI-B → SCL-90-R → MBI-HSS
-  var CL_ORDEN = ['BDI-II','STAI','SPAI-B','PHQ-9','GAD-7','Birleson','AAA','CSI','MBI-HSS','SCL-90-R'];
+  var CL_ORDEN = ['BDI-II','STAI','SPAI-B','PHQ-9','GAD-7','Birleson','AAA','CSI','MBI-HSS','SCL-90-R','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var clRaw = datos.filter(function(r){ return tipo(r.test)==='cl'; });
   var testsCl = CL_ORDEN.map(function(nombre){
     return clRaw.filter(function(r){ return r.test===nombre; });
@@ -7014,6 +7192,87 @@ function renderCuestionariosFam(d) {
         return;
       }
 
+      // ── CRC ──
+      if (r.test === 'CRC') {
+        html += clHeader('CRC · Cuestionario de Reserva Cognitiva');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
+        var crcTotal = r.puntaje_total!=null?r.puntaje_total:'—';
+        var crcCat = r.categoria||'—';
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">Puntaje total (0–25)</td>'+
+          '<td style="'+tdRC+'">'+crcTotal+'</td>'+
+          '<td style="'+tdRI+'">'+crcCat+'</td></tr>';
+        var crcItems = {
+          esc:'Escolaridad',esc_pad:'Escolaridad padres',cursos:'Cursos de formación',
+          ocup:'Ocupación laboral',musica:'Formación musical',idiomas:'Idiomas',
+          lectura:'Actividad lectora',juegos:'Juegos intelectuales'
+        };
+        var ci = 1;
+        Object.keys(crcItems).forEach(function(k){
+          if(d[k]!=null){
+            html+='<tr style="background:'+(ci%2===0?'#fff':'#f5fbf3')+';">'+
+              '<td style="'+tdR+'font-size:9px;">'+crcItems[k]+'</td>'+
+              '<td style="'+tdRC+'">'+d[k]+'</td>'+
+              '<td style="'+tdRI+'">&nbsp;</td></tr>';
+            ci++;
+          }
+        });
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">≤6 baja · 7–9 media-baja · 10–14 media-alta · ≥15 alta · Rami et al. (2011)</div>';
+        return;
+      }
+
+      // ── PSS-10 ──
+      if (r.test === 'PSS-10') {
+        html += clHeader('PSS-10 · Escala de Estrés Percibido');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">Puntaje total (0–40)</td>'+
+          '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">≤13 bajo · 14–26 moderado · ≥27 alto · Cohen, Kamarck & Mermelstein (1983)</div>';
+        return;
+      }
+
+      // ── Holmes & Rahe ──
+      if (r.test === 'Holmes-Rahe') {
+        html += clHeader('Holmes & Rahe · Escala de Reajuste Psicosocial');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">LCU</th>'+
+          '<th style="'+thDark+'">Riesgo</th></tr></thead><tbody>';
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">Puntaje total acumulado</td>'+
+          '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+        if (d.eventos && d.eventos.length > 0) {
+          html += '<tr style="background:#f5fbf3;"><td colspan="3" style="padding:4px 8px;border:0.5px solid #ddd;font-size:8px;color:#555;">Eventos marcados: '+
+            d.eventos.map(function(e){return e.label+' ('+e.val+')'}).join(' · ')+'</td></tr>';
+        }
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">&lt;180 bajo · 180–320 intermedio · &gt;320 alto · Holmes & Rahe (1967)</div>';
+        return;
+      }
+
+      // ── GDS-30 Yesavage ──
+      if (r.test === 'GDS-30') {
+        html += clHeader('GDS-30 · Escala de Depresión Geriátrica de Yesavage');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">Puntaje total (0–30)</td>'+
+          '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">0–9 normal · 10–19 dep. leve · 20–30 dep. establecida · Yesavage et al. (1983)</div>';
+        return;
+      }
+
       // ── DEX ──
       if (r.test === 'DEX') {
         var dexVer = d.version === 'hetero' ? 'Heteroadministrado' : 'Autoadministrado';
@@ -7390,6 +7649,30 @@ function irSector(s) {
         '<div class="test-nombre">MBI-HSS</div>'+
         '<div class="test-desc">Inventario de Burnout de Maslach — Profesionales de salud</div>'+
         '<span class="test-tag">22 ítems · 3 subescalas</span>'+
+      '</div>'+
+      '<div class="test-card" onclick="irTest(\'crc\')">'+
+        '<div class="test-icon">🧠</div>'+
+        '<div class="test-nombre">CRC</div>'+
+        '<div class="test-desc">Cuestionario de Reserva Cognitiva — Escolaridad, ocupación, actividades</div>'+
+        '<span class="test-tag">8 ítems · 0–25 · Rami et al. 2011</span>'+
+      '</div>'+
+      '<div class="test-card" onclick="irTest(\'pss\')">'+
+        '<div class="test-icon">😤</div>'+
+        '<div class="test-nombre">PSS-10</div>'+
+        '<div class="test-desc">Escala de Estrés Percibido — Nivel de estrés del último mes</div>'+
+        '<span class="test-tag">10 ítems · 0–40 · Cohen et al. 1983</span>'+
+      '</div>'+
+      '<div class="test-card" onclick="irTest(\'holmes\')">'+
+        '<div class="test-icon">📋</div>'+
+        '<div class="test-nombre">Holmes & Rahe</div>'+
+        '<div class="test-desc">Escala de Reajuste Psicosocial — Eventos vitales estresantes</div>'+
+        '<span class="test-tag">43 eventos · LCU · Holmes & Rahe 1967</span>'+
+      '</div>'+
+      '<div class="test-card" onclick="irTest(\'yesavage\')">'+
+        '<div class="test-icon">👴</div>'+
+        '<div class="test-nombre">GDS-30 Yesavage</div>'+
+        '<div class="test-desc">Escala de Depresión Geriátrica — Adultos mayores</div>'+
+        '<span class="test-tag">30 ítems · Sí/No · Yesavage et al. 1983</span>'+
       '</div>';
   } else if (s === 'neuro') {
     document.getElementById('sector-titulo').textContent = 'Neuropsicológicos';
@@ -7514,6 +7797,10 @@ function irTest(t) {
   if (t === 'juicio') iniciarJuicio();
   if (t === 'zoo') iniciarZoo();
   if (t === 'sdmt') iniciarSDMT();
+  if (t === 'crc') iniciarCRC();
+  if (t === 'pss') iniciarPSS();
+  if (t === 'holmes') iniciarHolmes();
+  if (t === 'yesavage') iniciarYesavage();
   aplicarPacienteActivoATest(t);
 }
 
@@ -8898,6 +9185,419 @@ function guardarResultadoGAD(){
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
 }
 
+
+
+// ══ CRC · Cuestionario de Reserva Cognitiva ══════════════════════════════════
+// Rami et al. (2011) · Máximo 25 puntos
+var CRC_ITEMS = [
+  { id:'esc', label:'Escolaridad', opciones:[
+    ['Sin estudios',0],['Lee y escribe (autodidacta)',1],['Básica (< 6 años)',2],
+    ['Primaria (≥ 6 años)',3],['Secundaria (≥ 9 años)',4],['Superior (diplomatura/licenciatura)',5]
+  ]},
+  { id:'esc_pad', label:'Escolaridad de los padres (el de mayor nivel)', opciones:[
+    ['No escolarizados',0],['Básica o primaria',1],['Secundaria o superior',2]
+  ]},
+  { id:'cursos', label:'Cursos de formación', opciones:[
+    ['Ninguno',0],['Uno o dos',1],['Entre dos y cinco',2],['Más de cinco',3]
+  ]},
+  { id:'ocup', label:'Ocupación laboral (a lo largo de la vida)', opciones:[
+    ['No cualificado (incluye "sus labores")',0],['Cualificado manual',1],
+    ['Cualificado no manual (secretariado, técnico)',2],
+    ['Profesional (estudios superiores)',3],['Directivo',4]
+  ]},
+  { id:'musica', label:'Formación musical', opciones:[
+    ['No toca ningún instrumento ni escucha música frecuentemente',0],
+    ['Toca poco (aficionado) o escucha música frecuentemente',1],
+    ['Formación musical reglada',2]
+  ]},
+  { id:'idiomas', label:'Idiomas (mantiene una conversación)', opciones:[
+    ['Solamente el idioma materno',0],
+    ['Dos idiomas (incluye dialectos regionales)',1],
+    ['Dos/tres idiomas (uno diferente al idioma materno)',2],
+    ['Más de dos idiomas',3]
+  ]},
+  { id:'lectura', label:'Actividad lectora', opciones:[
+    ['Nunca',0],['Ocasionalmente (diario/un libro al año)',1],
+    ['Entre dos y cinco libros al año',2],['De 5 a 10 libros al año',3],
+    ['Más de 10 libros al año',4]
+  ]},
+  { id:'juegos', label:'Juegos intelectuales (ajedrez, puzzles, crucigramas)', opciones:[
+    ['Nunca o alguna vez',0],['Ocasional (entre 1 y 5 al mes)',1],['Frecuente (más de 5 al mes)',2]
+  ]}
+];
+
+function iniciarCRC() {
+  var wrap = document.getElementById('crc-items-wrap');
+  wrap.innerHTML = CRC_ITEMS.map(function(item, i) {
+    var opts = item.opciones.map(function(op) {
+      return '<label class="bdi-opcion"><input type="radio" name="crc_'+item.id+'" value="'+op[1]+'"><span class="bdi-opcion-texto">'+op[0]+' ('+op[1]+')</span></label>';
+    }).join('');
+    return '<div class="bdi-item"><div class="bdi-pregunta">'+(i+1)+'. '+item.label+'</div><div class="bdi-opciones">'+opts+'</div></div>';
+  }).join('');
+  document.getElementById('crc-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('crc-form').style.display = 'block';
+  document.getElementById('crc-resultado').style.display = 'none';
+}
+
+function limpiarCRC() { if(!confirm('¿Limpiar?'))return; document.querySelectorAll('[name^="crc_"]').forEach(function(r){r.checked=false;}); }
+
+function calcularCRC() {
+  var total = 0; var sinR = 0;
+  CRC_ITEMS.forEach(function(item) {
+    var s = document.querySelector('[name="crc_'+item.id+'"]:checked');
+    if (s) total += parseInt(s.value); else sinR++;
+  });
+  if (sinR > 0 && !confirm('Hay '+sinR+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  var cat, rango, badge;
+  if (total <= 6)       { cat='Reserva baja';       rango='0–6';   badge='bg-grave'; }
+  else if (total <= 9)  { cat='Reserva media-baja';  rango='7–9';   badge='bg-moderada'; }
+  else if (total <= 14) { cat='Reserva media-alta';  rango='10–14'; badge='bg-leve'; }
+  else                  { cat='Reserva alta';        rango='≥15';   badge='bg-minima'; }
+  var interp = '<p>Puntaje CRC: <strong>'+total+'/25</strong> — '+cat+' ('+rango+' puntos).</p>';
+  if (total <= 6) interp += '<p>La puntuación sitúa al paciente en el cuartil inferior de reserva cognitiva (≤C1), lo que podría vincularse con una mayor vulnerabilidad ante el deterioro cognitivo.</p>';
+  else if (total <= 9) interp += '<p>La puntuación corresponde a un nivel de reserva cognitiva medio-bajo (C1-C2). Se sugiere considerar actividades de estimulación cognitiva.</p>';
+  else if (total <= 14) interp += '<p>La puntuación indica una reserva cognitiva medio-alta (C2-C3), compatible con un nivel de protección cognitiva moderado.</p>';
+  else interp += '<p>La puntuación sugiere una reserva cognitiva alta (≥C4), lo que constituye un factor protector relevante frente al deterioro cognitivo.</p>';
+  interp += '<p><em>Rami et al. (2011). Baremos normativos por cuartiles. Puntuaciones ≥15 = RC alta.</em></p>';
+  document.getElementById('crc-pts').textContent = total;
+  document.getElementById('crc-cat').textContent = cat;
+  document.getElementById('crc-rango').textContent = 'Rango: '+rango;
+  document.getElementById('crc-badge').textContent = cat;
+  document.getElementById('crc-badge').className = 'badge-grande '+badge;
+  document.getElementById('crc-interp').innerHTML = interp;
+  document.getElementById('crc-form').style.display = 'none';
+  document.getElementById('crc-resultado').style.display = 'block';
+  window._crcTotal = total;
+}
+
+function guardarCRC() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('crc-paciente').value;
+  var fecha = document.getElementById('crc-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero','error'); return; }
+  var total = window._crcTotal != null ? window._crcTotal : parseInt(document.getElementById('crc-pts').textContent)||0;
+  var cat = document.getElementById('crc-cat').textContent;
+  var datos = { total: total };
+  CRC_ITEMS.forEach(function(item) {
+    var s = document.querySelector('[name="crc_'+item.id+'"]:checked');
+    if (s) datos[item.id] = parseInt(s.value);
+  });
+  supaFetch('/rest/v1/psico_resultados','POST',{
+    user_id:SESSION.user.id, paciente_id:pacId, test:'CRC', fecha:fecha,
+    puntaje_total:total, categoria:cat, datos:datos
+  }, SESSION.access_token).then(function(){
+    cargarResultados(); toast('✓ CRC guardado','success');
+    var btn = document.querySelector('.vista.active .btn-primary:last-child');
+    if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
+  }).catch(function(){ toast('Error al guardar','error'); });
+}
+
+// ══ PSS-10 · Escala de Estrés Percibido ══════════════════════════════════════
+// Cohen, Kamarck & Mermelstein (1983) · 10 ítems · ítems 4,5,7,8 invertidos
+var PSS_ITEMS = [
+  { n:1,  text:'¿Con qué frecuencia ha estado afectado/a por algo que ha ocurrido inesperadamente?', inv:false },
+  { n:2,  text:'¿Con qué frecuencia se ha sentido incapaz de controlar las cosas importantes de su vida?', inv:false },
+  { n:3,  text:'¿Con qué frecuencia se ha sentido nervioso/a o estresado/a?', inv:false },
+  { n:4,  text:'¿Con qué frecuencia ha manejado con éxito los pequeños problemas irritantes de la vida?', inv:true },
+  { n:5,  text:'¿Con qué frecuencia ha sentido que ha afrontado efectivamente los cambios importantes que han estado ocurriendo en su vida?', inv:true },
+  { n:6,  text:'¿Con qué frecuencia ha estado seguro/a sobre su capacidad para manejar sus problemas personales?', inv:true },
+  { n:7,  text:'¿Con qué frecuencia ha sentido que las cosas le van bien?', inv:true },
+  { n:8,  text:'¿Con qué frecuencia ha sentido que no podía afrontar todas las cosas que tenía que hacer?', inv:false },
+  { n:9,  text:'¿Con qué frecuencia ha podido controlar las dificultades de su vida?', inv:true },
+  { n:10, text:'¿Con qué frecuencia ha sentido que tenía todo bajo control?', inv:true }
+];
+var PSS_OPS = ['Nunca (0)','Casi nunca (1)','A veces (2)','Casi a menudo (3)','Muy a menudo (4)'];
+
+function iniciarPSS() {
+  var wrap = document.getElementById('pss-items-wrap');
+  wrap.innerHTML = PSS_ITEMS.map(function(item, i) {
+    var opts = PSS_OPS.map(function(op, j) {
+      return '<label class="bdi-opcion"><input type="radio" name="pss_'+i+'" value="'+j+'"><span class="bdi-opcion-texto">'+op+'</span></label>';
+    }).join('');
+    return '<div class="bdi-item"><div class="bdi-pregunta">'+item.n+'. '+item.text+(item.inv?' <span style="font-size:0.75rem;color:var(--muted);">[ítem inverso]</span>':'')+'</div><div class="bdi-opciones">'+opts+'</div></div>';
+  }).join('');
+  document.getElementById('pss-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pss-form').style.display = 'block';
+  document.getElementById('pss-resultado').style.display = 'none';
+}
+
+function limpiarPSS() { if(!confirm('¿Limpiar?'))return; document.querySelectorAll('[name^="pss_"]').forEach(function(r){r.checked=false;}); }
+
+function calcularPSS() {
+  var total = 0; var sinR = 0;
+  PSS_ITEMS.forEach(function(item, i) {
+    var s = document.querySelector('[name="pss_'+i+'"]:checked');
+    if (s) {
+      var val = parseInt(s.value);
+      total += item.inv ? (4 - val) : val;
+    } else { sinR++; }
+  });
+  if (sinR > 0 && !confirm('Hay '+sinR+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  var cat, rango, badge;
+  if (total <= 13)      { cat='Bajo';    rango='0–13';  badge='bg-minima'; }
+  else if (total <= 26) { cat='Moderado';rango='14–26'; badge='bg-moderada'; }
+  else                  { cat='Alto';    rango='27–40'; badge='bg-grave'; }
+  var interp = '<p>Puntaje PSS-10: <strong>'+total+'/40</strong> — Estrés percibido <strong>'+cat.toLowerCase()+'</strong> ('+rango+' puntos).</p>';
+  if (total <= 13) interp += '<p>El nivel de estrés percibido se encuentra dentro de parámetros esperables, sin indicadores de sobrecarga significativa.</p>';
+  else if (total <= 26) interp += '<p>El nivel de estrés percibido es moderado. Se recomienda explorar fuentes de estrés y estrategias de afrontamiento.</p>';
+  else interp += '<p>El nivel de estrés percibido es elevado, lo que podría estar afectando el funcionamiento cotidiano y la salud. Se sugiere intervención.</p>';
+  interp += '<p><em>Cohen, Kamarck & Mermelstein (1983). Ítems 4,5,6,7,9,10 invertidos. Sin baremos normativos argentinos estandarizados.</em></p>';
+  document.getElementById('pss-pts').textContent = total;
+  document.getElementById('pss-cat').textContent = 'Estrés '+cat;
+  document.getElementById('pss-rango').textContent = 'Rango: '+rango;
+  document.getElementById('pss-badge').textContent = cat;
+  document.getElementById('pss-badge').className = 'badge-grande '+badge;
+  document.getElementById('pss-interp').innerHTML = interp;
+  document.getElementById('pss-form').style.display = 'none';
+  document.getElementById('pss-resultado').style.display = 'block';
+  window._pssTotal = total;
+}
+
+function guardarPSS() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('pss-paciente').value;
+  var fecha = document.getElementById('pss-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero','error'); return; }
+  var total = window._pssTotal != null ? window._pssTotal : parseInt(document.getElementById('pss-pts').textContent)||0;
+  var cat = document.getElementById('pss-cat').textContent;
+  supaFetch('/rest/v1/psico_resultados','POST',{
+    user_id:SESSION.user.id, paciente_id:pacId, test:'PSS-10', fecha:fecha,
+    puntaje_total:total, categoria:cat, datos:{ total:total }
+  }, SESSION.access_token).then(function(){
+    cargarResultados(); toast('✓ PSS-10 guardado','success');
+    var btn = document.querySelector('.vista.active .btn-primary:last-child');
+    if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
+  }).catch(function(){ toast('Error al guardar','error'); });
+}
+
+// ══ HOLMES & RAHE · Escala de Reajuste Psicosocial ═══════════════════════════
+// Holmes & Rahe (1967) · 43 eventos vitales · LCU
+var HOLMES_ITEMS = [
+  {n:1,  label:'Muerte del cónyuge',                                       val:100},
+  {n:2,  label:'Divorcio',                                                  val:73},
+  {n:3,  label:'Separación',                                                val:65},
+  {n:4,  label:'Privación de la libertad',                                  val:63},
+  {n:5,  label:'Muerte de un familiar próximo',                             val:63},
+  {n:6,  label:'Enfermedad o incapacidad graves',                           val:53},
+  {n:7,  label:'Matrimonio',                                                val:50},
+  {n:8,  label:'Perder el empleo',                                          val:47},
+  {n:9,  label:'Reconciliación de la pareja',                               val:45},
+  {n:10, label:'Jubilación',                                                val:45},
+  {n:11, label:'Enfermedad de un pariente cercano',                         val:44},
+  {n:12, label:'Embarazo',                                                  val:40},
+  {n:13, label:'Problemas sexuales',                                        val:39},
+  {n:14, label:'Llegada de un nuevo miembro a la familia',                  val:39},
+  {n:15, label:'Cambios importantes en el trabajo',                         val:39},
+  {n:16, label:'Cambios importantes a nivel económico',                     val:38},
+  {n:17, label:'Muerte de un amigo íntimo',                                 val:37},
+  {n:18, label:'Cambiar de empleo',                                         val:36},
+  {n:19, label:'Discusiones con la pareja (cambio significativo)',           val:35},
+  {n:20, label:'Pedir una hipoteca de alto valor',                          val:31},
+  {n:21, label:'Hacer efectivo un préstamo',                                val:30},
+  {n:22, label:'Cambio de responsabilidades en el trabajo',                 val:29},
+  {n:23, label:'Un hijo/a abandona el hogar (matrimonio, universidad)',      val:29},
+  {n:24, label:'Problemas con familiares políticos',                        val:29},
+  {n:25, label:'Logros personales excepcionales',                           val:28},
+  {n:26, label:'La pareja comienza o deja de trabajar',                     val:26},
+  {n:27, label:'Se inicia o se termina el ciclo de escolarización',         val:26},
+  {n:28, label:'Cambios importantes en las condiciones de vida',            val:25},
+  {n:29, label:'Cambio en los hábitos personales',                          val:24},
+  {n:30, label:'Problemas con el jefe',                                     val:23},
+  {n:31, label:'Cambio en el horario o condiciones de trabajo',             val:20},
+  {n:32, label:'Cambio de residencia',                                      val:20},
+  {n:33, label:'Cambio a una escuela nueva',                                val:20},
+  {n:34, label:'Cambio en la forma o frecuencia de las diversiones',        val:19},
+  {n:35, label:'Cambio en la frecuencia de las actividades religiosas',     val:19},
+  {n:36, label:'Cambio en las actividades sociales',                        val:18},
+  {n:37, label:'Pedir una hipoteca o préstamo menor',                       val:17},
+  {n:38, label:'Cambios en los hábitos del sueño',                         val:16},
+  {n:39, label:'Cambios en el número de reuniones familiares',              val:15},
+  {n:40, label:'Cambio en los hábitos alimentarios',                       val:15},
+  {n:41, label:'Vacaciones',                                                val:13},
+  {n:42, label:'Navidades',                                                 val:12},
+  {n:43, label:'Infracciones menores de la ley',                            val:11}
+];
+
+function holmesCat(total) {
+  if (total < 180) return { cat:'Riesgo bajo', badge:'bg-minima', rango:'<180' };
+  if (total <= 320) return { cat:'Riesgo intermedio', badge:'bg-moderada', rango:'180–320' };
+  return { cat:'Riesgo alto', badge:'bg-grave', rango:'>320' };
+}
+
+function iniciarHolmes() {
+  var wrap = document.getElementById('holmes-items-wrap');
+  wrap.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">' +
+    HOLMES_ITEMS.map(function(item) {
+      return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:0.83rem;border:1px solid var(--border);background:var(--surface);">' +
+        '<input type="checkbox" name="holmes_ev" value="'+item.val+'" data-label="'+item.label+'" onchange="holmesUpdate()"> ' +
+        '<span><strong>'+item.n+'.</strong> '+item.label+'</span>' +
+        '<span style="margin-left:auto;font-family:monospace;color:var(--accent);font-weight:700;white-space:nowrap;">'+item.val+'</span></label>';
+    }).join('') + '</div>';
+  document.getElementById('holmes-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('holmes-form').style.display = 'block';
+  document.getElementById('holmes-resultado').style.display = 'none';
+  holmesUpdate();
+}
+
+function holmesUpdate() {
+  var total = 0;
+  document.querySelectorAll('[name="holmes_ev"]:checked').forEach(function(cb){ total += parseInt(cb.value); });
+  var res = holmesCat(total);
+  document.getElementById('holmes-live').textContent = total;
+  document.getElementById('holmes-live-cat').textContent = total > 0 ? '— '+res.cat : '';
+}
+
+function limpiarHolmes() {
+  if(!confirm('¿Limpiar?'))return;
+  document.querySelectorAll('[name="holmes_ev"]').forEach(function(cb){cb.checked=false;});
+  holmesUpdate();
+}
+
+function calcularHolmes() {
+  var total = 0; var eventos = [];
+  document.querySelectorAll('[name="holmes_ev"]:checked').forEach(function(cb){
+    total += parseInt(cb.value);
+    eventos.push({ label: cb.getAttribute('data-label'), val: parseInt(cb.value) });
+  });
+  if (total === 0 && !confirm('No hay eventos marcados. ¿Continuar de todas formas?')) return;
+  var res = holmesCat(total);
+  var interp = '<p>Puntaje Holmes & Rahe: <strong>'+total+' LCU</strong> — <strong>'+res.cat+'</strong> de enfermedades somáticas ('+res.rango+' puntos).</p>';
+  if (total < 180) interp += '<p>El nivel de estrés acumulado por eventos vitales es bajo. El riesgo de enfermedades relacionadas con el estrés es reducido.</p>';
+  else if (total <= 320) interp += '<p>El nivel de estrés acumulado es intermedio. Existe un riesgo moderado de enfermedades relacionadas con el estrés en los próximos dos años.</p>';
+  else interp += '<p>El nivel de estrés acumulado es alto. El riesgo de enfermedades relacionadas con el estrés es elevado. Se recomienda atención y apoyo psicológico.</p>';
+  if (eventos.length > 0) {
+    interp += '<p>Eventos marcados ('+eventos.length+'): '+eventos.map(function(e){return e.label+' ('+e.val+')'}).join('; ')+'.</p>';
+  }
+  interp += '<p><em>Holmes & Rahe (1967). Social Readjustment Rating Scale. Cortes: &lt;180 bajo · 180–320 intermedio · &gt;320 alto.</em></p>';
+  document.getElementById('holmes-pts').textContent = total;
+  document.getElementById('holmes-cat').textContent = res.cat;
+  document.getElementById('holmes-rango').textContent = 'Rango: '+res.rango;
+  document.getElementById('holmes-badge').textContent = res.cat;
+  document.getElementById('holmes-badge').className = 'badge-grande '+res.badge;
+  document.getElementById('holmes-interp').innerHTML = interp;
+  document.getElementById('holmes-form').style.display = 'none';
+  document.getElementById('holmes-resultado').style.display = 'block';
+  window._holmesTotal = total;
+  window._holmesEventos = eventos;
+}
+
+function guardarHolmes() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('holmes-paciente').value;
+  var fecha = document.getElementById('holmes-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero','error'); return; }
+  var total = window._holmesTotal != null ? window._holmesTotal : parseInt(document.getElementById('holmes-pts').textContent)||0;
+  var cat = document.getElementById('holmes-cat').textContent;
+  supaFetch('/rest/v1/psico_resultados','POST',{
+    user_id:SESSION.user.id, paciente_id:pacId, test:'Holmes-Rahe', fecha:fecha,
+    puntaje_total:total, categoria:cat,
+    datos:{ total:total, eventos: window._holmesEventos||[] }
+  }, SESSION.access_token).then(function(){
+    cargarResultados(); toast('✓ Holmes & Rahe guardado','success');
+    var btn = document.querySelector('.vista.active .btn-primary:last-child');
+    if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
+  }).catch(function(){ toast('Error al guardar','error'); });
+}
+
+// ══ GDS-30 · Escala de Depresión Geriátrica de Yesavage ══════════════════════
+// Yesavage et al. (1983) · 30 ítems Sí/No
+// Clave: 1 punto si responde "No" a ítems 1,5,7,9,15,19,21,27,29,30 (positivos para salud)
+//        1 punto si responde "Sí" al resto (positivos para depresión)
+var YESAVAGE_ITEMS = [
+  {n:1,  text:'¿Está básicamente satisfecho/a con su vida?',                         dep:'NO'},
+  {n:2,  text:'¿Ha renunciado a muchas de sus actividades e intereses?',              dep:'SI'},
+  {n:3,  text:'¿Siente que su vida está vacía?',                                     dep:'SI'},
+  {n:4,  text:'¿Se encuentra a menudo aburrido/a?',                                  dep:'SI'},
+  {n:5,  text:'¿Tiene esperanza en el futuro?',                                      dep:'NO'},
+  {n:6,  text:'¿Sufre molestias por pensamientos que no puede sacarse de la cabeza?', dep:'SI'},
+  {n:7,  text:'¿Tiene a menudo buen ánimo?',                                         dep:'NO'},
+  {n:8,  text:'¿Tiene miedo de que algo le esté pasando?',                           dep:'SI'},
+  {n:9,  text:'¿Se siente feliz muchas veces?',                                      dep:'NO'},
+  {n:10, text:'¿Se siente a menudo abandonado/a?',                                   dep:'SI'},
+  {n:11, text:'¿Está a menudo intranquilo/a e inquieto/a?',                          dep:'SI'},
+  {n:12, text:'¿Prefiere quedarse en casa antes que salir y hacer cosas nuevas?',    dep:'SI'},
+  {n:13, text:'¿Frecuentemente está preocupado/a por el futuro?',                    dep:'SI'},
+  {n:14, text:'¿Encuentra que tiene más problemas de memoria que la mayoría de la gente?', dep:'SI'},
+  {n:15, text:'¿Piensa que es maravilloso vivir?',                                   dep:'NO'},
+  {n:16, text:'¿Se siente a menudo desanimado/a y melancólico/a?',                   dep:'SI'},
+  {n:17, text:'¿Se siente bastante inútil en el medio en que está?',                 dep:'SI'},
+  {n:18, text:'¿Está muy preocupado/a por el pasado?',                               dep:'SI'},
+  {n:19, text:'¿Encuentra la vida muy estimulante?',                                 dep:'NO'},
+  {n:20, text:'¿Es difícil para usted poner en marcha nuevos proyectos?',            dep:'SI'},
+  {n:21, text:'¿Se siente lleno/a de energía?',                                      dep:'NO'},
+  {n:22, text:'¿Siente que su situación es desesperada?',                            dep:'SI'},
+  {n:23, text:'¿Cree que mucha gente está mejor que usted?',                         dep:'SI'},
+  {n:24, text:'¿Frecuentemente está preocupado/a por pequeñas cosas?',               dep:'SI'},
+  {n:25, text:'¿Frecuentemente siente ganas de llorar?',                             dep:'SI'},
+  {n:26, text:'¿Tiene problemas para concentrarse?',                                 dep:'SI'},
+  {n:27, text:'¿Se siente mejor por la mañana al levantarse?',                       dep:'NO'},
+  {n:28, text:'¿Prefiere evitar reuniones sociales?',                                dep:'SI'},
+  {n:29, text:'¿Es fácil para usted tomar decisiones?',                              dep:'NO'},
+  {n:30, text:'¿Su mente está tan clara como lo acostumbraba a estar?',              dep:'NO'}
+];
+
+function iniciarYesavage() {
+  var wrap = document.getElementById('yesavage-items-wrap');
+  wrap.innerHTML = YESAVAGE_ITEMS.map(function(item, i) {
+    return '<div class="bdi-item" style="padding:8px 0;border-bottom:1px solid var(--border);">' +
+      '<div class="bdi-pregunta" style="margin-bottom:8px;">'+item.n+'. '+item.text+'</div>' +
+      '<div style="display:flex;gap:16px;">' +
+        '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem;"><input type="radio" name="yesavage_'+i+'" value="SI"> Sí</label>' +
+        '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.88rem;"><input type="radio" name="yesavage_'+i+'" value="NO"> No</label>' +
+      '</div></div>';
+  }).join('');
+  document.getElementById('yesavage-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('yesavage-form').style.display = 'block';
+  document.getElementById('yesavage-resultado').style.display = 'none';
+}
+
+function limpiarYesavage() { if(!confirm('¿Limpiar?'))return; document.querySelectorAll('[name^="yesavage_"]').forEach(function(r){r.checked=false;}); }
+
+function calcularYesavage() {
+  var total = 0; var sinR = 0;
+  YESAVAGE_ITEMS.forEach(function(item, i) {
+    var s = document.querySelector('[name="yesavage_'+i+'"]:checked');
+    if (s) {
+      if (s.value === item.dep) total++;
+    } else { sinR++; }
+  });
+  if (sinR > 0 && !confirm('Hay '+sinR+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  var cat, rango, badge;
+  if (total <= 9)       { cat='Normal';              rango='0–9';   badge='bg-minima'; }
+  else if (total <= 19) { cat='Depresión leve';      rango='10–19'; badge='bg-moderada'; }
+  else                  { cat='Depresión establecida';rango:'20–30'; badge='bg-grave'; rango='20–30'; }
+  var interp = '<p>Puntaje GDS-30: <strong>'+total+'/30</strong> — <strong>'+cat+'</strong> ('+rango+' puntos).</p>';
+  if (total <= 9) interp += '<p>La puntuación se encuentra dentro del rango de normalidad, sin indicadores de depresión geriátrica clínicamente significativa.</p>';
+  else if (total <= 19) interp += '<p>La puntuación sugiere <strong>depresión leve</strong> en el contexto geriátrico. Se recomienda seguimiento y evaluación clínica complementaria.</p>';
+  else interp += '<p>La puntuación indica una <strong>depresión establecida</strong>. Se recomienda evaluación clínica completa y tratamiento especializado.</p>';
+  interp += '<p><em>Yesavage et al. (1983). Corte clásico: ≥12 anormalidad; ≥15 sensibilidad 84%, especificidad 95%. Burke et al. (1992).</em></p>';
+  document.getElementById('yesavage-pts').textContent = total;
+  document.getElementById('yesavage-cat').textContent = cat;
+  document.getElementById('yesavage-rango').textContent = 'Rango: '+rango;
+  document.getElementById('yesavage-badge').textContent = cat;
+  document.getElementById('yesavage-badge').className = 'badge-grande '+badge;
+  document.getElementById('yesavage-interp').innerHTML = interp;
+  document.getElementById('yesavage-form').style.display = 'none';
+  document.getElementById('yesavage-resultado').style.display = 'block';
+  window._yesavageTotal = total;
+}
+
+function guardarYesavage() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('yesavage-paciente').value;
+  var fecha = document.getElementById('yesavage-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero','error'); return; }
+  var total = window._yesavageTotal != null ? window._yesavageTotal : parseInt(document.getElementById('yesavage-pts').textContent)||0;
+  var cat = document.getElementById('yesavage-cat').textContent;
+  supaFetch('/rest/v1/psico_resultados','POST',{
+    user_id:SESSION.user.id, paciente_id:pacId, test:'GDS-30', fecha:fecha,
+    puntaje_total:total, categoria:cat, datos:{ total:total }
+  }, SESSION.access_token).then(function(){
+    cargarResultados(); toast('✓ GDS-30 guardado','success');
+    var btn = document.querySelector('.vista.active .btn-primary:last-child');
+    if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
+  }).catch(function(){ toast('Error al guardar','error'); });
+}
 
 // ══ BIRLESON (PACES) ═════════════════════════════════════════════════════════
 var BIRLESON_CORTE = 14;
@@ -12242,6 +12942,10 @@ function buildPruebasRealizadasHtml(datos) {
     'CSI': 'Inventario de Estrategias de Afrontamiento (CSI)',
     'SCL-90-R': 'Inventario de Síntomas SCL-90-R',
     'MBI-HSS': 'Inventario de Burnout de Maslach (MBI-HSS)',
+    'CRC': 'Cuestionario de Reserva Cognitiva (CRC)',
+    'PSS-10': 'Escala de Estrés Percibido (PSS-10)',
+    'Holmes-Rahe': 'Escala de Reajuste Psicosocial (Holmes & Rahe)',
+    'GDS-30': 'Escala de Depresión Geriátrica de Yesavage (GDS-30)',
     'ASRS-V1.1': 'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
     'WURS-25': 'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX': 'Cuestionario Disejecutivo (DEX)',
@@ -12258,7 +12962,7 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
     { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX'] },
-    { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI'] },
+    { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'PSS-10', 'Holmes-Rahe', 'GDS-30'] },
     { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
     { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
   ];
@@ -14445,7 +15149,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
-  var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
+  var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var TD_LIST=['ASRS-V1.1','WURS-25','DEX'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
   function tipoTest(t){return NP_LIST.indexOf(t)!==-1?'np':CL_LIST.indexOf(t)!==-1?'cl':TD_LIST.indexOf(t)!==-1?'td':DO_LIST.indexOf(t)!==-1?'do':'cl';}
@@ -14517,7 +15221,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
     {label:'Habilidades visoconstructivas',         tests:['Figura Rey','Test del Reloj (Cacho)']},
     {label:'TDAH',                                  tests:['ASRS-V1.1','WURS-25','DEX']},
-    {label:'Psicología clínica',                    tests:['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI']},
+    {label:'Psicología clínica',                    tests:['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30']},
     {label:'Evaluación del dolor',                  tests:['PCS','CSQ','PBQ','BPI']},
     {label:'Cuestionarios familiares',              tests:['Cuestionarios Familiares']},
   ];
@@ -14697,6 +15401,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.scoreH!=null)addCL('ASRS — Hiper./Impulsividad',d.scoreH,d.pcH?'Pc '+d.pcH:'—');
         if(d.scoreT!=null||d.total_18!=null)addCL('ASRS — Total',d.scoreT||d.total_18,d.pcT?'Pc '+d.pcT:'—');
       } else if(r.test==='WURS-25'){addCL('WURS-25 — Total',r.puntaje_total!=null?r.puntaje_total:r.datos&&r.datos.total!=null?r.datos.total:'—',r.categoria||'—');}
+      else if(r.test==='CRC'){addCL('CRC — Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
+      else if(r.test==='PSS-10'){addCL('PSS-10 — Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
+      else if(r.test==='Holmes-Rahe'){addCL('Holmes & Rahe — Total LCU',r.puntaje_total!=null?r.puntaje_total:'—',r.categoria||'—');}
+      else if(r.test==='GDS-30'){addCL('GDS-30 Yesavage',r.puntaje_total!=null?r.puntaje_total+'/30':'—',r.categoria||'—');}
       else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX Total ('+dv+')',d.total,r.categoria||'—');}
       else if(r.test==='PCS'){addCL('PCS — Total',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='BPI'){
