@@ -467,7 +467,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.69</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.70</div>
     </div>
   </aside>
 
@@ -14984,14 +14984,19 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       '</w:p>'+
     '</w:ftr>';
 
-  // header/footer rels dentro de word/_rels/document.xml.rels
+  // Relaciones del documento (estilos, encabezado, pie)
   var relsXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
     '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>'+
     '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>'+
-    (hasLogoGp ? '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.'+(gpParsed.ext)+'"/>' : '')+
-    (hasLogoCt ? '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image2.'+(ctParsed.ext)+'"/>' : '')+
+    '</Relationships>';
+
+  // Las imágenes del encabezado deben enlazarse desde header1.xml.rels (no desde document.xml.rels)
+  var headerRelsXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    (hasLogoGp ? '<Relationship Id="rImgGP" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.'+(gpParsed.ext)+'"/>' : '')+
+    (hasLogoCt ? '<Relationship Id="rImgCT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image2.'+(ctParsed.ext)+'"/>' : '')+
     '</Relationships>';
 
   var stylesXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
@@ -15012,7 +15017,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
     '<Default Extension="xml" ContentType="application/xml"/>'+
-    '<Default Extension="png" ContentType="image/png"/>'+'<Default Extension="jpeg" ContentType="image/jpeg"/>'+
+    '<Default Extension="png" ContentType="image/png"/>'+
+    '<Default Extension="jpeg" ContentType="image/jpeg"/>'+
+    '<Default Extension="jpg" ContentType="image/jpeg"/>'+
+    (hasLogoGp ? '<Override PartName="/word/media/image1.'+gpParsed.ext+'" ContentType="image/'+(gpParsed.ext==='png'?'png':'jpeg')+'"/>' : '')+
+    (hasLogoCt ? '<Override PartName="/word/media/image2.'+ctParsed.ext+'" ContentType="image/'+(ctParsed.ext==='png'?'png':'jpeg')+'"/>' : '')+
     '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
     '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'+
     '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>'+
@@ -15041,6 +15050,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {name:'word/_rels/document.xml.rels',    data:enc.encode(relsXml)},
     {name:'word/styles.xml',                 data:enc.encode(stylesXml)},
     {name:'word/header1.xml',                data:enc.encode(headerXml)},
+    (hasLogoGp || hasLogoCt ? {name:'word/_rels/header1.xml.rels', data:enc.encode(headerRelsXml)} : null),
     {name:'word/footer1.xml',                data:enc.encode(footerXml)},
     (hasLogoGp ? {name:'word/media/image1.'+gpParsed.ext, data:b64ToBytes(gpParsed.b64)} : null),
     (hasLogoCt ? {name:'word/media/image2.'+ctParsed.ext, data:b64ToBytes(ctParsed.b64)} : null),
