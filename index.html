@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.78</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.79</div>
     </div>
   </aside>
 
@@ -6184,6 +6184,66 @@ var GLOSARIO_TESTS = {
       alto: ['¿El rendimiento elevado es consistente con el nivel educativo y la reserva cognitiva?']
     }
   },
+  'TAVEC·RI-AT': {
+    mide: 'Total de palabras recordadas en los 5 ensayos de aprendizaje (máximo 80). Refleja la capacidad global de adquisición de material verbal a lo largo de la tarea.',
+    interpretacion: {
+      bajo: 'Curva de aprendizaje muy limitada. Compatible con compromiso significativo de la memoria de trabajo y la codificación verbal. Considerar perfil hipocámpico.',
+      limite: 'Adquisición verbal por debajo del rango esperado. Evaluar si la curva ensayo a ensayo es plana o ascendente.',
+      normal: 'Adquisición verbal dentro del rango normativo.',
+      alto: 'Capacidad de aprendizaje verbal por encima del rango esperado.'
+    },
+    preguntas: {
+      bajo: ['¿La curva de aprendizaje es completamente plana o hay alguna mejora entre ensayos?', '¿El total bajo refleja dificultad desde el primer ensayo o fatiga progresiva?', '¿Es consistente con el rendimiento en RL-LP y RCL-LP?'],
+      limite: ['¿La curva es ascendente aunque por debajo de la norma?', '¿El rendimiento mejora en los ensayos finales?'],
+      normal: ['¿La curva de adquisición es homogénea a lo largo de los ensayos?'],
+      alto: ['¿El aprendizaje rápido es consistente con la reserva cognitiva del paciente?']
+    }
+  },
+  'TAVEC·RL-LP': {
+    mide: 'Palabras recordadas libremente tras un intervalo largo (aprox. 20 minutos). Refleja la consolidación y retención de material verbal en memoria episódica.',
+    interpretacion: {
+      bajo: 'Compromiso significativo de la consolidación mnésica verbal. Sin beneficio de clave sugiere perfil hipocámpico (tipo Alzheimer). Con beneficio de clave sugiere perfil estratégico (subcortical o ejecutivo).',
+      limite: 'Posible dificultad en la retención diferida. Evaluar el beneficio de clave para orientar el perfil.',
+      normal: 'Retención verbal a largo plazo preservada.',
+      alto: 'Excelente retención verbal diferida.'
+    },
+    preguntas: {
+      bajo: ['¿Hay beneficio de clave semántica respecto al recuerdo libre?', '¿La pérdida diferida es mayor que en el recuerdo a corto plazo?', '¿El patrón sugiere perfil hipocámpico (sin beneficio de clave) o estratégico?'],
+      limite: ['¿El rendimiento en LP es peor que en CP sugiriendo consolidación deficiente?', '¿La clave semántica mejora el recuerdo diferido?'],
+      normal: ['¿La retención diferida es consistente con el aprendizaje inicial?'],
+      alto: ['¿La excelente retención diferida es consistente con el RI-AT?']
+    }
+  },
+  'TAVEC·RCL-LP': {
+    mide: 'Palabras recordadas con clave semántica tras intervalo largo. La comparación con RL-LP permite distinguir déficit de acceso (mejora con clave) vs. déficit de almacenamiento (no mejora).',
+    interpretacion: {
+      bajo: 'Sin beneficio de clave: déficit de almacenamiento, compatible con perfil hipocámpico. Con beneficio relativo: déficit de acceso, perfil más estratégico o subcortical.',
+      limite: 'Posible dificultad en la recuperación con apoyo semántico.',
+      normal: 'Recuperación con clave semántica preservada.',
+      alto: 'Excelente recuperación con clave semántica.'
+    },
+    preguntas: {
+      bajo: ['¿El RCL-LP es mejor que el RL-LP (beneficio de clave)?', '¿La ausencia de beneficio de clave orienta hacia perfil hipocámpico?', '¿El rendimiento en reconocimiento también está comprometido?'],
+      limite: ['¿La clave semántica mejora el rendimiento respecto al RL-LP?', '¿La diferencia RL-LP vs RCL-LP es clínicamente significativa?'],
+      normal: ['¿La recuperación con clave es consistente con el RL-LP?'],
+      alto: ['¿El excelente rendimiento con clave refleja estrategias de codificación eficaces?']
+    }
+  },
+  'TAVEC·Discrim': {
+    mide: 'Índice de discriminabilidad en el reconocimiento. Refleja la capacidad de identificar correctamente las palabras de la lista original distinguiéndolas de distractores. Combina aciertos y falsos positivos.',
+    interpretacion: {
+      bajo: 'Dificultad significativa para discriminar palabras aprendidas de distractores. Compatible con compromiso de la memoria de reconocimiento.',
+      limite: 'Posible dificultad en la discriminación mnésica.',
+      normal: 'Discriminabilidad en el reconocimiento preservada.',
+      alto: 'Excelente capacidad de reconocimiento y discriminación.'
+    },
+    preguntas: {
+      bajo: ['¿El índice bajo se debe a pocos aciertos, muchos falsos positivos, o ambos?', '¿El reconocimiento deficiente con recuerdo libre también deficiente sugiere compromiso de almacenamiento?', '¿Los falsos positivos son elevados (tendencia a la confabulación)?'],
+      limite: ['¿El índice está afectado principalmente por falsos positivos o por bajo número de aciertos?', '¿La discriminabilidad mejora con más tiempo de respuesta?'],
+      normal: ['¿El reconocimiento preservado contrasta con el recuerdo libre?'],
+      alto: ['¿La excelente discriminabilidad es consistente con el perfil general de memoria?']
+    }
+  },
   'Rey Verbal': {
     mide: 'Test de aprendizaje verbal de 15 palabras. Evalúa memoria inmediata, curva de aprendizaje y recuerdo diferido.',
     interpretacion: {
@@ -6470,7 +6530,6 @@ function resolverTestGlosario(testNombre) {
   if (!testNombre) return null;
   if (GLOSARIO_TESTS[testNombre]) return testNombre;
   if (GLOSARIO_ALIAS[testNombre]) return GLOSARIO_ALIAS[testNombre];
-  if (testNombre.indexOf('TAVEC·') === 0) return 'TAVEC';
   return null;
 }
 
@@ -6963,7 +7022,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
       { dom: 'MEMORIA', tests: [
         { t:'Rey Verbal', fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){ if(v.z!==null&&v.z!==undefined) addPunto(v.label.replace('Ensayo ','A').replace('Recuerdo ','Rec. '),v.z,'MEMORIA','Rey Verbal'); });}else{addPunto('Rey Verbal',r.puntaje_z,'MEMORIA','Rey Verbal');} } },
         { t:'BEM 144 Signoret', fn: function(r){ addPunto('BEM', r.puntaje_z, 'MEMORIA', 'BEM 144 Signoret'); } },
-        { t:'TAVEC', fn: function(r){ var d=r.datos||{}; var vars=[['RI-AT',d.zAT],['RL-LP',d.zRLLP],['RCL-LP',d.zRCLLP],['Discrim',d.zDiscrim]]; vars.forEach(function(v){if(v[1]!==null&&v[1]!==undefined) addPunto('TAVEC·'+v[0],v[1],'MEMORIA','TAVEC');}); } },
+        { t:'TAVEC', fn: function(r){ var d=r.datos||{}; var vars=[['RI-AT',d.zAT],['RL-LP',d.zRLLP],['RCL-LP',d.zRCLLP],['Discrim',d.zDiscrim]]; vars.forEach(function(v){if(v[1]!==null&&v[1]!==undefined) addPunto('TAVEC·'+v[0],v[1],'MEMORIA','TAVEC·'+v[0]);}); } },
       ]},
       { dom: 'ATENCIÓN', tests: [
         { t:'D2',           fn: function(r){ var d=r.datos||{}; var idx=d.indices||{}; addPunto('d2 CON',idx.CON&&idx.CON.z,'ATENCIÓN','D2'); addPunto('d2 TOT',idx.TOT&&idx.TOT.z,'ATENCIÓN','D2'); } },
@@ -7202,21 +7261,21 @@ function renderCuestionariosFam(d) {
           var tavecVars = [
             ['RI-A1 · 1er ensayo',   d.v1,  gi2t!==null?TAVEC_BAR.v1[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v1[gi2t].d:null,  d.zA1],
             ['RI-A5 · 5to ensayo',   d.v2,  gi2t!==null?TAVEC_BAR.v2[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v2[gi2t].d:null,  d.zA5],
-            ['RI-AT · Total ensayos', d.v3,  gi2t!==null?TAVEC_BAR.v3[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v3[gi2t].d:null,  d.zAT],
+            ['RI-AT · Total 5 ensayos', d.v3,  gi2t!==null?TAVEC_BAR.v3[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v3[gi2t].d:null,  d.zAT],
             ['RI-B · Lista B',        d.v4,  gi2t!==null?TAVEC_BAR.v4[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v4[gi2t].d:null,  d.zRIB],
             ['RL-CP · Rec. libre CP', d.v8,  gi2t!==null?TAVEC_BAR.v8[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v8[gi2t].d:null,  d.zRLCP],
             ['RCL-CP · Claves CP',    d.v9,  gi2t!==null?TAVEC_BAR.v9[gi2t].m:null,  gi2t!==null?TAVEC_BAR.v9[gi2t].d:null,  d.zRCLCP],
             ['RL-LP · Rec. libre LP', d.v10, gi2t!==null?TAVEC_BAR.v10[gi2t].m:null, gi2t!==null?TAVEC_BAR.v10[gi2t].d:null, d.zRLLP],
             ['RCL-LP · Claves LP',    d.v11, gi2t!==null?TAVEC_BAR.v11[gi2t].m:null, gi2t!==null?TAVEC_BAR.v11[gi2t].d:null, d.zRCLLP],
             ['P · Perseveraciones',   d.v20, gi2t!==null?TAVEC_BAR.v20[gi2t].m:null, gi2t!==null?TAVEC_BAR.v20[gi2t].d:null, d.zP],
-            ['I-RL · Intrusiones RL', d.v21, gi2t!==null?TAVEC_BAR.v21[gi2t].m:null, gi2t!==null?TAVEC_BAR.v21[gi2t].d:null, d.zIRL],
-            ['I-RCL · Intrusiones C', d.v22, gi2t!==null?TAVEC_BAR.v22[gi2t].m:null, gi2t!==null?TAVEC_BAR.v22[gi2t].d:null, d.zIRCL],
-            ['Recon-Ac · Aciertos',   d.v23, gi2t!==null?TAVEC_BAR.v23[gi2t].m:null, gi2t!==null?TAVEC_BAR.v23[gi2t].d:null, d.zRecon],
+            ['I-RL · Intrusiones recuerdo libre', d.v21, gi2t!==null?TAVEC_BAR.v21[gi2t].m:null, gi2t!==null?TAVEC_BAR.v21[gi2t].d:null, d.zIRL],
+            ['I-RCL · Intrusiones con claves', d.v22, gi2t!==null?TAVEC_BAR.v22[gi2t].m:null, gi2t!==null?TAVEC_BAR.v22[gi2t].d:null, d.zIRCL],
+            ['Recon-Ac · Aciertos reconocimiento', d.v23, gi2t!==null?TAVEC_BAR.v23[gi2t].m:null, gi2t!==null?TAVEC_BAR.v23[gi2t].d:null, d.zRecon],
             ['FP · Falsos positivos',  d.v24, gi2t!==null?TAVEC_BAR.v24[gi2t].m:null, gi2t!==null?TAVEC_BAR.v24[gi2t].d:null, d.zFP],
-            ['Discrim',               d.v25, gi2t!==null?TAVEC_BAR.v25[gi2t].m:null, gi2t!==null?TAVEC_BAR.v25[gi2t].d:null, d.zDiscrim]
+            ['Discrim · Discriminabilidad', d.v25, gi2t!==null?TAVEC_BAR.v25[gi2t].m:null, gi2t!==null?TAVEC_BAR.v25[gi2t].d:null, d.zDiscrim]
           ];
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)</td></tr>';
-          tavecVars.forEach(function(tv){ if(tv[1]!==null&&tv[1]!==undefined) rows += filaTabla(tv[0], tv[1], tv[2], tv[3], tv[4], r.fecha, notaTAVEC); });
+          tavecVars.forEach(function(tv){ rows += filaTabla(tv[0], tv[1], tv[2], tv[3], tv[4], r.fecha, notaTAVEC); });
 
         } else if (testNombre === 'BEM 144 Signoret') {
           // Calcular Z desde baremos + grupo edad del paciente
@@ -15837,6 +15896,93 @@ function _zHdrRow() {
   return _wRow(cells, {hdr:true});
 }
 
+// ── Tabla TAVEC en Word (6 columnas, sin grilla Z) ─────────────────────
+var TAVEC_WORD_COLS = [3600, 1000, 1000, 1000, 1000, 4800];
+
+function tavecInterpWord(z, isError) {
+  if (z === null || z === undefined || isNaN(parseFloat(z))) return { label: '—', color: '888780' };
+  var zf = parseFloat(z);
+  if (isError) {
+    if (zf > 1)      return { label: 'Dificultad elevada', color: 'C53030' };
+    if (zf > 0.5)    return { label: 'Dificultad moderada', color: 'E07B00' };
+    if (zf > -0.5)   return { label: 'Normal', color: '2E7A4F' };
+    if (zf > -1)     return { label: 'Normal bajo', color: '639922' };
+    if (zf > -1.5)   return { label: 'Normal alto', color: '2E7A4F' };
+    return { label: 'Lím. superior norm.', color: '2563EB' };
+  }
+  if (zf > 1)        return { label: 'Lím. superior norm.', color: '2563EB' };
+  if (zf > 0.5)      return { label: 'Normal alto', color: '2E7A4F' };
+  if (zf >= -0.5)    return { label: 'Normal', color: '2E7A4F' };
+  if (zf >= -1)      return { label: 'Normal bajo', color: '639922' };
+  if (zf >= -1.5)    return { label: 'Dificultad leve', color: 'BA7517' };
+  if (zf >= -2)      return { label: 'Dificultad moderada', color: 'E07B00' };
+  return { label: 'Dificultad elevada', color: 'C53030' };
+}
+
+function _tavecWordHdr() {
+  var hdrFill = 'E8F4E0';
+  function hc(txt, w) {
+    return _wCell(_wPar(_wRun(txt, { sz: 18, bold: true, color: '214B1A', font: 'Arial' }), { align: 'center', before: 20, after: 20 }), { w: w, fill: hdrFill, hdrBorder: true });
+  }
+  return _wRow([
+    hc('Variable', TAVEC_WORD_COLS[0]),
+    hc('PB', TAVEC_WORD_COLS[1]),
+    hc('M', TAVEC_WORD_COLS[2]),
+    hc('DS', TAVEC_WORD_COLS[3]),
+    hc('Z', TAVEC_WORD_COLS[4]),
+    hc('Interpretación', TAVEC_WORD_COLS[5])
+  ], { hdr: true });
+}
+
+function _tavecWordDataRow(label, pb, m, ds, z, isError, isEven) {
+  var bg = isEven ? 'F2F2F2' : 'FFFFFF';
+  var interp = tavecInterpWord(z, isError);
+  var pbStr = pb !== null && pb !== undefined ? String(pb) : '—';
+  var mStr = m !== null && m !== undefined ? parseFloat(m).toFixed(2) : '—';
+  var dsStr = ds !== null && ds !== undefined ? parseFloat(ds).toFixed(2) : '—';
+  var zStr = z !== null && z !== undefined ? parseFloat(z).toFixed(2) : '—';
+  return _wRow([
+    _wCell(_wPar(_wRun(label, { sz: 20, font: 'Arial', color: '000000' }), { before: 20, after: 20 }), { w: TAVEC_WORD_COLS[0], fill: bg }),
+    _wCell(_wPar(_wRun(pbStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[1], fill: bg }),
+    _wCell(_wPar(_wRun(mStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[2], fill: bg }),
+    _wCell(_wPar(_wRun(dsStr, { sz: 20, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[3], fill: bg }),
+    _wCell(_wPar(_wRun(zStr, { sz: 20, bold: true, font: 'Arial', color: '000000' }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[4], fill: bg }),
+    _wCell(_wPar(_wRun(interp.label, { sz: 20, bold: true, font: 'Arial', color: interp.color }), { align: 'center', before: 20, after: 20 }), { w: TAVEC_WORD_COLS[5], fill: bg })
+  ]);
+}
+
+function _tavecWordNestedRow(d, gi2tw) {
+  var defs = [
+    ['RI-A1 · 1er ensayo', 'v1', 'zA1', false],
+    ['RI-A5 · 5to ensayo', 'v2', 'zA5', false],
+    ['RI-AT · Total 5 ensayos', 'v3', 'zAT', false],
+    ['RI-B · Lista B', 'v4', 'zRIB', false],
+    ['RL-CP · Rec. libre CP', 'v8', 'zRLCP', false],
+    ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false],
+    ['RL-LP · Rec. libre LP', 'v10', 'zRLLP', false],
+    ['RCL-LP · Claves LP', 'v11', 'zRCLLP', false],
+    ['P · Perseveraciones', 'v20', 'zP', true],
+    ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true],
+    ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true],
+    ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false],
+    ['FP · Falsos positivos', 'v24', 'zFP', true],
+    ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false]
+  ];
+  var innerRows = [_tavecWordHdr()];
+  defs.forEach(function(def, idx) {
+    var vk = def[1], zk = def[2];
+    var pb = d[vk];
+    var z = d[zk];
+    var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[vk]) ? TAVEC_BAR[vk][gi2tw] : null;
+    innerRows.push(_tavecWordDataRow(def[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, def[3], idx % 2 === 0));
+  });
+  var innerTable = _wTable(innerRows, TAVEC_WORD_COLS);
+  var totalW = COL_WIDTHS_HDR.reduce(function(a, b) { return a + b; }, 0);
+  return _wRow([
+    _wCell(innerTable, { w: totalW, span: COL_WIDTHS_HDR.length, fill: 'FFFFFF' })
+  ]);
+}
+
 // ── Generador principal ───────────────────────────────────────────────
 function generarWordHistorial() {
   var filtro = document.getElementById('historial-filtro-pac');
@@ -15977,19 +16123,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(tn==='Rey Verbal'&&d.variables&&d.variables.length){
           d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});
         } else if(tn==='TAVEC'){
-          var gi2tw=d.gi?d.gi-1:null;
-          var tvars=[
-            ['RI-A1 · 1er ensayo',d.v1,gi2tw!==null?TAVEC_BAR.v1[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v1[gi2tw].d:null,d.zA1,null],
-            ['RI-A5 · 5to ensayo',d.v2,gi2tw!==null?TAVEC_BAR.v2[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v2[gi2tw].d:null,d.zA5,null],
-            ['RI-AT · Total 5 ensayos',d.v3,gi2tw!==null?TAVEC_BAR.v3[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v3[gi2tw].d:null,d.zAT,null],
-            ['RI-B · Lista B',d.v4,gi2tw!==null?TAVEC_BAR.v4[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v4[gi2tw].d:null,d.zRIB,null],
-            ['RL-CP · Rec. libre CP',d.v8,gi2tw!==null?TAVEC_BAR.v8[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v8[gi2tw].d:null,d.zRLCP,null],
-            ['RCL-CP · Claves CP',d.v9,gi2tw!==null?TAVEC_BAR.v9[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v9[gi2tw].d:null,d.zRCLCP,null],
-            ['RL-LP · Rec. libre LP',d.v10,gi2tw!==null?TAVEC_BAR.v10[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v10[gi2tw].d:null,d.zRLLP,null],
-            ['RCL-LP · Claves LP',d.v11,gi2tw!==null?TAVEC_BAR.v11[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v11[gi2tw].d:null,d.zRCLLP,null],
-            ['Discrim',d.v25,gi2tw!==null?TAVEC_BAR.v25[gi2tw].m:null,gi2tw!==null?TAVEC_BAR.v25[gi2tw].d:null,d.zDiscrim,null]
-          ];
-          tvars.forEach(function(tv){if(tv[1]!==null&&tv[1]!==undefined) add(tv[0],tv[1],tv[2],tv[3],tv[4],null);});
+          var gi2tw = (d.gi != null && d.gi !== undefined) ? d.gi - 1 : null;
+          rows.push(_zGrillaRows('TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)', null, null, null, null, null, false, true));
+          rows.push(_tavecWordNestedRow(d, gi2tw));
 
         } else if(tn==='BEM 144 Signoret'){
           var gi=d.grupo_edad!=null?d.grupo_edad:bemGrupo;
@@ -16858,10 +16994,10 @@ function renderPerfilZ() {
       } else if (tn === 'Rey Verbal' && d.variables && d.variables.length) {
         d.variables.forEach(function(v){ filas.push({lbl: v.label, z: v.z}); });
       } else if (tn === 'TAVEC') {
-        if (d.zAT    != null) filas.push({lbl:'TAVEC RI-AT', z: d.zAT});
-        if (d.zRLLP  != null) filas.push({lbl:'TAVEC RL-LP', z: d.zRLLP});
-        if (d.zRCLLP != null) filas.push({lbl:'TAVEC RCL-LP', z: d.zRCLLP});
-        if (d.zDiscrim!=null) filas.push({lbl:'TAVEC Discrim', z: d.zDiscrim});
+        if (d.zAT != null) filas.push({lbl:'TAVEC·RI-AT', z: d.zAT, glosario: 'TAVEC·RI-AT'});
+        if (d.zRLLP != null) filas.push({lbl:'TAVEC·RL-LP', z: d.zRLLP, glosario: 'TAVEC·RL-LP'});
+        if (d.zRCLLP != null) filas.push({lbl:'TAVEC·RCL-LP', z: d.zRCLLP, glosario: 'TAVEC·RCL-LP'});
+        if (d.zDiscrim != null) filas.push({lbl:'TAVEC·Discrim', z: d.zDiscrim, glosario: 'TAVEC·Discrim'});
       } else if (tn === 'D2') {
         var idx = d.indices || {};
         if (idx.CON && idx.CON.z != null) filas.push({lbl:'D2 CON', z: idx.CON.z});
@@ -16884,8 +17020,9 @@ function renderPerfilZ() {
         if (fila.z === null || fila.z === undefined) return;
         hayDatos = true;
         var c = zColor(fila.z);
-        var lblCell = resolverTestGlosario(tn)
-          ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(tn) + '" data-glosario-z="' + fila.z + '">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
+        var gKey = fila.glosario || tn;
+        var lblCell = resolverTestGlosario(gKey)
+          ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(gKey) + '" data-glosario-z="' + fila.z + '">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
           : fila.lbl;
         html += '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 8px;border-radius:5px;margin-bottom:2px;background:var(--surface);">';
         html += '<span style="font-size:0.78rem;color:var(--text);">' + lblCell + '</span>';
