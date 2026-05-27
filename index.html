@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.82</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.83</div>
     </div>
   </aside>
 
@@ -6095,18 +6095,54 @@ var GLOSARIO_TESTS = {
     }
   },
   'TMT A-B': {
-    mide: 'Evalúa velocidad de procesamiento y atención sostenida (Parte A) y flexibilidad cognitiva y atención alternante (Parte B).',
+    dominio: 'Funciones ejecutivas · Atención',
+    mide: 'Trail Making Test (Fernández, Marino y Alderete, 2002). Tarea multicomponente: une estímulos en orden lo más rápido posible. Parte A: números (1–25). Parte B: alternancia número-letra (1-A-2-B…). En A predominan velocidad de procesamiento, atención focalizada/selectiva, búsqueda visual y motricidad fina; en B se suman control inhibitorio, cambio atencional y flexibilidad cognitiva (activación preferente prefrontal dorsolateral y cingulada).',
+    invertirZ: true,
     interpretacion: {
-      bajo: 'Compromiso significativo de velocidad de procesamiento y/o flexibilidad cognitiva. Compatible con disfunción fronto-subcortical.',
-      limite: 'Posible compromiso leve en velocidad de procesamiento o atención alternante. Integrar con el resto del perfil ejecutivo.',
-      normal: 'Velocidad de procesamiento y flexibilidad cognitiva preservadas.',
-      alto: 'Adecuada velocidad de procesamiento y flexibilidad cognitiva.'
+      bajo: 'Rendimiento global del trazo muy lento respecto a la norma (edad y escolaridad). Compatible con enlentecimiento psicomotor y/o disfunción fronto-subcortical; integrar A vs B y diferencia B−A.',
+      limite: 'Tiempos de ejecución en límite. Valorar ansiedad, fatiga, visión, motricidad y medicación antes de inferir déficit ejecutivo.',
+      normal: 'Velocidad y flexibilidad en rango esperado para el grupo normativo.',
+      alto: 'Ejecución rápida dentro o por encima de la norma; contrastar con queja subjetiva y resto del perfil atencional-ejecutivo.'
     },
     preguntas: {
-      bajo: ['¿El compromiso es mayor en velocidad (TMT-A) o en flexibilidad (TMT-B)?', '¿La diferencia B-A está desproporcionadamente aumentada?', '¿Hay signos conductuales de disfunción ejecutiva en la entrevista?'],
-      limite: ['¿Influyeron factores de ansiedad o fatiga en el tiempo de ejecución?', '¿El resultado es consistente con el FAB y el IFS?', '¿Hay factores motores o visuales que puedan explicar el rendimiento?'],
-      normal: ['¿La preservación ejecutiva es consistente con la queja del paciente?', '¿El rendimiento es homogéneo entre la Parte A y la Parte B?'],
-      alto: ['¿El rendimiento elevado es consistente con el resto del perfil ejecutivo?']
+      bajo: ['¿El enlentecimiento es mayor en B que en A (índice de flexibilidad)?', '¿Hay errores por omisión, persecución o levantar el lápiz?', '¿Es coherente con Stroop PC, FAB, IFS y TMT-B aislado?'],
+      limite: ['¿Influyeron ansiedad, dolor, visión o mano no dominante?', '¿El paciente entendió la consigna de alternancia en B?', '¿D2, SDMT y fluencias muestran el mismo patrón de velocidad?'],
+      normal: ['¿Los tiempos son homogéneos entre A y B?', '¿La queja de “lentitud” concuerda con el rendimiento?'],
+      alto: ['¿La rapidez se logró con pocos errores cualitativos?']
+    }
+  },
+  'TMT·A': {
+    dominio: 'Atención · Velocidad',
+    mide: 'TMT Parte A: enlazar números del 1 al 25 en orden ascendente. Tiempo en segundos (más tiempo = peor). Evalúa principalmente velocidad de procesamiento, atención sostenida y focalizada, búsqueda visual en campo disperso y coordinación visomotora fina; demanda memoria operativa para mantener la consigna y el último número alcanzado.',
+    invertirZ: true,
+    interpretacion: {
+      bajo: 'Tiempo de ejecución muy elevado. Sugiere enlentecimiento significativo en procesamiento y/o atención; sensible al envejecimiento y a daño cerebral difuso o frontal leve.',
+      limite: 'Ejecución algo más lenta de lo esperado. Descartar componente motor, visual o emocional antes de atribuir a atención.',
+      normal: 'Velocidad de trazo numérico y atención en rango normativo para edad y escolaridad.',
+      alto: 'Buen tiempo en Parte A; favorable para comparar el coste adicional de la Parte B.'
+    },
+    preguntas: {
+      bajo: ['¿Hubo omisiones, persecuciones o correcciones frecuentes?', '¿El enlentecimiento empeora hacia el final (fatiga)?', '¿D2, SDMT y WAIS velocidad concuerdan?'],
+      limite: ['¿Es la primera prueba de la sesión (efecto práctica)?', '¿Hay déficit visual no corregido?'],
+      normal: ['¿El tiempo A es proporcional al de B?', '¿Estrategia de búsqueda sistemática en el protocolo?'],
+      alto: ['¿La rapidez en A contrasta con B lento (problema de flexibilidad)?']
+    }
+  },
+  'TMT·B': {
+    dominio: 'Funciones ejecutivas',
+    mide: 'TMT Parte B: alternar número y letra (1-A-2-B…). Mayor demanda de búsqueda visual, cambio mental y control inhibitorio (no seguir la secuencia numérica automática). Correlaciona con otras medidas ejecutivas; referente de flexibilidad cognitiva (Bowie & Harvey, 2006).',
+    invertirZ: true,
+    interpretacion: {
+      bajo: 'Tiempo B muy prolongado. Compatible con rigidez cognitiva, dificultad de cambio atencional o desinhibición (perseverar en números); integrar diferencia B−A y Stroop PC.',
+      limite: 'Flexibilidad/atención alternante en límite. Revisar errores de secuencia y si A también está afectado.',
+      normal: 'Alternancia número-letra en tiempo esperado; control ejecutivo preservado en esta demanda.',
+      alto: 'Buena flexibilidad y velocidad en B; coherente con perfil ejecutivo conservado.'
+    },
+    preguntas: {
+      bajo: ['¿Los errores son de secuencia (perseveración numérica) o de búsqueda?', '¿B−A está desproporcionado respecto a la norma?', '¿FAB, IFS Go-No Go y Stroop PC están comprometidos?'],
+      limite: ['¿El paciente necesitó recordatorios de la regla A-B?', '¿A está preservado y solo B falla (selectividad ejecutiva)?'],
+      normal: ['¿La diferencia B−A es clínicamente esperada?', '¿Conducta observada muestra rigidez fuera del test?'],
+      alto: ['¿Mantiene precisión con tiempo rápido en B?']
     }
   },
   'FAB': {
@@ -6155,18 +6191,84 @@ var GLOSARIO_TESTS = {
     }
   },
   'Stroop': {
-    mide: 'Evalúa velocidad de procesamiento (Palabra, Color) y control inhibitorio (Color-Palabra). El índice de interferencia refleja inhibición de respuesta automática.',
+    dominio: 'Funciones ejecutivas · Control inhibitorio',
+    mide: 'Test de Colores y Palabras — Stroop (Golden). Tres láminas: P (leer palabras), C (nombrar colores), PC (nombrar color de tinta incongruente). El índice de interferencia (PC − PC′) refleja el costo de inhibir la lectura automática. Baremo: puntuaciones T corregidas por edad; Z = (PT − 50) / 10.',
     interpretacion: {
-      bajo: 'Compromiso del control inhibitorio y/o velocidad de procesamiento. Puede observarse en TDAH, lesiones frontales y deterioro cognitivo.',
-      limite: 'Posible dificultad en inhibición o velocidad. Integrar con el perfil ejecutivo completo.',
-      normal: 'Control inhibitorio y velocidad de procesamiento preservados.',
-      alto: 'Adecuado control inhibitorio y velocidad de procesamiento.'
+      bajo: 'Rendimiento global bajo en velocidad y/o control inhibitorio según la subprueba más afectada.',
+      limite: 'Desempeño en límite; desglosar P, C, PC e interferencia antes de concluir.',
+      normal: 'Velocidad y resistencia a la interferencia en rango esperado.',
+      alto: 'Buen rendimiento global en Stroop respecto a la norma.'
     },
     preguntas: {
-      bajo: ['¿El déficit es en velocidad (P y C) o específicamente en inhibición (PC)?', '¿El índice de interferencia está afectado de forma desproporcionada?', '¿Es consistente con el rendimiento en el TMT-B y el Go-No Go del IFS?'],
-      limite: ['¿La dificultad es mayor en la condición Color-Palabra?', '¿Influyeron factores de ansiedad o fatiga en el rendimiento?'],
-      normal: ['¿La preservación del control inhibitorio es consistente con el perfil ejecutivo?'],
-      alto: ['¿El rendimiento elevado en Stroop es consistente con el resto del perfil frontal?']
+      bajo: ['¿El déficit es de velocidad (P, C) o de inhibición (PC, interferencia)?', '¿La interferencia está desproporcionada respecto a P y C?', '¿Coincide con TMT-B, FAB conflicto y Go-No Go del IFS?'],
+      limite: ['¿Hubo correcciones, titubeos o fatiga en la lámina PC?', '¿El paciente lee la palabra en lugar de nombrar el color?'],
+      normal: ['¿El patrón P ≤ C ≤ PC es el esperado?', '¿Queja de concentración concuerda con el rendimiento?'],
+      alto: ['¿El rendimiento alto es homogéneo en las tres láminas?']
+    }
+  },
+  'Stroop·P': {
+    dominio: 'Atención · Velocidad',
+    mide: 'Lámina Palabras (P): lectura rápida de palabras de color impresas en negro. Refleja velocidad de procesamiento lector automatizado y atención sostenida; baseline para comparar con C y PC.',
+    interpretacion: {
+      bajo: 'Lectura muy lenta respecto a la norma. Puede indicar enlentecimiento psicomotor global, baja escolaridad lectora o fatiga.',
+      limite: 'Velocidad lectora en límite inferior. Verificar visión, ansiedad y familiaridad con la tarea.',
+      normal: 'Velocidad de lectura en rango esperado para la edad corregida.',
+      alto: 'Lectura rápida; buena base para evaluar el costo de interferencia en PC.'
+    },
+    preguntas: {
+      bajo: ['¿P bajo pero C y PC preservados (problema lector específico)?', '¿Dislexia, baja escolaridad o déficit visual explican P?', '¿Es consistente con TMT-A y fluencias?'],
+      limite: ['¿El paciente titubea por precisión o por lentitud real?'],
+      normal: ['¿P es coherente con C y con la interferencia calculada?', '¿Corrección por edad fue la adecuada?'],
+      alto: ['¿P alto contrasta con PC bajo (selectividad inhibitoria)?']
+    }
+  },
+  'Stroop·C': {
+    dominio: 'Atención · Velocidad',
+    mide: 'Lámina Color (C): nombrar el color de manchas o palabras “XXXX” impresas en colores. Evalúa velocidad de denominación cromática y atención selectiva al atributo color sin conflicto semántico.',
+    interpretacion: {
+      bajo: 'Denominación cromática muy lenta. Puede reflejar enlentecimiento atencional, dificultad nominal del color o componente visuoperceptivo.',
+      limite: 'Velocidad de nombrar colores en límite. Comparar con P para ver si el enlentecimiento es global.',
+      normal: 'Denominación de colores en rango normativo corregido por edad.',
+      alto: 'Buena velocidad en condición sin conflicto palabra-significado.'
+    },
+    preguntas: {
+      bajo: ['¿C bajo con P preservado sugiere problema específico del color?', '¿Anomia o trastorno visual del color?', '¿C y P bajos juntos sugieren enlentecimiento global?'],
+      limite: ['¿Confunde nombres de colores o titubea por precisión?'],
+      normal: ['¿La relación P–C es la esperada antes de analizar PC?', '¿Coherente con SDMT y D2?'],
+      alto: ['¿C alto pero PC bajo (conflicto selectivo)?']
+    }
+  },
+  'Stroop·PC': {
+    dominio: 'Funciones ejecutivas · Inhibición',
+    mide: 'Lámina Palabra-Color (PC): nombrar el color de la tinta ignorando la palabra. Mide control inhibitorio sobre la lectura automatizada, análogo al conflicto del TMT-B.',
+    interpretacion: {
+      bajo: 'Rendimiento muy bajo en condición incongruente. Compatible con déficit de inhibición y/o enlentecimiento bajo demanda conflictiva.',
+      limite: 'Control inhibitorio en límite. Observar si lee la palabra en lugar del color.',
+      normal: 'Capacidad de inhibir la lectura y nombrar el color en rango esperado.',
+      alto: 'Buen control inhibitorio en la tarea de conflicto.'
+    },
+    preguntas: {
+      bajo: ['¿PC es peor que P y C de forma desproporcionada?', '¿El índice de interferencia está elevado?', '¿Coincide con TMT-B, FAB conflicto e IFS?'],
+      limite: ['¿Errores por leer la palabra en lugar del color?', '¿Mejora con instrucción reforzada?'],
+      normal: ['¿PC coherente con interferencia y con TMT-B?', '¿Estrategia de nombrar solo el color fue explícita?'],
+      alto: ['¿PC alto con interferencia baja (buena resistencia)?']
+    }
+  },
+  'Stroop·Int': {
+    dominio: 'Funciones ejecutivas · Interferencia',
+    invertirZ: true,
+    mide: 'Índice de interferencia: PC corregido − PC′, con PC′ = (P×C)/(P+C). Z negativo = mayor susceptibilidad a la interferencia; Z positivo = menor interferencia relativa.',
+    interpretacion: {
+      bajo: 'Interferencia elevada (Z bajo en baremo). Gran costo de la incongruencia: dificultad para inhibir la lectura automática.',
+      limite: 'Interferencia en límite. Integrar si P y C están preservados o también bajos.',
+      normal: 'Costo de interferencia dentro del rango esperado para edad.',
+      alto: 'Poca interferencia relativa; buena resistencia al efecto Stroop.'
+    },
+    preguntas: {
+      bajo: ['¿P y C preservados pero interferencia alta (déficit inhibitorio puro)?', '¿Los tres brutos están bajos (interferencia artefactual)?', '¿Conducta desinhibida en entrevista o FAB?'],
+      limite: ['¿El paciente verbaliza leer en lugar de nombrar colores?', '¿Repetir instrucción cambia el índice?'],
+      normal: ['¿Interferencia coherente con PC y con TMT-B?', '¿Patrón esperado para escolaridad?'],
+      alto: ['¿Alta resistencia a interferencia con PC también alto?']
     }
   },
   'TAVEC': {
@@ -6674,8 +6776,12 @@ var GLOSARIO_ALIAS = {
   'Reloj': 'Test del Reloj (Cacho)',
   'BEM': 'BEM 144 Signoret',
   'Fluencia': 'Fluencia Verbal',
-  'TMT-A': 'TMT A-B',
-  'TMT-B': 'TMT A-B',
+  'TMT-A': 'TMT·A',
+  'TMT-B': 'TMT·B',
+  'Stroop P': 'Stroop·P',
+  'Stroop C': 'Stroop·C',
+  'Stroop PC': 'Stroop·PC',
+  'Stroop Int.': 'Stroop·Int',
   'Zoo': 'BADS-Zoo',
   'Llaves': 'BADS-Llaves',
   'Juicio T.': 'BADS-Juicio',
@@ -7204,8 +7310,8 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
       { dom: 'FUNC. EJEC.', tests: [
         { t:'FAB',         fn: function(r){ addPunto('FAB', r.puntaje_z, 'FUNC. EJEC.', 'FAB'); } },
         { t:'IFS',         fn: function(r){ addPunto('IFS', r.puntaje_z, 'FUNC. EJEC.', 'IFS'); } },
-        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; addPunto('TMT-A',d.tmt_a_z||r.puntaje_z,'FUNC. EJEC.','TMT A-B'); addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.','TMT A-B'); } },
-        { t:'Stroop',      fn: function(r){ var d=r.datos||{}; addPunto('Stroop P',d.zP,'FUNC. EJEC.','Stroop'); addPunto('Stroop C',d.zC,'FUNC. EJEC.','Stroop'); addPunto('Stroop PC',d.zPC,'FUNC. EJEC.','Stroop'); addPunto('Stroop Int.',d.zInt,'FUNC. EJEC.','Stroop'); } },
+        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; addPunto('TMT-A',d.tmt_a_z||r.puntaje_z,'FUNC. EJEC.','TMT·A'); addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.','TMT·B'); } },
+        { t:'Stroop',      fn: function(r){ var d=r.datos||{}; addPunto('Stroop P',d.zP,'FUNC. EJEC.','Stroop·P'); addPunto('Stroop C',d.zC,'FUNC. EJEC.','Stroop·C'); addPunto('Stroop PC',d.zPC,'FUNC. EJEC.','Stroop·PC'); addPunto('Stroop Int.',d.zInt,'FUNC. EJEC.','Stroop·Int'); } },
         { t:'BADS-Zoo',    fn: function(r){ var d=r.datos||{}; addPunto('Zoo',d.z,'FUNC. EJEC.','BADS-Zoo'); } },
         { t:'BADS-Llaves', fn: function(r){ var d=r.datos||{}; addPunto('Llaves',d.z,'FUNC. EJEC.','BADS-Llaves'); } },
         { t:'BADS-Juicio', fn: function(r){ var d=r.datos||{}; addPunto('Juicio T.',d.z,'FUNC. EJEC.','BADS-Juicio'); } },
@@ -16818,6 +16924,18 @@ var TAVEC_BAR = {
 // Variables de error: Z positivo = más errores = peor rendimiento
 var TAVEC_ERRORES = ['v20','v21','v22','v24'];
 
+// [etiqueta, clave Z en datos, claveGlosario, invertirZ en tooltip/perfil]
+var TMT_VARS_ORDER = [
+  ['TMT A · tiempo (seg)', 'tmt_a_z', 'TMT·A', true],
+  ['TMT B · tiempo (seg)', 'tmt_b_z', 'TMT·B', true]
+];
+var STROOP_VARS_ORDER = [
+  ['Stroop · Palabras (P)', 'zP', 'Stroop·P', false],
+  ['Stroop · Color (C)', 'zC', 'Stroop·C', false],
+  ['Stroop · Palabra-Color (PC)', 'zPC', 'Stroop·PC', false],
+  ['Stroop · Interferencia', 'zInt', 'Stroop·Int', true]
+];
+
 // [etiqueta, clave PB, clave Z, esVariableError, claveGlosario opcional]
 var TAVEC_VARS_ORDER = [
   ['RI-A1 · 1er ensayo', 'v1', 'zA1', false, 'TAVEC·RI-A1'],
@@ -17088,7 +17206,8 @@ function renderPerfilZ() {
     'Visoconstructivo':    ['Figura Rey'],
   };
 
-  function zColor(z) {
+  function zColor(z, invertirZ) {
+    if (invertirZ && z !== null && z !== undefined) z = -z;
     if (z === null || z === undefined) return {bg:'transparent',txt:'var(--muted)',lbl:'—'};
     if (z >= 1.5)  return {bg:'#d8f0fa',txt:'#1565c0',lbl:'Superior'};
     if (z >= 1.0)  return {bg:'#d8eaff',txt:'#1a4a8a',lbl:'Sobre el promedio'};
@@ -17124,13 +17243,17 @@ function renderPerfilZ() {
 
       // Extraer variables con Z según test
       if (tn === 'TMT A-B') {
-        if (d.tmt_a_z != null) filas.push({lbl:'TMT A', z: d.tmt_a_z});
-        if (d.tmt_b_z != null) filas.push({lbl:'TMT B', z: d.tmt_b_z});
+        TMT_VARS_ORDER.forEach(function(td) {
+          var z = d[td[1]];
+          if (z === null || z === undefined) return;
+          filas.push({ lbl: td[0], z: z, glosario: td[2], invertirZ: td[3] });
+        });
       } else if (tn === 'Stroop') {
-        if (d.zP  != null) filas.push({lbl:'Stroop Palabras', z: d.zP});
-        if (d.zC  != null) filas.push({lbl:'Stroop Color', z: d.zC});
-        if (d.zPC != null) filas.push({lbl:'Stroop Pal/Color', z: d.zPC});
-        if (d.zInt!= null) filas.push({lbl:'Stroop Interferencia', z: d.zInt});
+        STROOP_VARS_ORDER.forEach(function(td) {
+          var z = d[td[1]];
+          if (z === null || z === undefined) return;
+          filas.push({ lbl: td[0], z: z, glosario: td[2], invertirZ: td[3] });
+        });
       } else if (tn === 'WAIS-IV') {
         if (d.rd_z  != null) filas.push({lbl:'WAIS · Dígitos', z: d.rd_z});
         if (d.cla_z != null) filas.push({lbl:'WAIS · Claves', z: d.cla_z});
@@ -17176,7 +17299,7 @@ function renderPerfilZ() {
           : null;
         var c = (tn === 'TAVEC' && (fila.z === null || fila.z === undefined))
           ? { bg: 'transparent', txt: 'var(--muted)' }
-          : (interp ? tavecPerfilEstilo(interp) : zColor(fila.z));
+          : (interp ? tavecPerfilEstilo(interp) : zColor(fila.z, fila.invertirZ));
         var lblInterp = (tn === 'TAVEC') ? interp.label : c.lbl;
         var gKey = fila.glosario || tn;
         var lblCell = resolverTestGlosario(gKey)
