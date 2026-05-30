@@ -465,7 +465,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <span class="sidebar-icon">◈</span> Psicología Clínica
       </div>
       <div class="sidebar-section" id="snav-tdah" onclick="irSector('tdah')">
-        <span class="sidebar-icon">◇</span> TDAH
+        <span class="sidebar-icon">◇</span> Cuest. Neurodesarrollo
       </div>
       <div class="sidebar-section" id="snav-neuro" onclick="irSector('neuro')">
         <span class="sidebar-icon">◉</span> Neuropsicología
@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.10.83</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.0</div>
     </div>
   </aside>
 
@@ -546,13 +546,13 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         </div>
       <div class="sector-card" onclick="irSector('tdah')">
           <div class="sector-icon">⚡</div>
-          <div class="sector-titulo">TDAH</div>
-          <div class="sector-sub">Escalas de evaluación para TDAH en adultos.</div>
+          <div class="sector-titulo">Cuestionarios Neurodesarrollo</div>
+          <div class="sector-sub">TDAH y TEA · ASRS, WURS, EAVA, AQ, EQ, EA, SCQ.</div>
           <div class="sector-tests">
             <span class="sector-tag">ASRS-V1.1</span>
             <span class="sector-tag">WURS-25</span>
-            <span class="sector-tag">DEX</span>
-            <span class="sector-tag">EAVA</span>
+            <span class="sector-tag">AQ · EQ</span>
+            <span class="sector-tag">EA · SCQ</span>
           </div>
         </div>
       </div>
@@ -4699,6 +4699,94 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   </div>
 </div>
 
+<!-- ══ CUESTIONARIOS TEA / NEURODESARROLLO ══ -->
+<div class="vista" id="vista-aq">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">AQ · Cociente del Espectro Autista (50 ítems)</div></div>
+  <div id="aq-form">
+    <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
+      <div class="field"><label>Paciente *</label><select id="aq-paciente"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Fecha</label><input type="date" id="aq-fecha"></div>
+    </div></div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;"><strong>Instrucciones:</strong> Totalmente de acuerdo · Bastante de acuerdo · Un poco de acuerdo · Nada de acuerdo. Baremo adaptación hispanoamericana (Baron-Cohen et al.).</p></div>
+    <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-aq" onclick="setModo('aq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-aq" onclick="setModo('aq','manual')">✏ Carga manual</button></div>
+    <div id="man-area-aq" style="display:none;"><div class="card"><div class="card-title">Puntaje total AQ (0–50)</div><div class="field"><input type="number" id="man-aq-total" min="0" max="50" placeholder="0–50"></div></div><div class="btn-row"><button class="btn-primary" onclick="calcularAQManual()">Calcular →</button></div></div>
+    <div id="auto-area-aq"><div class="card"><div id="aq-items"></div></div><div class="btn-row"><button class="btn-secondary" onclick="limpiarAQ()">🗑 Limpiar</button><button class="btn-primary" onclick="calcularAQ()">Calcular →</button></div></div>
+  </div>
+  <div id="aq-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-puntaje"><div class="puntaje-grande" id="aq-pts">0</div><div class="puntaje-info"><div class="puntaje-label">Puntaje AQ (0–50)</div><div class="puntaje-categoria" id="aq-cat">—</div><span class="badge-grande" id="aq-badge">—</span></div></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="aq-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('aq-resultado').style.display='none';document.getElementById('aq-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarAQ()">💾 Guardar</button></div></div>
+</div>
+
+<div class="vista" id="vista-aq10">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">AQ-10 · Cribado de rasgos autistas</div></div>
+  <div id="aq10-form">
+    <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
+      <div class="field"><label>Paciente *</label><select id="aq10-paciente"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Fecha</label><input type="date" id="aq10-fecha"></div>
+    </div></div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Versión en español (Neuropsicología Latinoamericana, 2020). Corte de referencia: <strong>6–10</strong> sugiere derivación a evaluación especializada.</p></div>
+    <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-aq10" onclick="setModo('aq10','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-aq10" onclick="setModo('aq10','manual')">✏ Carga manual</button></div>
+    <div id="man-area-aq10" style="display:none;"><div class="card"><div class="card-title">Puntaje total (0–10)</div><div class="field"><input type="number" id="man-aq10-total" min="0" max="10" placeholder="0–10"></div></div><div class="btn-row"><button class="btn-primary" onclick="calcularAQ10Manual()">Calcular →</button></div></div>
+    <div id="auto-area-aq10"><div class="card"><div id="aq10-items"></div></div><div class="btn-row"><button class="btn-secondary" onclick="limpiarAQ10()">🗑 Limpiar</button><button class="btn-primary" onclick="calcularAQ10()">Calcular →</button></div></div>
+  </div>
+  <div id="aq10-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-puntaje"><div class="puntaje-grande" id="aq10-pts">0</div><div class="puntaje-info"><div class="puntaje-label">AQ-10 (0–10)</div><div class="puntaje-categoria" id="aq10-cat">—</div><span class="badge-grande" id="aq10-badge">—</span></div></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="aq10-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('aq10-resultado').style.display='none';document.getElementById('aq10-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarAQ10()">💾 Guardar</button></div></div>
+</div>
+
+<div class="vista" id="vista-eq">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">EQ · Coeficiente de Empatía (60 ítems)</div></div>
+  <div id="eq-form">
+    <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
+      <div class="field"><label>Paciente *</label><select id="eq-paciente"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Fecha</label><input type="date" id="eq-fecha"></div>
+    </div></div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Acuerdo absoluto · Acuerdo leve · Desacuerdo leve · Desacuerdo absoluto. <em>Nota:</em> puntajes más bajos indican mayor relevancia clínica en TEA.</p></div>
+    <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-eq" onclick="setModo('eq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-eq" onclick="setModo('eq','manual')">✏ Carga manual</button></div>
+    <div id="man-area-eq" style="display:none;"><div class="card"><div class="card-title">Puntaje total EQ (0–80)</div><div class="field"><input type="number" id="man-eq-total" min="0" max="80" placeholder="0–80"></div></div><div class="btn-row"><button class="btn-primary" onclick="calcularEQManual()">Calcular →</button></div></div>
+    <div id="auto-area-eq"><div class="card"><div id="eq-items"></div></div><div class="btn-row"><button class="btn-secondary" onclick="limpiarEQ()">🗑 Limpiar</button><button class="btn-primary" onclick="calcularEQ()">Calcular →</button></div></div>
+  </div>
+  <div id="eq-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-puntaje"><div class="puntaje-grande" id="eq-pts">0</div><div class="puntaje-info"><div class="puntaje-label">EQ (0–80)</div><div class="puntaje-categoria" id="eq-cat">—</div><span class="badge-grande" id="eq-badge">—</span></div></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="eq-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('eq-resultado').style.display='none';document.getElementById('eq-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarEQ()">💾 Guardar</button></div></div>
+</div>
+
+<div class="vista" id="vista-ea">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">EA · Escala Autónoma Asperger / Autismo alto funcionamiento</div></div>
+  <div id="ea-form">
+    <div class="card"><div class="card-title">Datos · Informante / acompañante</div><div class="form-grid-3">
+      <div class="field"><label>Paciente *</label><select id="ea-paciente"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Informante</label><input type="text" id="ea-informante" placeholder="Nombre y relación"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="ea-fecha"></div>
+    </div></div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Nunca (1) · Algunas veces (2) · Frecuentemente (3) · Siempre (4) · No observado. Corte: <strong>≥36</strong> suma directa o <strong>≥2,0</strong> promedio.</p></div>
+    <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-ea" onclick="setModo('ea','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-ea" onclick="setModo('ea','manual')">✏ Carga manual</button></div>
+    <div id="man-area-ea" style="display:none;"><div class="card"><div class="card-title">Puntaje</div><div class="form-grid-3"><div class="field"><label>Suma directa (18–72)</label><input type="number" id="man-ea-suma" min="18" max="72" placeholder="18–72"></div><div class="field"><label>Promedio (1–4)</label><input type="number" id="man-ea-prom" min="1" max="4" step="0.01" placeholder="1,0–4,0"></div></div><p style="font-size:0.78rem;color:var(--muted);">Ingresá suma directa <em>o</em> promedio (si hubo ítems no observados).</p></div><div class="btn-row"><button class="btn-primary" onclick="calcularEAManual()">Calcular →</button></div></div>
+    <div id="auto-area-ea"><div class="card"><div id="ea-items"></div></div><div class="btn-row"><button class="btn-secondary" onclick="limpiarEA()">🗑 Limpiar</button><button class="btn-primary" onclick="calcularEA()">Calcular →</button></div></div>
+  </div>
+  <div id="ea-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-puntaje"><div class="puntaje-grande" id="ea-pts">0</div><div class="puntaje-info"><div class="puntaje-label" id="ea-pts-lbl">Puntaje EA</div><div class="puntaje-categoria" id="ea-cat">—</div><span class="badge-grande" id="ea-badge">—</span></div></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="ea-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('ea-resultado').style.display='none';document.getElementById('ea-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarEA()">💾 Guardar</button></div></div>
+</div>
+
+<div class="vista" id="vista-scq">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">SCQ · Social Communication Questionnaire (Forma A)</div></div>
+  <div id="scq-form">
+    <div class="card"><div class="card-title">Datos · Informante</div><div class="form-grid-3">
+      <div class="field"><label>Paciente *</label><select id="scq-paciente"><option value="">— Seleccionar —</option></select></div>
+      <div class="field"><label>Informante</label><input type="text" id="scq-informante" placeholder="Nombre y relación"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="scq-fecha"></div>
+    </div></div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Forma A · Sí/No. Corte total: <strong>≥15</strong> · Escala total elevada: <strong>≥24</strong>. Subescalas: DC (comunicación), IS (interacción social), CRR (conductas repetitivas).</p></div>
+    <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-scq" onclick="setModo('scq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-scq" onclick="setModo('scq','manual')">✏ Carga manual</button></div>
+    <div id="man-area-scq" style="display:none;"><div class="card"><div class="card-title">Puntajes</div><div class="form-grid-3">
+      <div class="field"><label>Total (0–40)</label><input type="number" id="man-scq-total" min="0" max="40" placeholder="0–40"></div>
+      <div class="field"><label>DC · Comunicación</label><input type="number" id="man-scq-dc" min="0" max="20" placeholder="opcional"></div>
+      <div class="field"><label>IS · Interacción social</label><input type="number" id="man-scq-is" min="0" max="20" placeholder="opcional"></div>
+      <div class="field"><label>CRR · Conductas repetitivas</label><input type="number" id="man-scq-crr" min="0" max="20" placeholder="opcional"></div>
+    </div></div><div class="btn-row"><button class="btn-primary" onclick="calcularSCQManual()">Calcular →</button></div></div>
+    <div id="auto-area-scq"><div class="card"><div id="scq-items"></div></div><div class="btn-row"><button class="btn-secondary" onclick="limpiarSCQ()">🗑 Limpiar</button><button class="btn-primary" onclick="calcularSCQ()">Calcular →</button></div></div>
+  </div>
+  <div id="scq-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-detalle" id="scq-detalle"></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="scq-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('scq-resultado').style.display='none';document.getElementById('scq-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarSCQ()">💾 Guardar</button></div></div>
+</div>
+
 <!-- ── TEST ASRS-V1.1 ── -->
 
 <div class="vista" id="vista-asrs">
@@ -6078,7 +6166,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -6789,10 +6877,86 @@ var GLOSARIO_TESTS = {
       alto: 'Fortalezas relativas en uno o más índices por encima del promedio.'
     },
     preguntas: {
-      bajo: ['¿Qué índices muestran el mayor descenso respecto al CIT?', '¿La heterogeneidad del perfil es clínicamente significativa?', '¿El patrón es consistente con la historia clínica y el nivel educativo?'],
-      limite: ['¿Hay discrepancias ≥15 puntos entre índices?', '¿Las áreas más bajas coinciden con las quejas cognitivas del paciente?'],
-      normal: ['¿El perfil es homogéneo o hay dispersiones a considerar?', '¿Las fortalezas verbales/perceptuales se reflejan en el funcionamiento cotidiano?'],
-      alto: ['¿Las fortalezas en ICV o IRP compensan posibles debilidades en IMT o IVP?', '¿El perfil es coherente con el nivel educativo y ocupacional?']
+      bajo: ['¿Qué índices muestran el mayor descenso respecto al CIT?', '¿La heterogeneidad del perfil es clínicamente significativa?'],
+      limite: ['¿Hay discrepancias ≥15 puntos entre índices?', '¿Las áreas más bajas coinciden con las quejas cognitivas?'],
+      normal: ['¿El perfil es homogéneo o hay dispersiones a considerar?'],
+      alto: ['¿Las fortalezas en ICV o IRP compensan debilidades en IMT o IVP?']
+    }
+  },
+  'AQ': {
+    mide: 'Cociente del Espectro Autista (50 ítems). Autoadministrado. Cuantifica rasgos autistas en adultos: atención al detalle, comunicación social, imaginación, atención al cambio y preferencias por rutinas.',
+    interpretacion: {
+      bajo: 'Baja presencia de rasgos autistas. Perfil típico sin indicios relevantes.',
+      limite: 'Rango medio poblacional (11–22). Sin rasgos clínicamente significativos.',
+      normal: 'Rasgos leves (BAP, 23–28) o moderados (MAP, 29–34) compatibles con estilos cognitivos del espectro sin umbral diagnóstico.',
+      alto: 'Alta expresión de rasgos autistas (NAP, ≥35). Compatible con TEA de alto funcionamiento. Sugiere evaluación diagnóstica específica.'
+    },
+    preguntas: {
+      bajo: ['¿Hay indicadores clínicos a pesar del AQ bajo?', '¿Complementar con EQ y entrevista clínica?'],
+      limite: ['¿Hay fenotipo BAP o MAP según puntuación?', '¿Es consistente con EA/SCQ del informante?'],
+      normal: ['¿Los rasgos interfieren en la vida cotidiana?', '¿Integrar con perfil EQ (empatía)?'],
+      alto: ['¿Derivar a evaluación diagnóstica especializada?', '¿Complementar con ADOS/ADI-R o entrevista estructurada?']
+    }
+  },
+  'AQ-10': {
+    mide: 'Versión abreviada de cribado (10 ítems). Derivación recomendada si puntaje 6–10.',
+    interpretacion: {
+      bajo: 'Negativo al cribado (0–5). No descarta evaluación si hay sospecha clínica.',
+      limite: '—',
+      normal: '—',
+      alto: 'Positivo al cribado (6–10). Considerar derivación a servicio especializado.'
+    },
+    preguntas: {
+      bajo: ['¿Persiste sospecha clínica a pesar del cribado negativo?'],
+      limite: [],
+      normal: [],
+      alto: ['¿Completar con AQ-50 y evaluación clínica integral?']
+    }
+  },
+  'EQ': {
+    mide: 'Coeficiente de Empatía (60 ítems). Evalúa empatía cognitiva y afectiva. Complemento del AQ.',
+    invertirZ: true,
+    interpretacion: {
+      bajo: 'Empatía significativamente baja (0–32). Mayor relevancia clínica en TEA. Media Asperger/autismo ≈20.',
+      limite: 'Empatía en rango medio (33–52). Funcional para interacción social cotidiana.',
+      normal: 'Empatía sobre la media (53–63) o muy alta (64–80).',
+      alto: 'Nivel elevado o excepcional de empatía.'
+    },
+    preguntas: {
+      bajo: ['¿Es consistente con AQ elevado?', '¿Hay disociación entre empatía cognitiva y afectiva en la entrevista?'],
+      limite: ['¿Comparar con rendimiento en tareas sociales del resto de la evaluación?'],
+      normal: ['¿El perfil empático es coherente con el funcionamiento social observado?'],
+      alto: ['¿Empatía elevada descarta TEA si AQ también es alto?']
+    }
+  },
+  'EA': {
+    mide: 'Escala Autónoma para detección de Asperger y autismo de alto funcionamiento (18 ítems). Informante. Comportamientos observables desde los 6 años.',
+    interpretacion: {
+      bajo: 'Por debajo del punto de corte (<36 suma o <2,0 promedio).',
+      limite: '—',
+      normal: '—',
+      alto: 'Sobre punto de corte (≥36 o promedio ≥2). Compatible con rasgos de autismo/Asperger. Requiere evaluación clínica integral.'
+    },
+    preguntas: {
+      bajo: ['¿Hay indicadores clínicos a pesar del puntaje bajo?', '¿Informante con conocimiento suficiente del sujeto?'],
+      limite: [],
+      normal: [],
+      alto: ['¿Es consistente con AQ/EQ autoadministrados?', '¿Complementar con SCQ y evaluación diagnóstica?']
+    }
+  },
+  'SCQ': {
+    mide: 'Social Communication Questionnaire · Forma A (40 ítems). Informante. Evalúa comunicación social, interacción e intereses restringidos. Corte ≥15.',
+    interpretacion: {
+      bajo: 'Total <15. Por debajo del corte de la Forma A.',
+      limite: '—',
+      normal: '—',
+      alto: 'Total ≥15 (compatible con criterios de TEA). ≥24: nivel elevado de indicadores.'
+    },
+    preguntas: {
+      bajo: ['¿Hay sospecha clínica a pesar del SCQ bajo?', '¿Informante con buena observación del sujeto?'],
+      limite: [],
+      normal: [],
+      alto: ['¿Qué subescala (DC, IS, CRR) aporta más?', '¿Integrar con EA, AQ y evaluación clínica?']
     }
   },
   'BEM 144 Signoret': {
@@ -7198,7 +7362,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   // ── Clasificación de tests ──
   var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL = ['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
-  var TD = ['ASRS-V1.1','WURS-25','DEX'];
+  var TD = ['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ'];
   var DO = ['PCS','PBQ','CSQ','BPI'];
   function tipo(t){ return NP.indexOf(t)!==-1?'np': CL.indexOf(t)!==-1?'cl': TD.indexOf(t)!==-1?'td': DO.indexOf(t)!==-1?'do':'cl'; }
 
@@ -8260,6 +8424,47 @@ function renderCuestionariosFam(d) {
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad</div>';
         return;
       }
+      // ── AQ ──
+      if (r.test === 'AQ') {
+        html += clHeader('AQ · Cociente del Espectro Autista (50 ítems)');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><tbody>'+
+          '<tr><td style="'+tdR+'">Puntaje total</td><td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total+'/50':'—')+'</td><td style="'+tdRI+'">'+(r.categoria||'—')+(d.fenotipo?' · '+d.fenotipo:'')+'</td></tr></tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">0–10 bajo · 11–22 medio · 23–28 BAP · 29–34 MAP · 35–50 NAP · Baron-Cohen et al.</div>';
+        return;
+      }
+      if (r.test === 'AQ-10') {
+        html += clHeader('AQ-10 · Cribado de rasgos autistas');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><tbody>'+
+          '<tr><td style="'+tdR+'">Puntaje total</td><td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total+'/10':'—')+'</td><td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr></tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte cribado: 6–10 · Neuropsicología Latinoamericana (2020)</div>';
+        return;
+      }
+      if (r.test === 'EQ') {
+        html += clHeader('EQ · Coeficiente de Empatía (60 ítems)');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><tbody>'+
+          '<tr><td style="'+tdR+'">Puntaje total</td><td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total+'/80':'—')+'</td><td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr></tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">0–32 bajo · 33–52 medio · 53–63 sobre media · 64–80 muy alto · Puntajes bajos: mayor relevancia clínica en TEA</div>';
+        return;
+      }
+      if (r.test === 'EA') {
+        html += clHeader('EA · Escala Autónoma Asperger / Autismo alto funcionamiento');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><tbody>'+
+          '<tr><td style="'+tdR+'">'+(d.lbl||'Puntaje')+'</td><td style="'+tdRC+'">'+(d.score!=null?d.score:'—')+'</td><td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr></tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte: ≥36 suma directa · ≥2,0 promedio · Informante</div>';
+        return;
+      }
+      if (r.test === 'SCQ') {
+        html += clHeader('SCQ · Social Communication Questionnaire (Forma A)');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'">Subescala</th><th style="'+thDarkC+'">Puntaje</th><th style="'+thDark+'">Nota</th></tr></thead><tbody>'+
+          '<tr style="background:#f5fbf3;"><td style="'+tdR+'">Total</td><td style="'+tdRC+'">'+(d.total!=null?d.total:'—')+'</td><td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>'+
+          (d.dc!=null?'<tr><td style="'+tdR+'">DC · Comunicación</td><td style="'+tdRC+'">'+d.dc+'</td><td style="'+tdRI+'">—</td></tr>':'')+
+          (d.is!=null?'<tr><td style="'+tdR+'">IS · Interacción social</td><td style="'+tdRC+'">'+d.is+'</td><td style="'+tdRI+'">—</td></tr>':'')+
+          (d.crr!=null?'<tr><td style="'+tdR+'">CRR · Cond. repetitivas</td><td style="'+tdRC+'">'+d.crr+'</td><td style="'+tdRI+'">—</td></tr>':'')+
+          '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte Forma A: ≥15 · Escala total elevada: ≥24</div>';
+        return;
+      }
       // ── DEX ──
       if (r.test === 'DEX') {
         var dexVer = d.version === 'hetero' ? 'Heteroadministrado' : 'Autoadministrado';
@@ -8395,7 +8600,7 @@ function renderCuestionariosFam(d) {
       '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Evaluación Neuropsicológica</div>'+
       renderNP(testsNp) : '')+
     (testsTd.length ?
-      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">TDAH</div>'+
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Cuestionarios Neurodesarrollo</div>'+
       renderCL(testsTd) : '')+
     (testsDo.length ?
       '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;border-left:3px solid #214b1a;margin-bottom:0;margin-top:14px;">Evaluación del Dolor</div>'+
@@ -8712,8 +8917,9 @@ function irSector(s) {
       '</div>';
   }
   if (s === 'tdah') {
-    document.getElementById('sector-titulo').textContent = 'TDAH';
+    document.getElementById('sector-titulo').textContent = 'Cuestionarios Neurodesarrollo';
     document.getElementById('tests-grid').innerHTML =
+      '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:4px 0 2px;padding-left:4px;">TDAH</div>' +
       '<div class="test-card" onclick="irTest(\'asrs\')">' +
         '<div class="test-icon">⚡</div>' +
         '<div class="test-nombre">ASRS-V1.1</div>' +
@@ -8736,6 +8942,33 @@ function irSector(s) {
         '<div class="test-nombre">EAVA</div>'+
         '<div class="test-desc">Escala de Autovaloración de TDAH en Adultos — Parte A (inatención) + Parte B (hiperactividad/impulsividad)</div>'+
         '<span class="test-tag">18 ítems · 0–36 c/u · DSM-5</span>'+
+      '</div>' +
+      '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 2px;padding-left:4px;">TEA · Espectro autista</div>' +
+      '<div class="test-card" onclick="irTest(\'aq\')">' +
+        '<div class="test-icon">🧩</div>' +
+        '<div class="test-nombre">AQ · Cociente del Espectro Autista</div>' +
+        '<div class="test-desc">50 ítems · Autoadministrado · Detección de rasgos del espectro autista en adultos</div>' +
+        '<span class="test-tag">Baron-Cohen et al.</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'aq10\')">' +
+        '<div class="test-nombre">AQ-10</div>' +
+        '<div class="test-desc">Cribado breve · 10 ítems · Derivación si puntaje 6–10</div>' +
+        '<span class="test-tag">Neuropsicología Latinoamericana 2020</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'eq\')">' +
+        '<div class="test-nombre">EQ · Coeficiente de Empatía</div>' +
+        '<div class="test-desc">60 ítems · Empatía cognitiva y afectiva · Complemento del AQ</div>' +
+        '<span class="test-tag">Baron-Cohen et al.</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'ea\')">' +
+        '<div class="test-nombre">EA · Escala Autónoma Asperger</div>' +
+        '<div class="test-desc">18 ítems · Informante · Corte ≥36 / promedio ≥2</div>' +
+        '<span class="test-tag">Acompañante</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'scq\')">' +
+        '<div class="test-nombre">SCQ · Forma A</div>' +
+        '<div class="test-desc">Cuestionario de Comunicación Social · Informante · Corte ≥15</div>' +
+        '<span class="test-tag">Rutter et al. · DC · IS · CRR</span>' +
       '</div>';
   }
 }
@@ -8774,6 +9007,11 @@ function irTest(t) {
   if (t === 'wurs') iniciarWurs();
   if (t === 'dex') iniciarDEX();
   if (t === 'eava') iniciarEAVA();
+  if (t === 'aq') iniciarAQ();
+  if (t === 'aq10') iniciarAQ10();
+  if (t === 'eq') iniciarEQ();
+  if (t === 'ea') iniciarEA();
+  if (t === 'scq') iniciarSCQ();
   if (t === 'waisiv') iniciarWaisiv();
   if (t === 'waisperfil') iniciarWaisperfil();
   if (t === 'asrs') iniciarAsrs();
@@ -11898,6 +12136,490 @@ function guardarEAVA() {
   }).catch(function() { toast('Error al guardar', 'error'); });
 }
 
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ══ CUESTIONARIOS TEA · NEURODESARROLLO ═════════════════════════════════════
+var ND_LIKERT4_AQ = ['Totalmente de acuerdo','Bastante de acuerdo','Un poco de acuerdo','Nada de acuerdo'];
+var ND_LIKERT4_EQ = ['Acuerdo absoluto','Acuerdo leve','Desacuerdo leve','Desacuerdo absoluto'];
+var ND_EA_OPS = [{v:1,l:'Nunca'},{v:2,l:'Algunas veces'},{v:3,l:'Frecuentemente'},{v:4,l:'Siempre'},{v:0,l:'No observado'}];
+
+var AQ_AGREE = [1,2,4,5,6,7,9,12,13,16,18,19,20,21,22,23,26,33,35,39,41,42,43,45,46];
+var AQ_DISAGREE = [3,8,10,11,14,15,17,24,25,27,28,29,30,31,32,34,36,37,38,40,44,47,48,49,50];
+var AQ10_AGREE = [1,7,8,10];
+var AQ10_DISAGREE = [2,3,4,5,6,9];
+var EQ_AGREE = [1,6,19,22,25,26,35,36,37,38,41,42,43,44,52,54,55,57,58,59,60];
+var EQ_DISAGREE = [4,8,10,11,12,14,15,18,21,27,28,29,32,34,39,46,48,49,50];
+var SCQ_DC = [2,3,4,5,6,20,21,22,23,24,25,34,35];
+var SCQ_IS = [9,10,19,26,27,28,29,30,31,32,33,36,37,39,40];
+var SCQ_CRR = [7,8,11,12,13,14,15,16];
+
+function ndRenderLikert4(prefix, items, labels, containerId) {
+  var wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = items.map(function(it) {
+    var opts = labels.map(function(lbl, j) {
+      return '<label class="bdi-opcion"><input type="radio" name="' + prefix + '_' + it.n + '" value="' + (j + 1) + '"><span class="bdi-opcion-texto">' + lbl + '</span></label>';
+    }).join('');
+    return '<div class="bdi-item"><div class="bdi-pregunta">' + it.n + '. ' + it.txt + '</div><div class="bdi-opciones" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">' + opts + '</div></div>';
+  }).join('');
+}
+
+function ndRenderYesNo(prefix, items, containerId) {
+  var wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = items.map(function(it) {
+    return '<div class="bdi-item"><div class="bdi-pregunta">' + it.n + '. ' + it.txt + '</div><div class="bdi-opciones">' +
+      '<label class="bdi-opcion"><input type="radio" name="' + prefix + '_' + it.n + '" value="1"><span class="bdi-opcion-texto">Sí</span></label>' +
+      '<label class="bdi-opcion"><input type="radio" name="' + prefix + '_' + it.n + '" value="0"><span class="bdi-opcion-texto">No</span></label></div></div>';
+  }).join('');
+}
+
+function ndRenderEA(containerId) {
+  var wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = EA_ITEMS.map(function(it) {
+    var opts = ND_EA_OPS.map(function(op) {
+      return '<label class="bdi-opcion"><input type="radio" name="ea_' + it.n + '" value="' + op.v + '"><span class="bdi-opcion-texto">' + op.l + '</span></label>';
+    }).join('');
+    return '<div class="bdi-item"><div class="bdi-pregunta">' + it.n + '. ' + it.txt + '</div><div class="bdi-opciones" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">' + opts + '</div></div>';
+  }).join('');
+}
+
+function aqInterp(total) {
+  if (total <= 10) return { cat:'Bajo', fenotipo:'—', txt:'Baja presencia de rasgos autistas. Perfil típico sin indicios relevantes de características del espectro.', badge:'bg-minima' };
+  if (total <= 22) return { cat:'Medio', fenotipo:'Población general', txt:'Puntuación dentro del rango esperado (media femenina ≈15; masculina ≈17). No se identifican rasgos clínicamente significativos.', badge:'bg-minima' };
+  if (total <= 28) return { cat:'Sobre la media', fenotipo:'BAP', txt:'Fenotipo ampliado del autismo (BAP): rasgos leves compatibles con el espectro que no interfieren significativamente. Frecuente en familiares de personas con TEA.', badge:'bg-moderada' };
+  if (total <= 34) return { cat:'Sobre la media', fenotipo:'MAP', txt:'Fenotipo medio del autismo (MAP): rasgos más notorios por debajo del umbral diagnóstico. Pueden impactar moderadamente en lo social/comunicativo.', badge:'bg-moderada' };
+  return { cat:'Muy alto', fenotipo:'NAP', txt:'Fenotipo reducido del autismo (NAP): alta expresión de rasgos autistas, compatible con TEA de alto funcionamiento o Asperger (media ≈35). Sugiere evaluación diagnóstica específica.', badge:'bg-grave' };
+}
+
+function eqInterp(total) {
+  if (total <= 32) return { cat:'Bajo', txt:'Nivel significativamente bajo de empatía cognitiva y afectiva. Puede asociarse con dificultades para percibir e interpretar estados mentales ajenos (media TEA/Asperger ≈20).', badge:'bg-grave' };
+  if (total <= 52) return { cat:'Medio', txt:'Empatía dentro del rango normativo (media femenina 47; masculina 42). Habilidades empáticas funcionales para la interacción social cotidiana.', badge:'bg-minima' };
+  if (total <= 63) return { cat:'Sobre la media', txt:'Nivel elevado de empatía. Marcada sensibilidad hacia las emociones ajenas y buena capacidad de respuesta emocional.', badge:'bg-leve' };
+  return { cat:'Muy alto', txt:'Nivel excepcionalmente alto de empatía. Fuerte tendencia prosocial; en algunos casos puede conllevar vulnerabilidad emocional.', badge:'bg-leve' };
+}
+
+function ndShowResult(formId, resId, fn) { document.getElementById(formId).style.display='none'; document.getElementById(resId).style.display='block'; if(fn) fn(); }
+
+function ndInitTest(prefix, fechaId, formId, resId, renderFn) {
+  var f = document.getElementById(fechaId); if (f) f.value = new Date().toISOString().split('T')[0];
+  document.getElementById(formId).style.display = 'block';
+  document.getElementById(resId).style.display = 'none';
+  if (renderFn) renderFn();
+}
+
+function ndGuardar(testName, pacSelId, fechaId, total, cat, datos) {
+  if (!SESSION) return;
+  var pacId = document.getElementById(pacSelId).value;
+  var fecha = document.getElementById(fechaId).value;
+  if (!pacId) { toast('Seleccioná un paciente.', 'error'); return; }
+  return supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId, test: testName, fecha: fecha,
+    puntaje_total: total, categoria: cat, datos: datos
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ ' + testName + ' guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ── AQ 50 ítems ──
+var AQ_ITEMS = [
+  {n:1,txt:'Prefiero hacer las cosas con otras personas en lugar de hacerlas sólo'},
+  {n:2,txt:'Prefiero hacer las cosas siempre de la misma manera'},
+  {n:3,txt:'Cuando trato de imaginarme algo, me resulta fácil crear la imagen en mi mente'},
+  {n:4,txt:'Frecuentemente me concentro tanto en una cosa que no presto atención a otras'},
+  {n:5,txt:'A menudo escucho ciertos sonidos que las otras personas no oyen'},
+  {n:6,txt:'Normalmente presto atención a las matrículas de los coches u otras informaciones similares'},
+  {n:7,txt:'Las otras personas frecuentemente me dicen que lo que digo es maleducado aunque yo no creo que sea así'},
+  {n:8,txt:'Cuando estoy leyendo un libro me resulta fácil imaginarme cómo son los personajes'},
+  {n:9,txt:'Me interesan mucho las fechas'},
+  {n:10,txt:'Cuando estoy en una reunión me resulta fácil seguir varias conversaciones a la vez'},
+  {n:11,txt:'Las situaciones sociales me resultan fáciles'},
+  {n:12,txt:'Suelo prestar atención a detalles que otras personas no ven'},
+  {n:13,txt:'Prefiero ir a una biblioteca en lugar de ir a una fiesta'},
+  {n:14,txt:'Me resulta fácil inventar historias'},
+  {n:15,txt:'Me siento más atraído por las personas que por las cosas'},
+  {n:16,txt:'Suelo tener un fuerte interés por ciertas cosas y me molesta si no puedo realizarlas'},
+  {n:17,txt:'Me gusta charlar'},
+  {n:18,txt:'Cuando yo hablo apenas dejo hablar a los demás'},
+  {n:19,txt:'Me interesan mucho los números'},
+  {n:20,txt:'Cuando leo un cuento me resulta muy difícil interpretar las intenciones de los personajes'},
+  {n:21,txt:'No disfruto especialmente con los libros de ciencia ficción'},
+  {n:22,txt:'Me resulta difícil hacer nuevos amigos'},
+  {n:23,txt:'Siempre descubro patrones en las cosas'},
+  {n:24,txt:'Prefiero ir al teatro que a un museo'},
+  {n:25,txt:'No me molesta si mi rutina diaria se modifica'},
+  {n:26,txt:'Frecuentemente noto que me cuesta mantener una conversación con otra persona'},
+  {n:27,txt:'Me resulta fácil "leer entre líneas" cuando alguien me está hablando'},
+  {n:28,txt:'Normalmente me concentro más en el todo que en los detalles'},
+  {n:29,txt:'No soy bueno para recordar números de teléfono'},
+  {n:30,txt:'Normalmente no noto pequeños cambios en una situación o en el aspecto de una persona'},
+  {n:31,txt:'Me doy cuenta cuando una persona con la que estoy hablando se aburre'},
+  {n:32,txt:'Me resulta fácil hacer más de una cosa a la vez'},
+  {n:33,txt:'Cuando hablo por teléfono me cuesta darme cuenta de cuándo es mi turno para hablar'},
+  {n:34,txt:'Me gusta hacer las cosas espontáneamente (sin planificar)'},
+  {n:35,txt:'A menudo soy el último en entender una broma'},
+  {n:36,txt:'Me resulta fácil imaginarme lo que una persona puede estar pensando o sintiendo sólo con mirarla'},
+  {n:37,txt:'Puedo retomar lo que estaba haciendo después de una interrupción'},
+  {n:38,txt:'Soy bueno charlando'},
+  {n:39,txt:'La gente me dice que suelo hablar siempre de un mismo tema'},
+  {n:40,txt:'Cuando era más pequeño me gustaba jugar con los demás a juegos de imaginación'},
+  {n:41,txt:'Me gusta recabar información sobre clases de cosas (coches, pájaros, trenes, plantas, etc.)'},
+  {n:42,txt:'Me resulta difícil imaginarme cómo sería ser otra persona'},
+  {n:43,txt:'Me gusta planificar cuidadosamente las actividades en las que participo'},
+  {n:44,txt:'Disfruto de las reuniones sociales'},
+  {n:45,txt:'Me resulta difícil identificar las intenciones de las otras personas'},
+  {n:46,txt:'Las situaciones nuevas me ponen ansioso'},
+  {n:47,txt:'Me gusta conocer gente nueva'},
+  {n:48,txt:'Soy bastante diplomático'},
+  {n:49,txt:'No soy muy bueno para recordar fechas de cumpleaños'},
+  {n:50,txt:'Me resulta fácil jugar a juegos de imaginación con niños'}
+];
+
+function aqScoreFromResponses(getVal) {
+  var total = 0;
+  for (var i = 1; i <= 50; i++) {
+    var v = getVal(i); if (v == null) continue;
+    if (AQ_AGREE.indexOf(i) >= 0 && v <= 2) total++;
+    else if (AQ_DISAGREE.indexOf(i) >= 0 && v >= 3) total++;
+  }
+  return total;
+}
+
+function _mostrarAQ(total) {
+  var r = aqInterp(total);
+  document.getElementById('aq-pts').textContent = total;
+  document.getElementById('aq-cat').textContent = r.cat + (r.fenotipo !== '—' ? ' · ' + r.fenotipo : '');
+  document.getElementById('aq-badge').textContent = r.cat;
+  document.getElementById('aq-badge').className = 'badge-grande ' + r.badge;
+  document.getElementById('aq-interp').innerHTML = '<p><strong>Puntaje AQ: ' + total + '/50 — ' + r.cat + '</strong>' + (r.fenotipo !== '—' ? ' (' + r.fenotipo + ')' : '') + '.</p><p>' + r.txt + '</p><p><em>Baron-Cohen et al. · Síntesis orientativa — integrar con entrevista clínica y evaluación neuropsicológica.</em></p>';
+  window._aqData = { total: total, cat: r.cat, fenotipo: r.fenotipo };
+  ndShowResult('aq-form', 'aq-resultado');
+}
+
+function iniciarAQ() { ndInitTest('aq','aq-fecha','aq-form','aq-resultado', function(){ ndRenderLikert4('aq', AQ_ITEMS, ND_LIKERT4_AQ, 'aq-items'); }); }
+function limpiarAQ() { for (var i=1;i<=50;i++) document.querySelectorAll('input[name="aq_'+i+'"]').forEach(function(r){r.checked=false;}); }
+function calcularAQ() {
+  var sin = 0, total = aqScoreFromResponses(function(n){ var s=document.querySelector('input[name="aq_'+n+'"]:checked'); if(!s){sin++;return null;} return parseInt(s.value,10); });
+  if (sin && !confirm('Hay '+sin+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  _mostrarAQ(total);
+}
+function calcularAQManual() { var t=parseInt(document.getElementById('man-aq-total').value,10); if(isNaN(t)||t<0||t>50){toast('Puntaje 0–50','error');return;} _mostrarAQ(t); }
+function guardarAQ() { if(!window._aqData){toast('Calculá antes de guardar','error');return;} ndGuardar('AQ','aq-paciente','aq-fecha',window._aqData.total,window._aqData.cat,window._aqData); }
+
+// ── AQ-10 ──
+var AQ10_ITEMS = [
+  {n:1,txt:'Muchas veces noto pequeños sonidos en los que otros no reparan'},
+  {n:2,txt:'Por lo general me concentro más en la imagen completa que en los pequeños detalles'},
+  {n:3,txt:'Me resulta fácil hacer más de una cosa a la vez'},
+  {n:4,txt:'Si hay una interrupción, puedo volver a concentrarme muy rápido'},
+  {n:5,txt:'Me resulta fácil "leer entre líneas" cuando alguien me está hablando'},
+  {n:6,txt:'Sé cómo saber si alguien que me escucha se está aburriendo'},
+  {n:7,txt:'Cuando estoy leyendo una historia, me resulta difícil descifrar las intenciones de los personajes'},
+  {n:8,txt:'Me gusta recabar información sobre categorías de cosas (automóviles, aves, trenes, plantas, etc.)'},
+  {n:9,txt:'Me resulta fácil saber lo que alguien piensa o siente mirando su rostro'},
+  {n:10,txt:'Me resulta difícil comprender las intenciones de las personas'}
+];
+
+function iniciarAQ10() { ndInitTest('aq10','aq10-fecha','aq10-form','aq10-resultado', function(){ ndRenderLikert4('aq10', AQ10_ITEMS, ['Definitivamente en desacuerdo','Un poco en desacuerdo','Un poco de acuerdo','Definitivamente de acuerdo'], 'aq10-items'); }); }
+function limpiarAQ10() { for(var i=1;i<=10;i++) document.querySelectorAll('input[name="aq10_'+i+'"]').forEach(function(r){r.checked=false;}); }
+function _mostrarAQ10(total) {
+  var pos = total >= 6;
+  document.getElementById('aq10-pts').textContent = total;
+  document.getElementById('aq10-cat').textContent = pos ? 'Positivo al cribado (6–10)' : 'Negativo al cribado (0–5)';
+  document.getElementById('aq10-badge').textContent = pos ? 'Derivar evaluación' : 'Sin indicación de cribado';
+  document.getElementById('aq10-badge').className = 'badge-grande ' + (pos ? 'bg-grave' : 'bg-minima');
+  document.getElementById('aq10-interp').innerHTML = '<p><strong>AQ-10: ' + total + '/10</strong>. ' + (pos ? 'Puntaje entre 6 y 10: considerar derivación a servicio especializado de diagnóstico e intervención.' : 'Puntaje por debajo del umbral de cribado. No descarta evaluación clínica si hay sospecha clínica.') + '</p><p><em>Neuropsicología Latinoamericana (2020).</em></p>';
+  window._aq10Data = { total: total, positivo: pos };
+  ndShowResult('aq10-form', 'aq10-resultado');
+}
+function calcularAQ10() {
+  var total = 0, sin = 0;
+  for (var i = 1; i <= 10; i++) {
+    var s = document.querySelector('input[name="aq10_'+i+'"]:checked');
+    if (!s) { sin++; continue; }
+    var v = parseInt(s.value, 10);
+    if (AQ10_AGREE.indexOf(i) >= 0 && v >= 3) total++;
+    else if (AQ10_DISAGREE.indexOf(i) >= 0 && v <= 2) total++;
+  }
+  if (sin && !confirm('Hay '+sin+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  _mostrarAQ10(total);
+}
+function calcularAQ10Manual() { var t=parseInt(document.getElementById('man-aq10-total').value,10); if(isNaN(t)||t<0||t>10){toast('Puntaje 0–10','error');return;} _mostrarAQ10(t); }
+function guardarAQ10() { if(!window._aq10Data){toast('Calculá antes','error');return;} ndGuardar('AQ-10','aq10-paciente','aq10-fecha',window._aq10Data.total,window._aq10Data.positivo?'Positivo cribado':'Negativo cribado',window._aq10Data); }
+
+// ── EQ 60 ítems (textos abreviados donde necesario) ──
+var EQ_ITEMS = [
+  {n:1,txt:'Puedo captar con facilidad si otra persona quiere tomar parte en una conversación'},
+  {n:2,txt:'Prefiero la compañía de animales a la de las personas'},
+  {n:3,txt:'Intento seguir las tendencias y modas actuales'},
+  {n:4,txt:'Encuentro difícil explicar a otros lo que yo entiendo con facilidad'},
+  {n:5,txt:'Sueño la mayoría de las noches'},
+  {n:6,txt:'Me gusta verdaderamente cuidar a otras personas'},
+  {n:7,txt:'Intento resolver los problemas yo solo antes que discutirlos con los demás'},
+  {n:8,txt:'Encuentro difícil saber qué hay que hacer en una situación social'},
+  {n:9,txt:'A primera hora de la mañana, estoy en mi mejor momento'},
+  {n:10,txt:'A menudo, en medio de una discusión, me dicen que me excedo defendiendo mi punto de vista'},
+  {n:11,txt:'No me preocupa mucho llegar tarde a una cita con un amigo'},
+  {n:12,txt:'Las amistades y relaciones son demasiado difíciles de mantener'},
+  {n:13,txt:'Nunca quebrantaría una ley, por irrelevante que fuera'},
+  {n:14,txt:'Generalmente me cuesta juzgar si alguien ha sido amable o descortés'},
+  {n:15,txt:'En una conversación me concentro en mis pensamientos antes que en los del interlocutor'},
+  {n:16,txt:'Prefiero gastar bromas a contar chistes'},
+  {n:17,txt:'Prefiero vivir al día a pensar en el futuro'},
+  {n:18,txt:'De pequeño me gustaba cortar gusanos en pedazos para ver qué pasaba'},
+  {n:19,txt:'Puedo captar fácilmente si una persona dice una cosa pero quiere decir otra'},
+  {n:20,txt:'Tiendo a tener fuertes convicciones morales'},
+  {n:21,txt:'Me resulta difícil ver por qué algunas cosas molestan tanto a otras personas'},
+  {n:22,txt:'Me resulta fácil ponerme en el lugar de otra persona'},
+  {n:23,txt:'Pienso que la buena educación es lo más importante que los padres pueden enseñar'},
+  {n:24,txt:'Me gusta hacer las cosas sin reflexionar demasiado'},
+  {n:25,txt:'Tengo facilidad para predecir cómo se sentirá otra persona'},
+  {n:26,txt:'Enseguida me doy cuenta si alguien se siente molesto en el grupo'},
+  {n:27,txt:'Si alguien se siente ofendido cuando hablo, pienso que el problema es suyo'},
+  {n:28,txt:'Si me preguntan si me gusta su corte de pelo respondo la verdad aunque no me guste'},
+  {n:29,txt:'A veces no entiendo por qué alguien se ha sentido ofendido por una observación mía'},
+  {n:30,txt:'A menudo me dicen que soy totalmente imprevisible'},
+  {n:31,txt:'Me gusta ser el centro de atención en reuniones sociales'},
+  {n:32,txt:'Ver llorar a la gente no me pone especialmente triste'},
+  {n:33,txt:'Me gusta discutir de política'},
+  {n:34,txt:'Soy muy sincero, lo que hace que algunos me consideren maleducado'},
+  {n:35,txt:'No suelo encontrar confusas las relaciones sociales'},
+  {n:36,txt:'Me dicen que tengo facilidad para entender cómo se sienten y qué piensan'},
+  {n:37,txt:'Cuando hablo tiendo más a hablar de las experiencias del otro que de las mías'},
+  {n:38,txt:'Me da pena ver sufrir a un animal'},
+  {n:39,txt:'Puedo tomar decisiones sin que me influencien los sentimientos de los demás'},
+  {n:40,txt:'No me relajo hasta haber hecho todo lo planeado durante el día'},
+  {n:41,txt:'Captar fácilmente si a alguien le aburre o le interesa lo que digo'},
+  {n:42,txt:'Me afecta ver personas sufriendo en programas informativos'},
+  {n:43,txt:'Mis amigos me hablan de sus problemas porque dicen que los comprendo'},
+  {n:44,txt:'Me doy cuenta de que molesto incluso si la otra persona no me lo dice'},
+  {n:45,txt:'Empiezo nuevas aficiones pero enseguida me canso y busco otras'},
+  {n:46,txt:'A veces me dicen que he ido demasiado lejos con mis bromas'},
+  {n:47,txt:'Subirme a montañas rusas me pondría demasiado nervioso'},
+  {n:48,txt:'A menudo me dicen que soy insensible aunque yo no veo por qué'},
+  {n:49,txt:'Si hay alguien nuevo en un grupo, es cosa suya integrarse'},
+  {n:50,txt:'Por lo general me mantengo emocionalmente indiferente cuando veo una película'},
+  {n:51,txt:'Me gusta tener muy organizadas las actividades cotidianas y hacer listas'},
+  {n:52,txt:'Puedo conectar y saber cómo se siente alguien de forma rápida e intuitiva'},
+  {n:53,txt:'No me gusta correr riesgos'},
+  {n:54,txt:'Me doy cuenta fácilmente de lo que otra persona desea hablar'},
+  {n:55,txt:'Puedo darme cuenta si alguien oculta sus verdaderas emociones'},
+  {n:56,txt:'Antes de tomar una decisión siempre considero pros y contras'},
+  {n:57,txt:'No elaboro conscientemente las reglas de una situación social'},
+  {n:58,txt:'Tengo facilidad para predecir lo que otra persona hará'},
+  {n:59,txt:'Tengo tendencia a implicarme en los problemas de mis amigos'},
+  {n:60,txt:'Aprecio el punto de vista de otras personas aunque no esté de acuerdo'}
+];
+
+function eqScoreFromResponses(getVal) {
+  var total = 0;
+  for (var i = 1; i <= 60; i++) {
+    var v = getVal(i); if (v == null) continue;
+    if (EQ_AGREE.indexOf(i) >= 0) { if (v === 1) total += 2; else if (v === 2) total += 1; }
+    else if (EQ_DISAGREE.indexOf(i) >= 0) { if (v === 4) total += 2; else if (v === 3) total += 1; }
+  }
+  return total;
+}
+
+function iniciarEQ() { ndInitTest('eq','eq-fecha','eq-form','eq-resultado', function(){ ndRenderLikert4('eq', EQ_ITEMS, ND_LIKERT4_EQ, 'eq-items'); }); }
+function limpiarEQ() { for(var i=1;i<=60;i++) document.querySelectorAll('input[name="eq_'+i+'"]').forEach(function(r){r.checked=false;}); }
+function _mostrarEQ(total) {
+  var r = eqInterp(total);
+  document.getElementById('eq-pts').textContent = total;
+  document.getElementById('eq-cat').textContent = r.cat;
+  document.getElementById('eq-badge').textContent = r.cat;
+  document.getElementById('eq-badge').className = 'badge-grande ' + r.badge;
+  document.getElementById('eq-interp').innerHTML = '<p><strong>EQ: ' + total + '/80 — ' + r.cat + '</strong>.</p><p>' + r.txt + '</p><p><em>En EQ, puntajes más bajos tienen mayor relevancia clínica en TEA. Complementar con AQ.</em></p>';
+  window._eqData = { total: total, cat: r.cat };
+  ndShowResult('eq-form', 'eq-resultado');
+}
+function calcularEQ() {
+  var sin = 0, total = eqScoreFromResponses(function(n){ var s=document.querySelector('input[name="eq_'+n+'"]:checked'); if(!s){sin++;return null;} return parseInt(s.value,10); });
+  if (sin && !confirm('Hay '+sin+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  _mostrarEQ(total);
+}
+function calcularEQManual() { var t=parseInt(document.getElementById('man-eq-total').value,10); if(isNaN(t)||t<0||t>80){toast('Puntaje 0–80','error');return;} _mostrarEQ(t); }
+function guardarEQ() { if(!window._eqData){toast('Calculá antes','error');return;} ndGuardar('EQ','eq-paciente','eq-fecha',window._eqData.total,window._eqData.cat,window._eqData); }
+
+// ── EA 18 ítems (informante) ──
+var EA_ITEMS = [
+  {n:1,txt:'Dificultades para extraer ideas principales y obviar detalles irrelevantes'},
+  {n:2,txt:'Dificultades para entender expresiones no literales (bromas, metáforas, etc.)'},
+  {n:3,txt:'Prefiere hacer cosas solo antes que con otros'},
+  {n:4,txt:'Forma extraña de iniciar y mantener interacciones con los demás'},
+  {n:5,txt:'Dificultades para comprender expresiones faciales sutiles'},
+  {n:6,txt:'Problemas para interpretar palabras cuyo significado depende del contexto'},
+  {n:7,txt:'Carece de iniciativa y creatividad en las actividades'},
+  {n:8,txt:'Uso estereotipado o peculiar de fórmulas sociales en la conversación'},
+  {n:9,txt:'Le resulta difícil hacer amigos'},
+  {n:10,txt:'La conversación resulta laboriosa y poco fluida'},
+  {n:11,txt:'Impresión de no compartir intereses con el grupo de iguales'},
+  {n:12,txt:'Dificultades para cooperar eficazmente con otros'},
+  {n:13,txt:'Comportamiento ingenuo (no se da cuenta de burlas, no sabe mentir…)'},
+  {n:14,txt:'Uso idiosincrásico de las palabras'},
+  {n:15,txt:'Dificultades para interpretar expresiones emocionales y empatía'},
+  {n:16,txt:'Dificultades para entender situaciones ficticias (películas, teatro, juegos de rol…)'},
+  {n:17,txt:'Rutinas o rituales complejos que dificultan actividades cotidianas'},
+  {n:18,txt:'Adherencia rígida e inflexible a las reglas en los juegos'}
+];
+
+function eaCalcFromItems() {
+  var sum = 0, cnt = 0, noObs = 0, answered = 0;
+  EA_ITEMS.forEach(function(it) {
+    var s = document.querySelector('input[name="ea_'+it.n+'"]:checked');
+    if (!s) return;
+    answered++;
+    var v = parseInt(s.value, 10);
+    if (v === 0) noObs++;
+    else { sum += v; cnt++; }
+  });
+  return { sum: sum, cnt: cnt, noObs: noObs, answered: answered };
+}
+
+function eaInterp(data) {
+  var useDirect = data.answered === 18 && data.noObs <= 2;
+  var score = useDirect ? data.sum : (data.cnt ? parseFloat((data.sum / data.cnt).toFixed(2)) : 0);
+  var positivo = useDirect ? score >= 36 : score >= 2;
+  var lbl = useDirect ? ('Suma directa: ' + score + '/72') : ('Promedio: ' + score + '/4');
+  var txt = positivo ? 'Puntaje en o por encima del punto de corte (≥36 suma directa o ≥2,0 promedio). Compatible con rasgos de autismo/Asperger de alto funcionamiento. Requiere evaluación clínica integral.' : 'Puntaje por debajo del punto de corte. No descarta evaluación si hay indicadores clínicos.';
+  return { score: score, useDirect: useDirect, positivo: positivo, lbl: lbl, cat: positivo ? 'Sobre punto de corte' : 'Bajo punto de corte', txt: txt };
+}
+
+function iniciarEA() { ndInitTest('ea','ea-fecha','ea-form','ea-resultado', ndRenderEA.bind(null,'ea-items')); }
+function limpiarEA() { for(var i=1;i<=18;i++) document.querySelectorAll('input[name="ea_'+i+'"]').forEach(function(r){r.checked=false;}); }
+function _mostrarEA(r) {
+  document.getElementById('ea-pts').textContent = r.score;
+  document.getElementById('ea-pts-lbl').textContent = r.lbl;
+  document.getElementById('ea-cat').textContent = r.cat;
+  document.getElementById('ea-badge').textContent = r.positivo ? '≥ corte' : '< corte';
+  document.getElementById('ea-badge').className = 'badge-grande ' + (r.positivo ? 'bg-grave' : 'bg-minima');
+  document.getElementById('ea-interp').innerHTML = '<p><strong>' + r.lbl + ' — ' + r.cat + '</strong>.</p><p>' + r.txt + '</p><p><em>EA · Informante · Corte: 36 (suma) o 2,0 (promedio).</em></p>';
+  window._eaData = r;
+  ndShowResult('ea-form', 'ea-resultado');
+}
+function calcularEA() {
+  var raw = eaCalcFromItems();
+  if (raw.answered < 18 && !confirm('Hay ítems sin responder. ¿Continuar?')) return;
+  _mostrarEA(eaInterp(raw));
+}
+function calcularEAManual() {
+  var sum = document.getElementById('man-ea-suma').value;
+  var prom = document.getElementById('man-ea-prom').value;
+  if (sum !== '') {
+    var s = parseInt(sum, 10);
+    if (isNaN(s) || s < 18 || s > 72) { toast('Suma 18–72', 'error'); return; }
+    _mostrarEA({ score: s, useDirect: true, positivo: s >= 36, lbl: 'Suma directa: '+s+'/72', cat: s >= 36 ? 'Sobre punto de corte' : 'Bajo punto de corte', txt: s >= 36 ? 'Sobre corte ≥36.' : 'Bajo corte.' });
+  } else if (prom !== '') {
+    var p = parseFloat(prom);
+    if (isNaN(p) || p < 1 || p > 4) { toast('Promedio 1–4', 'error'); return; }
+    _mostrarEA({ score: p, useDirect: false, positivo: p >= 2, lbl: 'Promedio: '+p+'/4', cat: p >= 2 ? 'Sobre punto de corte' : 'Bajo punto de corte', txt: p >= 2 ? 'Sobre corte ≥2,0.' : 'Bajo corte.' });
+  } else toast('Ingresá suma o promedio', 'error');
+}
+function guardarEA() {
+  if (!window._eaData) { toast('Calculá antes', 'error'); return; }
+  var inf = document.getElementById('ea-informante').value.trim();
+  var d = Object.assign({}, window._eaData, { informante: inf || null });
+  ndGuardar('EA', 'ea-paciente', 'ea-fecha', d.score, d.cat, d);
+}
+
+// ── SCQ Forma A ──
+var SCQ_ITEMS = [
+  {n:1,txt:'¿Es capaz de hablar usando frases u oraciones cortas?'},
+  {n:2,txt:'¿Puede tener una conversación en la que participen ambos y construyan sobre lo dicho?'},
+  {n:3,txt:'¿Ha usado frases raras o repetido lo mismo casi exactamente igual?'},
+  {n:4,txt:'¿Ha hecho preguntas o afirmaciones socialmente inconvenientes?'},
+  {n:5,txt:'¿Ha confundido pronombres (vos/ella en lugar de yo)?'},
+  {n:6,txt:'¿Ha usado palabras inventadas o formas metafóricas peculiares?'},
+  {n:7,txt:'¿Ha insistido en hacer cosas de una manera u orden muy particular?'},
+  {n:8,txt:'¿Ha insistido en rituales que debían respetarse?'},
+  {n:9,txt:'¿Su expresión facial ha sido generalmente adecuada a la situación?'},
+  {n:10,txt:'¿Ha usado la mano de otra persona como herramienta?'},
+  {n:11,txt:'¿Ha mostrado interés por cosas que parecen extrañas (semáforos, tuberías, horarios)?'},
+  {n:12,txt:'¿Más interesado en piezas de un juguete que en su función?'},
+  {n:13,txt:'¿Interés especial excesivamente intenso por algún tema?'},
+  {n:14,txt:'¿Interés excepcional por vista, tacto, sonido, sabor u olor?'},
+  {n:15,txt:'¿Gestos o movimientos extraños con manos o dedos?'},
+  {n:16,txt:'¿Movimientos complicados del cuerpo (dar vueltas, retorcerse, saltos)?'},
+  {n:17,txt:'¿Se ha hecho daño a propósito (morderse, golpearse la cabeza)?'},
+  {n:18,txt:'¿Objetos que necesitaba llevar consigo (aparte de muñeco/manta)?'},
+  {n:19,txt:'¿Tiene un amigo íntimo o amistad en particular?'},
+  {n:20,txt:'(4–5 años) ¿Habló solo para ser simpático y no para conseguir algo?'},
+  {n:21,txt:'(4–5 años) ¿Imitó espontáneamente a otras personas?'},
+  {n:22,txt:'(4–5 años) ¿Señaló cosas solo para mostrárselas?'},
+  {n:23,txt:'(4–5 años) ¿Hizo gestos para indicar lo que quería?'},
+  {n:24,txt:'(4–5 años) ¿Asentía con la cabeza para decir sí?'},
+  {n:25,txt:'(4–5 años) ¿Negaba con la cabeza para decir no?'},
+  {n:26,txt:'(4–5 años) ¿Le miraba directamente a la cara al hablarle?'},
+  {n:27,txt:'(4–5 años) ¿Devolvía la sonrisa?'},
+  {n:28,txt:'(4–5 años) ¿Mostraba cosas que le interesaban para captar atención?'},
+  {n:29,txt:'(4–5 años) ¿Se ofrecía a compartir cosas (aparte de comida)?'},
+  {n:30,txt:'(4–5 años) ¿Intentó que participaran en sus juegos?'},
+  {n:31,txt:'(4–5 años) ¿Intentó consolar si veía tristeza o dolor?'},
+  {n:32,txt:'(4–5 años) ¿Miraba y hacía gestos/sonidos para captar atención?'},
+  {n:33,txt:'(4–5 años) ¿Mostraba variedad normal de expresiones faciales?'},
+  {n:34,txt:'(4–5 años) ¿Participó en juegos de grupo o imitó juegos sociales?'},
+  {n:35,txt:'(4–5 años) ¿Jugaba a disfrazarse o juegos de ficción?'},
+  {n:36,txt:'(4–5 años) ¿Mostró interés por niños de su edad desconocidos?'},
+  {n:37,txt:'(4–5 años) ¿Respondió positivamente al acercarse otro niño?'},
+  {n:38,txt:'(4–5 años) ¿Levantaba la vista si le hablaban sin decir su nombre?'},
+  {n:39,txt:'(4–5 años) ¿Participó en juegos de ficción comprendidos mutuamente?'},
+  {n:40,txt:'(4–5 años) ¿Participó en juegos grupales que requerían colaborar?'}
+];
+
+function scqScoreFromResponses(getVal) {
+  var total = 0, dc = 0, is = 0, crr = 0;
+  for (var i = 1; i <= 40; i++) {
+    var v = getVal(i); if (v == null) continue;
+    var pt = v ? 1 : 0;
+    if (i === 1) continue;
+    if (i === 9 || i === 19) pt = v ? 0 : 1;
+    total += pt;
+    if (SCQ_DC.indexOf(i) >= 0) dc += pt;
+    if (SCQ_IS.indexOf(i) >= 0) is += pt;
+    if (SCQ_CRR.indexOf(i) >= 0) crr += pt;
+  }
+  return { total: total, dc: dc, is: is, crr: crr };
+}
+
+function iniciarSCQ() { ndInitTest('scq','scq-fecha','scq-form','scq-resultado', function(){ ndRenderYesNo('scq', SCQ_ITEMS, 'scq-items'); }); }
+function limpiarSCQ() { for(var i=1;i<=40;i++) document.querySelectorAll('input[name="scq_'+i+'"]').forEach(function(r){r.checked=false;}); }
+function _mostrarSCQ(d) {
+  var pos = d.total >= 15, alto = d.total >= 24;
+  document.getElementById('scq-detalle').innerHTML =
+    '<div class="resultado-detalle">' +
+    '<div class="detalle-item"><div class="detalle-num">'+d.total+'</div><div class="detalle-lbl">Total (corte ≥15)</div></div>' +
+    '<div class="detalle-item"><div class="detalle-num">'+d.dc+'</div><div class="detalle-lbl">DC · Comunicación</div></div>' +
+    '<div class="detalle-item"><div class="detalle-num">'+d.is+'</div><div class="detalle-lbl">IS · Interacción social</div></div>' +
+    '<div class="detalle-item"><div class="detalle-num">'+d.crr+'</div><div class="detalle-lbl">CRR · Cond. repetitivas</div></div></div>';
+  document.getElementById('scq-interp').innerHTML =
+    '<p><strong>SCQ Forma A — Total: '+d.total+'</strong>. ' +
+    (pos ? 'Puntaje ≥15: compatible con criterios de comunicación social del espectro autista. ' : 'Puntaje <15: por debajo del corte de la Forma A. ') +
+    (alto ? 'Escala total ≥24: nivel elevado de indicadores.' : '') + '</p>' +
+    '<p>Subescalas — DC (comunicación): '+d.dc+' · IS (interacción social): '+d.is+' · CRR (conductas repetitivas): '+d.crr+'.</p>' +
+    '<p><em>Informante · No diagnóstico por sí solo · Complementar con entrevista clínica y evaluación multidisciplinaria.</em></p>';
+  window._scqData = d;
+  ndShowResult('scq-form', 'scq-resultado');
+}
+function calcularSCQ() {
+  var sin = 0, d = scqScoreFromResponses(function(n){ var s=document.querySelector('input[name="scq_'+n+'"]:checked'); if(!s){sin++;return null;} return parseInt(s.value,10); });
+  if (sin && !confirm('Hay '+sin+' ítem(s) sin respuesta. ¿Continuar?')) return;
+  _mostrarSCQ(d);
+}
+function calcularSCQManual() {
+  var t = parseInt(document.getElementById('man-scq-total').value, 10);
+  if (isNaN(t) || t < 0 || t > 40) { toast('Total 0–40', 'error'); return; }
+  var d = { total: t, dc: parseInt(document.getElementById('man-scq-dc').value)||null, is: parseInt(document.getElementById('man-scq-is').value)||null, crr: parseInt(document.getElementById('man-scq-crr').value)||null };
+  _mostrarSCQ(d);
+}
+function guardarSCQ() {
+  if (!window._scqData) { toast('Calculá antes', 'error'); return; }
+  var inf = document.getElementById('scq-informante').value.trim();
+  var d = Object.assign({}, window._scqData, { informante: inf || null });
+  ndGuardar('SCQ', 'scq-paciente', 'scq-fecha', d.total, d.total >= 15 ? 'Sobre corte (≥15)' : 'Bajo corte', d);
+}
+
 function iniciarAsrs() {
   document.getElementById('asrs-fecha').value = new Date().toISOString().split('T')[0];
   var divA = document.getElementById('asrs-items-a');
@@ -14281,6 +15003,11 @@ function buildPruebasRealizadasHtml(datos) {
     'GDS-30': 'Escala de Depresión Geriátrica de Yesavage (GDS-30)',
     'ASRS-V1.1': 'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
     'EAVA': 'Escala de Autovaloración de TDAH en Adultos (EAVA)',
+    'AQ': 'Cociente del Espectro Autista — AQ (50 ítems)',
+    'AQ-10': 'AQ-10 · Cribado de rasgos autistas',
+    'EQ': 'Coeficiente de Empatía (EQ)',
+    'EA': 'Escala Autónoma Asperger / Autismo alto funcionamiento (EA)',
+    'SCQ': 'Social Communication Questionnaire — Forma A (SCQ)',
     'WURS-25': 'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX': 'Cuestionario Disejecutivo (DEX)',
     'PCS': 'Escala de Catastrofización del Dolor (PCS)',
@@ -14295,7 +15022,8 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
     { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
-    { label: 'TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
+    { label: 'Cuestionarios Neurodesarrollo · TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
+    { label: 'Cuestionarios Neurodesarrollo · TEA', tests: ['AQ', 'AQ-10', 'EQ', 'EA', 'SCQ'] },
     { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'PSS-10', 'Holmes-Rahe', 'GDS-30'] },
     { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
     { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
@@ -16535,7 +17263,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
-  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
+  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
   function tipoTest(t){return NP_LIST.indexOf(t)!==-1?'np':CL_LIST.indexOf(t)!==-1?'cl':TD_LIST.indexOf(t)!==-1?'td':DO_LIST.indexOf(t)!==-1?'do':'cl';}
   var testsNP    = datos.filter(function(r){return tipoTest(r.test)==='np';});
@@ -16594,6 +17322,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'ASRS-V1.1':'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
     'WURS-25':'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX':'Cuestionario Disejecutivo (DEX)',
+    'AQ':'Cociente del Espectro Autista — AQ (50 ítems)',
+    'AQ-10':'AQ-10 · Cribado de rasgos autistas',
+    'EQ':'Coeficiente de Empatía (EQ)',
+    'EA':'Escala Autónoma Asperger / Autismo alto funcionamiento (EA)',
+    'SCQ':'Social Communication Questionnaire — Forma A (SCQ)',
     'PCS':'Escala de Catastrofización del Dolor (PCS)',
     'CSQ':'Cuestionario de Estrategias de Afrontamiento al Dolor (CSQ)',
     'PBQ':'Cuestionario de Conductas de Dolor (PBQ)',
@@ -16606,7 +17339,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
     {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
     {label:'Habilidades visoconstructivas',         tests:['Figura Rey','Test del Reloj (Cacho)']},
-    {label:'TDAH',                                  tests:['ASRS-V1.1','WURS-25','DEX']},
+    {label:'Cuest. Neurodesarrollo · TDAH',         tests:['ASRS-V1.1','WURS-25','DEX','EAVA']},
+    {label:'Cuest. Neurodesarrollo · TEA',          tests:['AQ','AQ-10','EQ','EA','SCQ']},
     {label:'Psicología clínica',                    tests:['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30']},
     {label:'Evaluación del dolor',                  tests:['PCS','CSQ','PBQ','BPI']},
     {label:'Cuestionarios familiares',              tests:['Cuestionarios Familiares']},
@@ -16779,6 +17513,16 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
         addCL('EAVA · Inatención (Parte A)',eA!='—'?eA+'/36':'—',d.cat_a||'—');
         addCL('EAVA · Hiper./Impulsividad (Parte B)',eB!='—'?eB+'/36':'—',d.cat_b||'—');
+      }
+      else if(r.test==='AQ'){addCL('AQ · Cociente del Espectro Autista',r.puntaje_total!=null?r.puntaje_total+'/50':'—',(r.categoria||'—')+(d.fenotipo?' · '+d.fenotipo:''));}
+      else if(r.test==='AQ-10'){addCL('AQ-10 · Cribado autista',r.puntaje_total!=null?r.puntaje_total+'/10':'—',r.categoria||'—');}
+      else if(r.test==='EQ'){addCL('EQ · Coeficiente de Empatía',r.puntaje_total!=null?r.puntaje_total+'/80':'—',r.categoria||'—');}
+      else if(r.test==='EA'){addCL('EA · Escala Autónoma Asperger',d.score!=null?d.score:'—',r.categoria||'—');}
+      else if(r.test==='SCQ'){
+        addCL('SCQ · Total Forma A',d.total!=null?d.total:'—',r.categoria||'—');
+        if(d.dc!=null)addCL('SCQ · DC Comunicación',d.dc,'—');
+        if(d.is!=null)addCL('SCQ · IS Interacción social',d.is,'—');
+        if(d.crr!=null)addCL('SCQ · CRR Cond. repetitivas',d.crr,'—');
       }
       else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,r.categoria||'—');}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
