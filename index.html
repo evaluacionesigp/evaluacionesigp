@@ -533,6 +533,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <span class="sector-tag">MoCA</span>
             <span class="sector-tag">IFS</span>
             <span class="sector-tag">WAIS-IV</span>
+            <span class="sector-tag">WAIS Perfil</span>
             <span class="sector-tag">ACE-R</span>
             <span class="sector-tag">BNT</span>
             <span class="sector-tag">WCST-64</span>
@@ -4483,6 +4484,60 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         </div>
       </div>
     </div>
+
+    <!-- ── WAIS-IV PERFIL (carga de índices desde software) ── -->
+    <div class="vista" id="vista-waisperfil">
+      <div class="back-btn" onclick="volverSector()">← Volver</div>
+      <div class="vista-header"><div class="vista-titulo">WAIS-IV · Perfil de Índices</div></div>
+
+      <div id="waisperfil-form">
+        <div class="card">
+          <div class="card-title">Datos de la evaluación</div>
+          <div class="form-grid-3">
+            <div class="field"><label>Paciente *</label><select id="waisperfil-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+            <div class="field"><label>Fecha</label><input type="date" id="waisperfil-fecha"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes obtenidos en el software de corrección WAIS-IV. La descripción se completa automáticamente según el Puntaje Compuesto; podés modificarla si el software arroja otra categoría.</p>
+          <div style="overflow-x-auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.84rem;min-width:640px;">
+              <thead>
+                <tr style="border-bottom:2px solid var(--border);">
+                  <th style="text-align:left;padding:8px 12px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Índices</th>
+                  <th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Puntaje Equivalente</th>
+                  <th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Puntaje Compuesto</th>
+                  <th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Percentil</th>
+                  <th style="text-align:left;padding:8px 12px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Descripción</th>
+                </tr>
+              </thead>
+              <tbody id="waisperfil-input-rows"></tbody>
+            </table>
+          </div>
+          <div class="btn-row" style="margin-top:16px;">
+            <button class="btn-secondary" onclick="limpiarWaisperfil()">🗑 Limpiar</button>
+            <button class="btn-primary" onclick="calcularWaisperfil()">Ver resultado →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="waisperfil-resultado" style="display:none;">
+        <div class="resultado-box">
+          <div class="card">
+            <div class="card-title">ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)</div>
+            <div class="resultado-detalle" id="waisperfil-detalle"></div>
+          </div>
+          <div class="interp-box"><div class="interp-titulo">📋 Interpretación del perfil</div><div class="interp-texto" id="waisperfil-interp"></div></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn-secondary" onclick="document.getElementById('waisperfil-resultado').style.display='none';document.getElementById('waisperfil-form').style.display='block';">← Modificar</button>
+          <button class="btn-primary" onclick="guardarWaisperfil()">💾 Guardar resultado</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── TEST BNT ── -->
     <div class="vista" id="vista-bnt">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
@@ -6023,7 +6078,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -6725,6 +6780,21 @@ var GLOSARIO_TESTS = {
       alto: ['¿El rendimiento elevado es consistente con el nivel educativo?']
     }
   },
+  'WAIS-IV Perfil': {
+    mide: 'Perfil global de inteligencia con los cinco índices principales: Comprensión Verbal (ICV), Razonamiento Perceptual (IRP), Memoria de Trabajo (IMT), Velocidad de Procesamiento (IVP) y CI Total (CIT).',
+    interpretacion: {
+      bajo: 'Rendimiento intelectual global o por índices por debajo del promedio esperado.',
+      limite: 'Algunos índices en límite inferior normativo con posible heterogeneidad del perfil.',
+      normal: 'Capacidad intelectual global y por índices dentro del rango esperado.',
+      alto: 'Fortalezas relativas en uno o más índices por encima del promedio.'
+    },
+    preguntas: {
+      bajo: ['¿Qué índices muestran el mayor descenso respecto al CIT?', '¿La heterogeneidad del perfil es clínicamente significativa?', '¿El patrón es consistente con la historia clínica y el nivel educativo?'],
+      limite: ['¿Hay discrepancias ≥15 puntos entre índices?', '¿Las áreas más bajas coinciden con las quejas cognitivas del paciente?'],
+      normal: ['¿El perfil es homogéneo o hay dispersiones a considerar?', '¿Las fortalezas verbales/perceptuales se reflejan en el funcionamiento cotidiano?'],
+      alto: ['¿Las fortalezas en ICV o IRP compensan posibles debilidades en IMT o IVP?', '¿El perfil es coherente con el nivel educativo y ocupacional?']
+    }
+  },
   'BEM 144 Signoret': {
     mide: 'Evaluación de memoria episódica verbal y visual con diferentes modalidades de codificación y evocación.',
     interpretacion: {
@@ -7126,7 +7196,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   }
 
   // ── Clasificación de tests ──
-  var NP = ['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
+  var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL = ['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
   var TD = ['ASRS-V1.1','WURS-25','DEX'];
   var DO = ['PCS','PBQ','CSQ','BPI'];
@@ -7293,6 +7363,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
       { dom: 'COGNITIVO GLOBAL', tests: [
         { t:'MoCA',               fn: function(r){ addPunto('MoCA', r.puntaje_z, 'COG. GLOBAL', 'MoCA'); } },
         { t:'ACE-R',              fn: function(r){ addPunto('ACE-R', r.puntaje_z, 'COG. GLOBAL', 'ACE-R'); } },
+        { t:'WAIS-IV Perfil', fn: function(r){ var idx=(r.datos||{}).indices||{}; ['icv','irp','imt','ivp','cit'].forEach(function(k){ var wi=idx[k]; if(wi&&wi.z!=null) addPunto(wi.corto||k.toUpperCase(),wi.z,'COG. GLOBAL','WAIS-IV Perfil'); }); } },
         { t:'Test del Reloj (Cacho)', fn: function(r){ addPunto('Reloj', r.puntaje_z, 'COG. GLOBAL', 'Test del Reloj (Cacho)'); } },
       ]},
       { dom: 'MEMORIA', tests: [
@@ -7495,7 +7566,7 @@ function renderCuestionariosFam(d) {
 
     // Agrupar por dominio
     var dominios = {
-      'COGNITIVO GLOBAL':    ['MoCA','ACE-R','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':    ['MoCA','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
       'MEMORIA':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
       'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64'],
@@ -7607,6 +7678,16 @@ function renderCuestionariosFam(d) {
           if (d.rd_pb != null) rows += filaTabla('Retención de Dígitos', d.rd_pb, 10, 3, d.rd_z, r.fecha);
           if (d.cla_pb != null) rows += filaTabla('Claves', d.cla_pb, 10, 3, d.cla_z, r.fecha);
           if (d.sln_pb != null) rows += filaTabla('Sec. Número-Letra', d.sln_pb, 10, 3, d.sln_z, r.fecha);
+
+        } else if (testNombre === 'WAIS-IV Perfil') {
+          rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WAIS-IV · Perfil de Índices (ICV · IRP · IMT · IVP · CIT)</td></tr>';
+          var wIdx = d.indices || {};
+          WAIS_PERFIL_INDICES.forEach(function(idx) {
+            var wi = wIdx[idx.key];
+            if (!wi || wi.pc == null) return;
+            var nota = 'PE=' + (wi.pe != null ? wi.pe : '—') + ' · Pc ' + (wi.pct != null ? wi.pct : '—') + ' · ' + (wi.desc || '—');
+            rows += filaTabla(idx.lbl, wi.pe, 100, 15, wi.z, r.fecha, nota);
+          });
 
         } else if (testNombre === 'Test del Hotel') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">Test del Hotel (Pinasco et al., 2023)</td></tr>';
@@ -8423,6 +8504,7 @@ var NP_TESTS = [
   {id:'sdmt',     n:'SDMT',              d:'Symbol Digit Modalities · escrita + oral',    t:'Atención',           dom:'atencion'},
   {id:'stroop',   n:'Stroop',            d:'P · C · PC · Interferencia',                  t:'Atención',           dom:'atencion'},
   {id:'waisiv',   n:'WAIS-IV',           d:'Dígitos · Claves · SLN',                      t:'Atención / Mem. trabajo', dom:'atencion'},
+  {id:'waisperfil', n:'WAIS-IV Perfil',  d:'Carga de índices ICV · IRP · IMT · IVP · CIT desde software', t:'Cognitivo global', dom:'global'},
   // Memoria
   {id:'rey',      n:'Rey Verbal',        d:'RAVLT · Aprendizaje verbal episódico',         t:'Memoria',            dom:'memoria'},
   {id:'signoret', n:'BEM 144',           d:'Signoret · Memoria lógica y episódica',       t:'Memoria',            dom:'memoria'},
@@ -8693,6 +8775,7 @@ function irTest(t) {
   if (t === 'dex') iniciarDEX();
   if (t === 'eava') iniciarEAVA();
   if (t === 'waisiv') iniciarWaisiv();
+  if (t === 'waisperfil') iniciarWaisperfil();
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
   if (t === 'mbi') iniciarMBI();
@@ -11423,6 +11506,219 @@ function guardarWaisiv() {
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
   }).catch(function(){toast('Error al guardar','error');});
 }
+
+// ══ WAIS-IV PERFIL (carga manual de índices) ════════════════════════════════
+var WAIS_PERFIL_INDICES = [
+  {key:'icv', lbl:'Índice de Comprensión Verbal (ICV)', corto:'ICV'},
+  {key:'irp', lbl:'Índice de Razonamiento Perceptual (IRP)', corto:'IRP'},
+  {key:'imt', lbl:'Índice de Memoria de Trabajo (IMT)', corto:'IMT'},
+  {key:'ivp', lbl:'Índice de Velocidad de Procesamiento (IVP)', corto:'IVP'},
+  {key:'cit', lbl:'CI Total (CIT)', corto:'CIT'}
+];
+
+function waisPcToDesc(pc) {
+  if (pc === null || pc === undefined || isNaN(pc)) return '';
+  pc = parseFloat(pc);
+  if (pc >= 130) return 'Muy superior';
+  if (pc >= 120) return 'Superior';
+  if (pc >= 110) return 'Sobre el promedio';
+  if (pc >= 90)  return 'Promedio';
+  if (pc >= 80)  return 'Por debajo del promedio';
+  if (pc >= 70)  return 'Límite inferior';
+  return 'Dificultad';
+}
+
+function waisPcToZ(pc) {
+  if (pc === null || pc === undefined || isNaN(pc)) return null;
+  return parseFloat(((parseFloat(pc) - 100) / 15).toFixed(2));
+}
+
+function waisperfilRenderInputs() {
+  var tbody = document.getElementById('waisperfil-input-rows');
+  if (!tbody) return;
+  tbody.innerHTML = WAIS_PERFIL_INDICES.map(function(idx) {
+    return '<tr style="border-bottom:1px solid var(--border);">' +
+      '<td style="padding:8px 12px;font-weight:500;">' + idx.lbl + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;"><input type="number" id="waisperfil-' + idx.key + '-pe" min="1" max="190" placeholder="PE" style="width:72px;text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;"></td>' +
+      '<td style="padding:6px 8px;text-align:center;"><input type="number" id="waisperfil-' + idx.key + '-pc" min="40" max="160" placeholder="PC" style="width:72px;text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;" oninput="waisperfilAutoDesc(\'' + idx.key + '\')"></td>' +
+      '<td style="padding:6px 8px;text-align:center;"><input type="number" id="waisperfil-' + idx.key + '-pct" min="1" max="99" placeholder="Pc" style="width:64px;text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;"></td>' +
+      '<td style="padding:6px 8px;"><input type="text" id="waisperfil-' + idx.key + '-desc" placeholder="Descripción" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.82rem;"></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function waisperfilAutoDesc(key) {
+  var pcEl = document.getElementById('waisperfil-' + key + '-pc');
+  var descEl = document.getElementById('waisperfil-' + key + '-desc');
+  if (!pcEl || !descEl || pcEl.value === '') return;
+  descEl.value = waisPcToDesc(parseFloat(pcEl.value));
+}
+
+function waisperfilLeerDatos() {
+  var indices = {};
+  WAIS_PERFIL_INDICES.forEach(function(idx) {
+    var peEl = document.getElementById('waisperfil-' + idx.key + '-pe');
+    var pcEl = document.getElementById('waisperfil-' + idx.key + '-pc');
+    var pctEl = document.getElementById('waisperfil-' + idx.key + '-pct');
+    var descEl = document.getElementById('waisperfil-' + idx.key + '-desc');
+    var pe = peEl && peEl.value !== '' ? parseFloat(peEl.value) : null;
+    var pc = pcEl && pcEl.value !== '' ? parseFloat(pcEl.value) : null;
+    var pct = pctEl && pctEl.value !== '' ? parseInt(pctEl.value, 10) : null;
+    var desc = descEl && descEl.value.trim() ? descEl.value.trim() : (pc !== null ? waisPcToDesc(pc) : null);
+    if (pe !== null || pc !== null) {
+      indices[idx.key] = { pe:pe, pc:pc, pct:pct, desc:desc, z:waisPcToZ(pc), lbl:idx.lbl, corto:idx.corto };
+    }
+  });
+  return indices;
+}
+
+function waisperfilTablaHtml(indices, esResultado) {
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:0.84rem;">' +
+    '<thead><tr style="border-bottom:2px solid var(--border);">' +
+    '<th style="text-align:left;padding:8px 12px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Índices</th>' +
+    '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Puntaje Equivalente</th>' +
+    '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Puntaje Compuesto</th>' +
+    '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Percentil</th>' +
+    '<th style="text-align:left;padding:8px 12px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Descripción</th>' +
+    '</tr></thead><tbody>';
+  WAIS_PERFIL_INDICES.forEach(function(idx) {
+    var d = indices[idx.key];
+    if (!d) return;
+    var descBg = d.desc === 'Sobre el promedio' || d.desc === 'Superior' || d.desc === 'Muy superior' ? '#d8eaff'
+      : d.desc === 'Promedio' ? '#d4f0e2'
+      : d.desc === 'Por debajo del promedio' ? '#fdf0c4'
+      : '#fad8d8';
+    html += '<tr style="border-bottom:1px solid var(--border);' + (idx.key === 'cit' && esResultado ? 'background:#f8faf6;' : '') + '">' +
+      '<td style="padding:8px 12px;font-weight:' + (idx.key === 'cit' ? '700' : '500') + ';">' + idx.lbl + '</td>' +
+      '<td style="text-align:center;padding:8px;font-family:monospace;font-weight:600;">' + (d.pe != null ? d.pe : '—') + '</td>' +
+      '<td style="text-align:center;padding:8px;font-family:monospace;font-weight:700;color:var(--accent);">' + (d.pc != null ? d.pc : '—') + '</td>' +
+      '<td style="text-align:center;padding:8px;font-family:monospace;">' + (d.pct != null ? d.pct : '—') + '</td>' +
+      '<td style="padding:8px 12px;"><span style="background:' + descBg + ';border-radius:12px;padding:3px 10px;font-size:0.78rem;font-weight:600;">' + (d.desc || '—') + '</span></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function waisperfilGenerarInterp(indices) {
+  var interp = [];
+  var cit = indices.cit;
+  if (cit && cit.pc != null) {
+    interp.push('El CI Total (CIT) es de <strong>' + cit.pc + '</strong> (percentil ' + (cit.pct != null ? cit.pct : '—') + '), ubicándose en rango <strong>' + (cit.desc || waisPcToDesc(cit.pc)).toLowerCase() + '</strong>.');
+  }
+  var primarios = ['icv','irp','imt','ivp'].map(function(k){ return indices[k] ? Object.assign({k:k}, indices[k]) : null; }).filter(Boolean);
+  if (primarios.length) {
+    var altos = primarios.filter(function(x){ return x.pc >= 110; });
+    var bajos = primarios.filter(function(x){ return x.pc < 90; });
+    var medios = primarios.filter(function(x){ return x.pc >= 90 && x.pc < 110; });
+    if (altos.length) {
+      interp.push('Se observan fortalezas relativas en ' + altos.map(function(x){ return x.corto + ' (PC=' + x.pc + ', ' + (x.desc||'').toLowerCase() + ')'; }).join(' y ') + '.');
+    }
+    if (bajos.length) {
+      interp.push('Los índices con rendimiento por debajo del promedio son ' + bajos.map(function(x){ return x.corto + ' (PC=' + x.pc + ')'; }).join(' y ') + '.');
+    }
+    if (medios.length && !altos.length && !bajos.length) {
+      interp.push('Los cuatro índices primarios (ICV, IRP, IMT, IVP) se encuentran en rango promedio, sugiriendo un perfil cognitivo homogéneo.');
+    }
+    if (primarios.length >= 2) {
+      var pcs = primarios.map(function(x){ return x.pc; });
+      var maxPc = Math.max.apply(null, pcs);
+      var minPc = Math.min.apply(null, pcs);
+      var spread = maxPc - minPc;
+      if (spread >= 15) {
+        var maxIdx = primarios.find(function(x){ return x.pc === maxPc; });
+        var minIdx = primarios.find(function(x){ return x.pc === minPc; });
+        interp.push('Existe una dispersión de ' + spread + ' puntos entre el índice más alto (' + maxIdx.corto + ', PC=' + maxPc + ') y el más bajo (' + minIdx.corto + ', PC=' + minPc + '), lo que indica un perfil cognitivo heterogéneo.');
+      } else if (spread < 15 && spread > 0) {
+        interp.push('La dispersión entre índices es de ' + spread + ' puntos, dentro de un rango de variabilidad esperado.');
+      }
+    }
+    var verbal = indices.icv, percept = indices.irp, mem = indices.imt, vel = indices.ivp;
+    if (verbal && percept && mem && vel) {
+      var vpProm = (verbal.pc + percept.pc) / 2;
+      var mvProm = (mem.pc + vel.pc) / 2;
+      if (vpProm - mvProm >= 10) {
+        interp.push('Predominan las habilidades verbales y de razonamiento perceptual sobre la memoria de trabajo y la velocidad de procesamiento.');
+      } else if (mvProm - vpProm >= 10) {
+        interp.push('Predominan la memoria de trabajo y la velocidad de procesamiento sobre las habilidades verbales y de razonamiento perceptual.');
+      }
+    }
+  }
+  if (!interp.length) interp.push('Completá al menos el CIT o un índice para obtener la interpretación del perfil.');
+  interp.push('<em>Síntesis orientativa — integrar con el juicio clínico, el nivel educativo y el resto de la evaluación neuropsicológica.</em>');
+  return interp;
+}
+
+function iniciarWaisperfil() {
+  document.getElementById('waisperfil-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('waisperfil-form').style.display = 'block';
+  document.getElementById('waisperfil-resultado').style.display = 'none';
+  waisperfilRenderInputs();
+  window._waisperfilData = null;
+}
+
+function limpiarWaisperfil() {
+  waisperfilRenderInputs();
+  window._waisperfilData = null;
+}
+
+function calcularWaisperfil() {
+  var pacId = document.getElementById('waisperfil-paciente').value;
+  if (!pacId) { toast('Seleccioná un paciente.', 'error'); return; }
+  var indices = waisperfilLeerDatos();
+  var faltantes = WAIS_PERFIL_INDICES.filter(function(idx) {
+    return !indices[idx.key] || indices[idx.key].pc == null;
+  });
+  if (faltantes.length) {
+    toast('Completá el Puntaje Compuesto de: ' + faltantes.map(function(x){ return x.corto; }).join(', '), 'error');
+    return;
+  }
+  WAIS_PERFIL_INDICES.forEach(function(idx) {
+    var d = indices[idx.key];
+    if (d && !d.desc) d.desc = waisPcToDesc(d.pc);
+    if (d && d.pct == null) {
+      var z = d.z;
+      if (z != null) d.pct = Math.max(1, Math.min(99, Math.round(50 + 28.57 * z)));
+    }
+  });
+  document.getElementById('waisperfil-detalle').innerHTML = waisperfilTablaHtml(indices, true);
+  var interp = waisperfilGenerarInterp(indices);
+  document.getElementById('waisperfil-interp').innerHTML = interp.map(function(p){ return '<p>' + p + '</p>'; }).join('');
+  window._waisperfilData = { indices: indices };
+  document.getElementById('waisperfil-form').style.display = 'none';
+  document.getElementById('waisperfil-resultado').style.display = 'block';
+}
+
+function guardarWaisperfil() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('waisperfil-paciente').value;
+  var fecha = document.getElementById('waisperfil-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente.', 'error'); return; }
+  if (!window._waisperfilData) { toast('Calculá el resultado antes de guardar.', 'error'); return; }
+  var indices = window._waisperfilData.indices;
+  var cit = indices.cit || {};
+  var datosObj = { indices: {} };
+  WAIS_PERFIL_INDICES.forEach(function(idx) {
+    var d = indices[idx.key];
+    if (d) datosObj.indices[idx.key] = { pe:d.pe, pc:d.pc, pct:d.pct, desc:d.desc, z:d.z, lbl:idx.lbl, corto:idx.corto };
+  });
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'WAIS-IV Perfil', fecha: fecha,
+    puntaje_total: cit.pc,
+    puntaje_z: cit.z,
+    percentil: cit.pct,
+    categoria: cit.desc || waisPcToDesc(cit.pc),
+    datos: datosObj
+  }, SESSION.access_token).then(function() {
+    cargarResultados();
+    toast('✓ WAIS-IV Perfil guardado', 'success');
+    var btnAll = document.querySelectorAll('.vista.active .btn-primary');
+    var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
+    if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
+  }).catch(function(){ toast('Error al guardar', 'error'); });
+}
+
 // ══ ASRS-V1.1 ════════════════════════════════════════════════════════════════
 // Baremos Scandar MG (2021) — Rev Neurol 72(3):77-84 — Tabla V — n=1.173, Argentina
 var ASRS_BAR = {
@@ -13941,6 +14237,7 @@ function buildPruebasRealizadasHtml(datos) {
     'MoCA': 'Montreal Cognitive Assessment (MoCA)',
     'ACE-R': "Addenbrooke's Cognitive Examination — Revisado (ACE-R)",
     'WAIS-IV': 'Retención de Dígitos, Claves y Secuencia Número-Letra — WAIS-IV',
+    'WAIS-IV Perfil': 'Escala de Inteligencia para Adultos de Wechsler — Perfil de Índices (WAIS-IV)',
     'TMT A-B': 'Trail Making Test (TMT-A y TMT-B)',
     'Fluencia Verbal': 'Fluencia Verbal Semántica y Fonológica',
     'Cuestionarios Familiares': 'Cuestionarios Familiares (NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG)',
@@ -13992,7 +14289,7 @@ function buildPruebasRealizadasHtml(datos) {
     'BPI': 'Inventario Breve de Dolor (BPI)'
   };
   var DOMINIOS = [
-    { label: 'Screening cognitivo global', tests: ['MoCA', 'ACE-R', 'Test del Reloj (Cacho)'] },
+    { label: 'Screening cognitivo global', tests: ['MoCA', 'ACE-R', 'WAIS-IV Perfil', 'Test del Reloj (Cacho)'] },
     { label: 'Atención y velocidad de procesamiento', tests: ['WAIS-IV', 'TMT A-B', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'] },
     { label: 'Lenguaje', tests: ['Fluencia Verbal', 'BNT-60', 'BNT-12', 'Token Test'] },
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
@@ -16236,7 +16533,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   inf = inf || {};
   var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
-  var NP_LIST=['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
+  var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
@@ -16261,6 +16558,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'MoCA':'Montreal Cognitive Assessment (MoCA)',
     'ACE-R':'Addenbrooke\'s Cognitive Examination — Revisado (ACE-R)',
     'WAIS-IV':'Retención de Dígitos, Claves y Sec. Número-Letra — WAIS-IV',
+    'WAIS-IV Perfil':'Escala de Inteligencia para Adultos de Wechsler — Perfil de Índices (WAIS-IV)',
     'TMT A-B':'Trail Making Test (TMT-A y TMT-B)',
     'Fluencia Verbal':'Fluencia Verbal Semántica y Fonológica',
     'Cuestionarios Familiares':'Cuestionarios Familiares (NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG)',
@@ -16302,7 +16600,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BPI':'Inventario Breve de Dolor (BPI)'
   };
   var DOMINIOS_PRUEBAS=[
-    {label:'Screening cognitivo global',           tests:['MoCA','ACE-R']},
+    {label:'Screening cognitivo global',           tests:['MoCA','ACE-R','WAIS-IV Perfil']},
     {label:'Atención y velocidad de procesamiento',tests:['WAIS-IV','TMT A-B','D2','SDMT-escrita','SDMT-oral','BTA']},
     {label:'Lenguaje',                              tests:['Fluencia Verbal','BNT-60','BNT-12','Token Test']},
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
@@ -16320,7 +16618,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var byTest={};
     list.forEach(function(r){byTest[r.test]=r;});
     var DOMS={
-      'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)','WAIS-IV Perfil'],
       'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
       'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64'],
@@ -16378,6 +16676,13 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.rd_pb!=null)add('WAIS-IV · Ret. Dígitos',d.rd_pb,10,3,d.rd_z,null);
           if(d.cla_pb!=null)add('WAIS-IV · Claves',d.cla_pb,10,3,d.cla_z,null);
           if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra',d.sln_pb,10,3,d.sln_z,null);
+        } else if(tn==='WAIS-IV Perfil'){
+          var wIdx=d.indices||{};
+          WAIS_PERFIL_INDICES.forEach(function(idx){
+            var wi=wIdx[idx.key];
+            if(!wi||wi.pc==null)return;
+            add('WAIS · '+idx.corto,wi.pe,100,15,wi.z,'Pc '+(wi.pct!=null?wi.pct:'—')+' · '+(wi.desc||''));
+          });
         } else if(tn==='Stroop'){
           if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
           if(d.zC!=null) add('Stroop — Color',d.c!=null?d.c:d.cCorr,50,10,d.zC,null);
@@ -17258,6 +17563,12 @@ function renderPerfilZ() {
         if (d.rd_z  != null) filas.push({lbl:'WAIS · Dígitos', z: d.rd_z});
         if (d.cla_z != null) filas.push({lbl:'WAIS · Claves', z: d.cla_z});
         if (d.sln_z != null) filas.push({lbl:'WAIS · Nro-Letra', z: d.sln_z});
+      } else if (tn === 'WAIS-IV Perfil') {
+        var wIdx = d.indices || {};
+        WAIS_PERFIL_INDICES.forEach(function(idx) {
+          var wi = wIdx[idx.key];
+          if (wi && wi.z != null) filas.push({lbl:'WAIS · ' + idx.corto, z: wi.z, glosario: 'WAIS-IV Perfil'});
+        });
       } else if (tn === 'Fluencia Verbal' && d.variables && d.variables.length) {
         d.variables.forEach(function(v){ filas.push({lbl: v.label, z: v.z}); });
       } else if (tn === 'Rey Verbal' && d.variables && d.variables.length) {
