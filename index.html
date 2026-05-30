@@ -17727,20 +17727,23 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   if(infCfgPack.cfg.incluir_apendice_b){
   body+=secTit('8. Apéndice B: Resultados Estadísticos');
 
-  // Evaluación Neuropsicológica: WAIS-IV Perfil (tabla índices) + grilla Z
+  // Evaluación Neuropsicológica — grilla Z
   var waisPerfilTbl = buildWaisPerfilWordTable(datos);
   var npRows = buildNPRows(testsNP);
-  if (waisPerfilTbl || npRows.length) {
+  if (npRows.length) {
     body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
-    if (waisPerfilTbl) {
-      body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 19, font: 'Arial', color: '000000' }), { before: 40, after: 30 });
-      body += _wTable(waisPerfilTbl.rows, waisPerfilTbl.cols);
-      body += _wPar('', { before: 0, after: waisPerfilTbl && npRows.length ? 60 : 80 });
+    body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
+    body += _wPar('', { before: 0, after: 80 });
+  }
+
+  // WAIS-IV Perfil (tabla índices) — al final de neuro, antes de Cuest. Neurodesarrollo
+  if (waisPerfilTbl) {
+    if (!npRows.length) {
+      body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
     }
-    if (npRows.length) {
-      body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
-      body += _wPar('', { before: 0, after: 80 });
-    }
+    body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: npRows.length ? 80 : 0, after: 40 });
+    body += _wTable(waisPerfilTbl.rows, waisPerfilTbl.cols);
+    body += _wPar('', { before: 0, after: 80 });
   }
 
   // TABLA Cuestionarios Neurodesarrollo (TDAH + TEA)
