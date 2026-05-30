@@ -7850,7 +7850,7 @@ function renderCuestionariosFam(d) {
             var wi = wIdx[idx.key];
             if (!wi || wi.pc == null) return;
             var nota = 'PE=' + (wi.pe != null ? wi.pe : '—') + ' · Pc ' + (wi.pct != null ? wi.pct : '—') + ' · ' + (wi.desc || '—');
-            rows += filaTabla(idx.lbl, wi.pe, 100, 15, wi.z, r.fecha, nota);
+            rows += filaTabla(idx.lbl, wi.pc, 100, 15, wi.z, r.fecha, nota);
           });
 
         } else if (testNombre === 'Test del Hotel') {
@@ -12133,9 +12133,6 @@ function guardarEAVA() {
     cargarResultados(); toast('✓ EAVA guardado', 'success');
     var btn = document.querySelector('.vista.active .btn-primary:last-child');
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function() { toast('Error al guardar', 'error'); });
-}
-
   }).catch(function() { toast('Error al guardar', 'error'); });
 }
 
@@ -17320,6 +17317,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'SCL-90-R':'Inventario de Síntomas SCL-90-R',
     'MBI-HSS':'Inventario de Burnout de Maslach (MBI-HSS)',
     'ASRS-V1.1':'Escala de Autodetección de TDAH en Adultos (ASRS-V1.1)',
+    'EAVA':'Escala de Autovaloración de TDAH en Adultos (EAVA)',
     'WURS-25':'Escala de Wender-Utah — 25 ítems (WURS-25)',
     'DEX':'Cuestionario Disejecutivo (DEX)',
     'AQ':'Cociente del Espectro Autista — AQ (50 ítems)',
@@ -17415,7 +17413,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           WAIS_PERFIL_INDICES.forEach(function(idx){
             var wi=wIdx[idx.key];
             if(!wi||wi.pc==null)return;
-            add('WAIS · '+idx.corto,wi.pe,100,15,wi.z,'Pc '+(wi.pct!=null?wi.pct:'—')+' · '+(wi.desc||''));
+            add(idx.lbl, wi.pc, 100, 15, wi.z, 'PE='+(wi.pe!=null?wi.pe:'—')+' · Pc '+(wi.pct!=null?wi.pct:'—')+' · '+(wi.desc||'—'));
           });
         } else if(tn==='Stroop'){
           if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
@@ -17689,13 +17687,23 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wPar('',{before:0,after:80});
   }
 
-  // TABLA TDAH
-  var tdRows=buildSimpleRows(testsTD);
-  if(tdRows.length){
-    body+=_wPar(_wRun('TDAH',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
+  // TABLA Cuestionarios Neurodesarrollo (TDAH + TEA)
+  var TD_TDAH_LIST = ['ASRS-V1.1','WURS-25','DEX','EAVA'];
+  var TD_TEA_LIST  = ['AQ','AQ-10','EQ','EA','SCQ'];
+  var tdahRows = buildSimpleRows(testsTD.filter(function(r){ return TD_TDAH_LIST.indexOf(r.test) >= 0; }));
+  var teaRows  = buildSimpleRows(testsTD.filter(function(r){ return TD_TEA_LIST.indexOf(r.test) >= 0; }));
+  if(tdahRows.length){
+    body+=_wPar(_wRun('Cuestionarios Neurodesarrollo · TDAH',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
     body+=_wTable([
       _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(tdRows),COL_CL);
+    ].concat(tdahRows),COL_CL);
+    body+=_wPar('',{before:0,after:80});
+  }
+  if(teaRows.length){
+    body+=_wPar(_wRun('Cuestionarios Neurodesarrollo · TEA',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
+    body+=_wTable([
+      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
+    ].concat(teaRows),COL_CL);
     body+=_wPar('',{before:0,after:80});
   }
 
