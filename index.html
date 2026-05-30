@@ -17350,7 +17350,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var byTest={};
     list.forEach(function(r){byTest[r.test]=r;});
     var DOMS={
-      'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)','WAIS-IV Perfil'],
+      'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)'],
       'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
       'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64'],
@@ -17408,13 +17408,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.rd_pb!=null)add('WAIS-IV · Ret. Dígitos',d.rd_pb,10,3,d.rd_z,null);
           if(d.cla_pb!=null)add('WAIS-IV · Claves',d.cla_pb,10,3,d.cla_z,null);
           if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra',d.sln_pb,10,3,d.sln_z,null);
-        } else if(tn==='WAIS-IV Perfil'){
-          var wIdx=d.indices||{};
-          WAIS_PERFIL_INDICES.forEach(function(idx){
-            var wi=wIdx[idx.key];
-            if(!wi||wi.pc==null)return;
-            add(idx.lbl, wi.pc, 100, 15, wi.z, 'PE='+(wi.pe!=null?wi.pe:'—')+' · Pc '+(wi.pct!=null?wi.pct:'—')+' · '+(wi.desc||'—'));
-          });
         } else if(tn==='Stroop'){
           if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
           if(d.zC!=null) add('Stroop — Color',d.c!=null?d.c:d.cCorr,50,10,d.zC,null);
@@ -17453,6 +17446,63 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       });
     });
     return rows;
+  }
+
+  // ── Normalizar campo datos (jsonb o string) ──
+  function _parseResultDatos(raw) {
+    if (!raw) return {};
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch (e) { return {}; }
+    }
+    return raw;
+  }
+
+  // ── Tabla WAIS-IV Perfil (PE · PC · Percentil · Descripción) ──
+  function buildWaisPerfilWordTable(list) {
+    var r = null;
+    list.forEach(function(x) {
+      if (x.test === 'WAIS-IV Perfil' || x.test === 'WAIS Perfil') r = x;
+    });
+    if (!r) return null;
+    var wIdx = (_parseResultDatos(r.datos).indices) || {};
+    var COL_WAIS = _wordScaleCols([3000, 1300, 1300, 1100, 2760], WORD_CONTENT_W);
+    var rows = [], rc = 0;
+    function waisCell(txt, w, bg, center) {
+      return _wCell(_wPar(_wRun(String(txt != null && txt !== '' ? txt : '—'), { sz: 19, font: 'Arial', color: '000000' }), { align: center ? 'center' : 'left', before: 20, after: 20 }), { w: w, fill: bg || 'FFFFFF' });
+    }
+    function waisHdr(txt, w) {
+      return _wCell(_wPar(_wRun(txt, { sz: 17, bold: true, color: '000000', font: 'Arial' }), { align: 'center', before: 20, after: 20 }), { w: w, fill: 'F2F2F2', hdrBorder: true });
+    }
+    rows.push(_wRow([
+      waisHdr('Índices', COL_WAIS[0]),
+      waisHdr('Puntaje Equivalente', COL_WAIS[1]),
+      waisHdr('Puntaje Compuesto', COL_WAIS[2]),
+      waisHdr('Percentil', COL_WAIS[3]),
+      waisHdr('Descripción', COL_WAIS[4])
+    ], { hdr: true }));
+    WAIS_PERFIL_INDICES.forEach(function(idx) {
+      var wi = wIdx[idx.key];
+      if (!wi) return;
+      var pc = wi.pc != null && wi.pc !== '' ? parseFloat(wi.pc) : null;
+      if (pc == null || isNaN(pc)) return;
+      var desc = wi.desc || (typeof waisPcToDesc === 'function' ? waisPcToDesc(pc) : '');
+      var pct = wi.pct != null && wi.pct !== '' ? wi.pct : null;
+      if (pct == null && typeof waisPcToZ === 'function') {
+        var wz = waisPcToZ(pc);
+        if (wz != null) pct = Math.max(1, Math.min(99, Math.round(50 + 28.57 * wz)));
+      }
+      var bg = rc % 2 === 0 ? 'F2F2F2' : 'FFFFFF';
+      var lbl = wi.lbl || idx.lbl;
+      rows.push(_wRow([
+        waisCell(lbl, COL_WAIS[0], bg, false),
+        waisCell(wi.pe, COL_WAIS[1], bg, true),
+        waisCell(pc, COL_WAIS[2], bg, true),
+        waisCell(pct, COL_WAIS[3], bg, true),
+        waisCell(desc, COL_WAIS[4], bg, false)
+      ]));
+      rc++;
+    });
+    return rows.length > 1 ? { rows: rows, cols: COL_WAIS } : null;
   }
 
   // ── Tabla simple para CL/TD/DO (Instrumento | Puntaje | Resultado) ──
@@ -17677,14 +17727,20 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   if(infCfgPack.cfg.incluir_apendice_b){
   body+=secTit('8. Apéndice B: Resultados Estadísticos');
 
-
-
-  // Tabla NP con grilla Z
-  var npRows=buildNPRows(testsNP);
-  if(npRows.length){
-    body+=_wPar(_wRun('Evaluación Neuropsicológica',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([_zHdrRow()].concat(npRows),COL_WIDTHS_HDR);
-    body+=_wPar('',{before:0,after:80});
+  // Evaluación Neuropsicológica: WAIS-IV Perfil (tabla índices) + grilla Z
+  var waisPerfilTbl = buildWaisPerfilWordTable(datos);
+  var npRows = buildNPRows(testsNP);
+  if (waisPerfilTbl || npRows.length) {
+    body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
+    if (waisPerfilTbl) {
+      body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 19, font: 'Arial', color: '000000' }), { before: 40, after: 30 });
+      body += _wTable(waisPerfilTbl.rows, waisPerfilTbl.cols);
+      body += _wPar('', { before: 0, after: waisPerfilTbl && npRows.length ? 60 : 80 });
+    }
+    if (npRows.length) {
+      body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
+      body += _wPar('', { before: 0, after: 80 });
+    }
   }
 
   // TABLA Cuestionarios Neurodesarrollo (TDAH + TEA)
