@@ -478,7 +478,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.0</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.1</div>
     </div>
   </aside>
 
@@ -4624,7 +4624,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 <!-- ── EAVA · Escala de Autovaloración de TDAH en Adultos ── -->
 <div class="vista" id="vista-eava">
   <div class="back-btn" onclick="volverSector()">← Volver</div>
-  <div class="vista-header"><div class="vista-titulo">EAVA · Escala de Autovaloración de TDAH en Adultos</div></div>
+  <div class="vista-header"><div class="vista-titulo" id="eava-titulo-glosario">EAVA · Escala de Autovaloración de TDAH en Adultos</div></div>
   <div id="eava-form">
     <div class="card">
       <div class="card-title">Datos de la evaluación</div>
@@ -4791,7 +4791,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 <div class="vista" id="vista-asrs">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
-      <div class="vista-header"><div class="vista-titulo">ASRS-V1.1 · Escala de Autodetección de TDAH en Adultos</div>
+      <div class="vista-header"><div class="vista-titulo" id="asrs-titulo-glosario">ASRS-V1.1 · Escala de Autodetección de TDAH en Adultos</div>
       <div style="margin-bottom:16px;">
         <button onclick="generarPDF('asrs')" style="
           background:#325c28;
@@ -4861,7 +4861,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <!-- ── TEST DEX ── -->
     <div class="vista" id="vista-dex">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
-      <div class="vista-header"><div class="vista-titulo">DEX · Cuestionario Disejecutivo</div></div>
+      <div class="vista-header"><div class="vista-titulo" id="dex-titulo-glosario">DEX · Cuestionario Disejecutivo</div></div>
       <div id="dex-form">
         <div class="card">
           <div class="card-titulo">Datos del paciente</div>
@@ -5163,7 +5163,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 <div class="vista" id="vista-wurs">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
-      <div class="vista-header"><div class="vista-titulo">WURS-25 · Escala de Wender-Utah</div>
+      <div class="vista-header"><div class="vista-titulo" id="wurs-titulo-glosario">WURS-25 · Escala de Wender-Utah</div>
       <div style="margin-bottom:16px;">
         <button onclick="generarPDF('wurs')" style="
           background:#325c28;
@@ -6222,6 +6222,247 @@ function cerrarModal(id) { document.getElementById(id).classList.remove('active'
 
 // ══ GLOSARIO CLÍNICO — TOOLTIP TESTS ════════════════════════════════════════
 var GLOSARIO_TESTS = {
+  'ASRS-V1.1': {
+    dominio: 'TDAH · Cribado en adultos',
+    soloInfo: true,
+    mide: 'Adult ADHD Self-Report Scale (ASRS v1.1, OMS). Autoinforme de síntomas actuales (últimos 6 meses). Parte A: screener de 6 ítems (corte ≥4 positivos). Partes B: 12 ítems adicionales para inatención (ASRS-I) e hiperactividad/impulsividad (ASRS-H). No diagnostica por sí sola: integrar criterios DSM-5/CIE-11 (inicio en desarrollo, ≥2 contextos, impacto funcional) y WURS retrospectivo.',
+    interpretacion: {
+      bajo: 'Perfil global sugestivo de síntomas actuales elevados. Requiere entrevista clínica y corroboración informante.',
+      limite: 'Hallazgos en zona límite; desglosar Parte A, inatención e hiperactividad.',
+      normal: 'Cribado sin indicadores marcados de TDAH actual.',
+      alto: 'Baja carga sintomática actual en el autoinforme; contrastar con queja y funcionamiento real.'
+    },
+    preguntas: {
+      bajo: ['¿Cumple criterio B (síntomas antes de los 12 años según DSM-5)?', '¿Hay impacto en trabajo, estudio y vínculos (criterio D)?', '¿Ansiedad, depresión o TUS explican mejor el cuadro?'],
+      limite: ['¿La Parte A es positiva pero WURS negativo (inicio no evolutivo)?', '¿Hay compensación alta (estrategias, estructura externa)?'],
+      normal: ['¿El paciente busca evaluación por queja familiar o laboral discordante?', '¿Coinciden neuropsicología ejecutiva y atención?'],
+      alto: ['¿ASRS negativo con marcada disfunción observada (subreporte)?']
+    }
+  },
+  'ASRS·SecA': {
+    dominio: 'TDAH · Cribado',
+    tipoMetrica: 'screening',
+    mide: 'Sección A (6 ítems, frecuencia 0–4). Cada ítem es “positivo” si supera umbral (ítems 1–3: ≥2; ítems 4–6: ≥3). Corte clínico: ≥4 ítems positivos → screening positivo para TDAH en adultos (Kessler et al.).',
+    interpretacion: {
+      bajo: 'Screening positivo (≥4/6). Alta probabilidad de TDAH actual; priorizar evaluación diagnóstica integral.',
+      limite: '2–3 ítems positivos. Zona gris; completar ASRS completo y entrevista.',
+      normal: '1 ítem positivo; baja señal en el screener.',
+      alto: '0 ítems positivos; screening negativo en Parte A.'
+    },
+    preguntas: {
+      bajo: ['¿Los ítems positivos son de inatención, hiperactividad o mixtos?', '¿El paciente minimiza síntomas por vergüenza?', '¿Corrobora informante o pareja?'],
+      limite: ['¿Repetir con informante hetero?', '¿Síntomas solo en un contexto (laboral vs doméstico)?'],
+      normal: ['¿Parte B eleva percentiles aunque A sea negativo?'],
+      alto: ['¿Screening negativo con historia infantil clara en WURS?']
+    }
+  },
+  'ASRS·I': {
+    dominio: 'TDAH · Inatención',
+    tipoMetrica: 'percentil',
+    mide: 'Subescala de inatención (10 ítems, suma 0–48). Percentil respecto a baremo argentino Scandar (2021). Evalúa desatención sostenida, desorganización, procrastinación y distractibilidad en la adultez.',
+    interpretacion: {
+      bajo: 'Percentil muy elevado (≥90). Inatención marcada respecto a la norma.',
+      limite: 'Percentil alto (75–89). Inatención por encima del promedio.',
+      normal: 'Percentil medio (40–74).',
+      alto: 'Percentil bajo (<40). Poca inatención reportada.'
+    },
+    preguntas: {
+      bajo: ['¿Predomina en trabajo intelectual o también en actividades automáticas?', '¿Hay queja de “niebla mental” y olvidos?', '¿Coincide con TMT-A, errores por omisión y Stroop?'],
+      limite: ['¿Solo inatención sin hiperactividad (presentación inatenta)?'],
+      normal: ['¿Inatención situacional (estrés, depresión)?'],
+      alto: ['¿Inatención baja con hiperactividad elevada (perfil combinado atípico)?']
+    }
+  },
+  'ASRS·H': {
+    dominio: 'TDAH · Hiperactividad/Impulsividad',
+    tipoMetrica: 'percentil',
+    mide: 'Subescala hiperactividad/impulsividad (8 ítems, suma 0–36). En adultos suele manifestarse como inquietud interna, impulsividad verbal, interrupciones y baja tolerancia a la demora más que hiperactividad motora evidente.',
+    interpretacion: {
+      bajo: 'Percentil muy elevado. Hiperactividad/impulsividad marcada en autoinforme.',
+      limite: 'Percentil alto. Sintomatología elevada.',
+      normal: 'Rango medio normativo.',
+      alto: 'Percentil bajo; poca hiperactividad/impulsividad reportada.'
+    },
+    preguntas: {
+      bajo: ['¿Impulsividad en gastos, conducción o vínculos?', '¿Inquietud motora sutil en entrevista?', '¿Coincide con FAB, DEX desinhibición y Stroop?'],
+      limite: ['¿Hiperactividad solo bajo estrés?'],
+      normal: ['¿Perfil inatento sin H/I?'],
+      alto: ['¿H/I baja con marcada desorganización (perfil ejecutivo)?']
+    }
+  },
+  'ASRS·T': {
+    dominio: 'TDAH · Global',
+    tipoMetrica: 'percentil',
+    mide: 'Puntaje total ASRS (18 ítems, 0–72). Resume carga sintomática global actual. Baremo nacional Scandar (2021).',
+    interpretacion: {
+      bajo: 'Percentil muy elevado. Carga global de síntomas de TDAH muy alta.',
+      limite: 'Percentil alto. Sintomatología global elevada.',
+      normal: 'Rango medio.',
+      alto: 'Percentil bajo; autoinforme global bajo.'
+    },
+    preguntas: {
+      bajo: ['¿Disociación entre total alto y funcionamiento aparente (compensación)?', '¿WURS confirma trayectoria evolutiva?', '¿Evaluar comorbilidad (TOC, TUS, bipolar)?'],
+      limite: ['¿Qué subescala explica el total?'],
+      normal: ['¿Total normal con Parte A positiva?'],
+      alto: ['¿Subreporte por negación o falta de insight?']
+    }
+  },
+  'WURS-25': {
+    dominio: 'TDAH · Historia evolutiva',
+    soloInfo: true,
+    mide: 'Wender Utah Rating Scale — 25 ítems retrospectivos sobre la infancia/adolescencia (“cuando era niño/a”). Evalúa si los síntomas nucleares estaban presentes en el desarrollo (criterio B DSM-5: antes de los 12 años). Baremo Scandar (2021), Argentina.',
+    interpretacion: {
+      bajo: 'Puntaje total ≥46: altamente compatible con síntomas significativos en la infancia.',
+      limite: '36–45: probable historia de síntomas infantiles.',
+      normal: 'Por debajo de 36: sin evidencia retrospectiva destacable.',
+      alto: 'Puntaje bajo; poca sintomatología recordada en la infancia.'
+    },
+    preguntas: {
+      bajo: ['¿El paciente recuerda problemas escolares, conducta o inatención aunque no hubo “fracaso”?', '¿Informantes familiares confirman?', '¿Coincide con ASRS actual?'],
+      limite: ['¿Memoria retrospectiva poco fiable (minimización)?', '¿Pedir ejemplos concretos por década escolar?'],
+      normal: ['¿WURS bajo pero ASRS alto (inicio tardío o adquirido)?'],
+      alto: ['¿Infancia estable con síntomas solo actuales (diagnóstico diferencial)?']
+    }
+  },
+  'WURS·Total': {
+    dominio: 'TDAH · Historia evolutiva',
+    tipoMetrica: 'wurs',
+    mide: 'Suma total WURS-25 (0–75; en la app cada ítem 0–3). Cortes: <36 sin síntomas significativos · 36–45 probable TDAH infantil · ≥46 altamente compatible. Percentil y Z según baremo argentino (M≈23.5, DE≈13.16).',
+    interpretacion: {
+      bajo: 'Total ≥46. Fuerte indicio de TDAH con inicio evolutivo.',
+      limite: 'Total 36–45. Probable sintomatología infantil; ampliar entrevista.',
+      normal: 'Total 25–35. Zona intermedia; integrar otros datos.',
+      alto: 'Total <25. Baja carga retrospectiva reportada.'
+    },
+    preguntas: {
+      bajo: ['¿Qué factores de la infancia predominan: atención, conducta o hiperactividad?', '¿Hubo repetición de año o informes escolares?', '¿La madre/padre completaría el mismo perfil?'],
+      limite: ['¿Síntomas solo en casa o solo en la escuela?'],
+      normal: ['¿Percentil medio con ejemplos clínicos en entrevista?'],
+      alto: ['¿Trauma o deprivación explican el cuadro actual sin TDAH?']
+    }
+  },
+  'EAVA': {
+    dominio: 'TDAH · Autovaloración',
+    soloInfo: true,
+    mide: 'Escala de Autovaloración de TDAH en Adultos. 18 ítems (Parte A inatención, Parte B hiperactividad/impulsividad), frecuencia 0–4, últimos 6 meses. Cortes por subescala (0–36): ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad. Complementa ASRS y entrevista; no reemplaza criterios formales.',
+    interpretacion: {
+      bajo: 'Al menos una subescala en rango “muy probable” (≥24).',
+      limite: 'Subescalas en rango probable (17–23).',
+      normal: 'Ambas subescalas en rango medio.',
+      alto: 'Baja probabilidad en ambas partes.'
+    },
+    preguntas: {
+      bajo: ['¿Perfil combinado, inatento o hiperactivo según A vs B?', '¿Impacto funcional documentado?', '¿Correlación con ASRS y WURS?'],
+      limite: ['¿Una sola subescala elevada?'],
+      normal: ['¿Discordancia con informante?'],
+      alto: ['¿EAVA baja con marcador ejecutivo en pruebas?']
+    }
+  },
+  'EAVA·A': {
+    dominio: 'TDAH · Inatención',
+    tipoMetrica: 'eava',
+    mide: 'Parte A — Inatención (9 ítems, 0–36). Evalúa olvidos, distractibilidad, dificultad para finalizar tareas y organización en los últimos 6 meses.',
+    interpretacion: {
+      bajo: '≥24: muy probable TDAH adulto — predominio inatento.',
+      limite: '17–23: probable; ampliar evaluación.',
+      normal: '10–16: sintomatología leve o subclínica.',
+      alto: '0–9: baja probabilidad por inatención.'
+    },
+    preguntas: {
+      bajo: ['¿Errores por descuido en trabajo?', '¿Procrastinación crónica?', '¿Parte B también elevada?'],
+      limite: ['¿Inatención solo con tareas aburridas?'],
+      normal: ['¿Estrés o sobrecarga explican el puntaje?'],
+      alto: ['¿Parte A baja con B muy alta?']
+    }
+  },
+  'EAVA·B': {
+    dominio: 'TDAH · Hiperactividad/Impulsividad',
+    tipoMetrica: 'eava',
+    mide: 'Parte B — Hiperactividad/impulsividad (9 ítems, 0–36). Inquietud, impulsividad verbal, dificultad para esperar y actuar “como impulsado por un motor”.',
+    interpretacion: {
+      bajo: '≥24: muy probable TDAH — predominio hiperactivo/impulsivo.',
+      limite: '17–23: probable.',
+      normal: '10–16: leve.',
+      alto: '0–9: baja probabilidad por H/I.'
+    },
+    preguntas: {
+      bajo: ['¿Interrupciones y hablar demasiado en entrevista?', '¿Impulsividad en decisiones?', '¿Parte A también elevada (combinado)?'],
+      limite: ['¿H/I solo social?'],
+      normal: ['¿Ansiedad explica inquietud?'],
+      alto: ['¿B baja con A muy alta (inatento)?']
+    }
+  },
+  'DEX': {
+    dominio: 'TDAH · Funciones ejecutivas',
+    soloInfo: true,
+    mide: 'Cuestionario Disejecutivo (DEX, Wilson). Autoinforme u heteroinforme de cambios conductuales postlesión o disfunción ejecutiva en la vida cotidiana. En TDAH adulto aporta impacto subjetivo en desorganización, apatía e impulsividad. Baremo adaptación argentina Querejeta et al. (2015).',
+    interpretacion: {
+      bajo: 'Z muy elevado: disejecutividad marcada reportada por el paciente o familiar.',
+      limite: 'Z moderadamente elevado.',
+      normal: 'Rango normativo.',
+      alto: 'Por debajo del promedio; pocos cambios reportados.'
+    },
+    preguntas: {
+      bajo: ['¿Coincide con pruebas (TMT-B, Stroop, WCST)?', '¿Hetero vs auto discrepan?', '¿Afecta AVD laborales y domésticas?'],
+      limite: ['¿Quejas selectivas (solo organización)?'],
+      normal: ['¿DEX normal con pruebas alteradas (insight)?'],
+      alto: ['¿DEX bajo con queja familiar intensa?']
+    }
+  },
+  'DEX·Desorg': {
+    dominio: 'TDAH · Ejecutivas',
+    tipoMetrica: 'z',
+    invertirZ: true,
+    mide: 'Subescala Desorganización/Apatía (10 ítems del DEX). Planificación, iniciativa, abulia percibida. Frecuente en presentación inatenta del TDAH adulto.',
+    interpretacion: {
+      bajo: 'Z alto: desorganización y apatía muy elevadas en autopercepción.',
+      limite: 'Z límite-alto.',
+      normal: 'En rango esperado.',
+      alto: 'Por debajo del promedio normativo.'
+    },
+    preguntas: {
+      bajo: ['¿Procrastinación y desorden crónico?', '¿Estrategias compensatorias fallan?', '¿Coincide con ASRS-I y EAVA-A?'],
+      limite: ['¿Solo en el trabajo?'],
+      normal: ['¿Desorganización situacional?'],
+      alto: ['¿Desorg baja con TMT-B muy lento?']
+    }
+  },
+  'DEX·Desinhi': {
+    dominio: 'TDAH · Ejecutivas',
+    tipoMetrica: 'z',
+    invertirZ: true,
+    mide: 'Subescala Desinhibición/Impulsividad del DEX. Irritabilidad, impulsividad, falta de control en conducta y afecto.',
+    interpretacion: {
+      bajo: 'Z alto: desinhibición marcada reportada.',
+      limite: 'Z elevado leve-moderado.',
+      normal: 'Normativo.',
+      alto: 'Bajo reporte de desinhibición.'
+    },
+    preguntas: {
+      bajo: ['¿Impulsividad verbal o decisiones?', '¿Coincide con ASRS-H y FAB?', '¿TUS o bipolar en diferencial?'],
+      limite: ['¿Solo con frustración?'],
+      normal: ['¿Contexto limitado?'],
+      alto: ['¿Desinhi baja con Stroop PC alterado?']
+    }
+  },
+  'DEX·Total': {
+    dominio: 'TDAH · Ejecutivas',
+    tipoMetrica: 'z',
+    invertirZ: true,
+    mide: 'Puntaje total DEX (/80). Resumen global de disfunción ejecutiva subjetiva.',
+    interpretacion: {
+      bajo: 'Z muy elevado: impacto ejecutivo global severo en la vida cotidiana.',
+      limite: 'Z elevado.',
+      normal: 'Normativo.',
+      alto: 'Bajo impacto reportado.'
+    },
+    preguntas: {
+      bajo: ['¿Correlación con batería neuropsicológica?', '¿Informante confirma?', '¿Criterio D DSM cumplido?'],
+      limite: ['¿Total elevado por una sola subescala?'],
+      normal: ['¿Discordancia auto-hetero?'],
+      alto: ['¿Total bajo con disfunción objetiva?']
+    }
+  },
   'MoCA': {
     mide: 'Instrumento de cribado del deterioro cognitivo leve. Evalúa funciones ejecutivas, denominación, memoria, atención, lenguaje, abstracción y orientación en aproximadamente 10 minutos.',
     interpretacion: {
@@ -7033,6 +7274,104 @@ function categoriaZGlosario(z, invertirZ) {
   return 'alto';
 }
 
+function categoriaGlosarioValor(val, g) {
+  if (val === null || val === undefined || val === '' || isNaN(parseFloat(val))) return null;
+  var v = parseFloat(val);
+  var tipo = (g && g.tipoMetrica) ? g.tipoMetrica : 'z';
+  if (tipo === 'z') return categoriaZGlosario(v, g.invertirZ);
+  if (tipo === 'percentil') {
+    if (v >= 90) return 'bajo';
+    if (v >= 75) return 'limite';
+    if (v >= 40) return 'normal';
+    return 'alto';
+  }
+  if (tipo === 'screening') {
+    if (v >= 4) return 'bajo';
+    if (v >= 2) return 'limite';
+    if (v >= 1) return 'normal';
+    return 'alto';
+  }
+  if (tipo === 'eava') {
+    if (v >= 24) return 'bajo';
+    if (v >= 17) return 'limite';
+    if (v >= 10) return 'normal';
+    return 'alto';
+  }
+  if (tipo === 'wurs') {
+    if (v >= 46) return 'bajo';
+    if (v >= 36) return 'limite';
+    if (v >= 25) return 'normal';
+    return 'alto';
+  }
+  return categoriaZGlosario(v, g.invertirZ);
+}
+
+function etiquetaMetricaGlosario(val, cat, g) {
+  var v = parseFloat(val);
+  var tipo = (g && g.tipoMetrica) ? g.tipoMetrica : 'z';
+  if (tipo === 'percentil') return 'Pc ' + Math.round(v) + ' · ' + ({ bajo: 'Muy elevado', limite: 'Elevado', normal: 'Promedio', alto: 'Bajo' })[cat];
+  if (tipo === 'screening') return Math.round(v) + '/6 positivos · ' + ({ bajo: 'Screening +', limite: 'Indeterminado', normal: '1 positivo', alto: 'Screening −' })[cat];
+  if (tipo === 'eava') return Math.round(v) + '/36 · ' + ({ bajo: 'Muy probable', limite: 'Probable', normal: 'Leve', alto: 'Baja probabilidad' })[cat];
+  if (tipo === 'wurs') return Math.round(v) + '/75 · ' + ({ bajo: '≥46 compatible', limite: '36–45 probable', normal: 'Zona media', alto: '<25 bajo' })[cat];
+  var zFmt = (Math.round(v * 100) / 100).toFixed(2);
+  return 'Z ' + zFmt + ' · ' + GLOSARIO_CAT_LABEL[cat];
+}
+
+function htmlGlosarioCelda(clave, valor, texto) {
+  if (!resolverTestGlosario(clave)) return texto;
+  var vArg = (valor === null || valor === undefined) ? 'null' : valor;
+  return '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(clave) + '" data-glosario-z="' + vArg + '">' +
+    texto + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>';
+}
+
+function htmlGlosarioInfo(clave, texto) {
+  if (!resolverTestGlosario(clave)) return texto;
+  return '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(clave) + '" data-glosario-solo="1">' +
+    texto + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>';
+}
+
+function aplicarTituloGlosario(id, clave, texto) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = htmlGlosarioInfo(clave, texto);
+}
+
+function buildHistorialTestCell(r) {
+  var d = r.datos || {};
+  if (r.test === 'ASRS-V1.1') {
+    var p = [htmlGlosarioInfo('ASRS-V1.1', r.test)];
+    if (d.parte_a_positivos != null) p.push('A ' + htmlGlosarioCelda('ASRS·SecA', d.parte_a_positivos, d.parte_a_positivos + '/6'));
+    if (d.pcI != null) p.push('I ' + htmlGlosarioCelda('ASRS·I', d.pcI, 'Pc' + d.pcI));
+    else if (d.scoreI != null) p.push('I ' + d.scoreI);
+    if (d.pcH != null) p.push('H ' + htmlGlosarioCelda('ASRS·H', d.pcH, 'Pc' + d.pcH));
+    else if (d.scoreH != null) p.push('H ' + d.scoreH);
+    if (d.pcT != null) p.push('T ' + htmlGlosarioCelda('ASRS·T', d.pcT, 'Pc' + d.pcT));
+    return '<div style="line-height:1.55;">' + p.join('<br>') + '</div>';
+  }
+  if (r.test === 'WURS-25') {
+    var t = d.total != null ? d.total : r.puntaje_total;
+  var pc = d.pc != null ? ' · Pc' + d.pc : '';
+    return htmlGlosarioInfo('WURS-25', r.test) + '<br><span style="font-size:0.75rem;">' +
+      htmlGlosarioCelda('WURS·Total', t, (t != null ? t + '/75' + pc : '—')) + '</span>';
+  }
+  if (r.test === 'EAVA') {
+    return htmlGlosarioInfo('EAVA', r.test) + '<br><span style="font-size:0.75rem;">' +
+      'A ' + htmlGlosarioCelda('EAVA·A', d.parte_a, (d.parte_a != null ? d.parte_a + '/36' : '—')) + '<br>' +
+      'B ' + htmlGlosarioCelda('EAVA·B', d.parte_b, (d.parte_b != null ? d.parte_b + '/36' : '—')) + '</span>';
+  }
+  if (r.test === 'DEX') {
+    var q = [htmlGlosarioInfo('DEX', r.test)];
+    if (d.zDesorg != null) q.push('Desorg ' + htmlGlosarioCelda('DEX·Desorg', d.zDesorg, 'Z' + (d.zDesorg >= 0 ? '+' : '') + d.zDesorg));
+    if (d.zDesinhi != null) q.push('Desinhi ' + htmlGlosarioCelda('DEX·Desinhi', d.zDesinhi, 'Z' + (d.zDesinhi >= 0 ? '+' : '') + d.zDesinhi));
+    if (d.zTotal != null) q.push('Total ' + htmlGlosarioCelda('DEX·Total', d.zTotal, 'Z' + (d.zTotal >= 0 ? '+' : '') + d.zTotal));
+    return '<div style="line-height:1.55;font-size:0.82rem;">' + q.join('<br>') + '</div>';
+  }
+  var zArg = (r.puntaje_z !== null && r.puntaje_z !== undefined) ? r.puntaje_z : 'null';
+  if (resolverTestGlosario(r.test)) {
+    return '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(r.test) + '" data-glosario-z="' + zArg + '">' + r.test + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>';
+  }
+  return r.test;
+}
+
 var GLOSARIO_CAT_COLOR = { bajo: '#c53030', limite: '#e07b00', normal: '#2e7a4f', alto: '#2563eb' };
 var GLOSARIO_CAT_LABEL = { bajo: 'Z < −2', limite: '−2 ≤ Z < −1', normal: '−1 ≤ Z ≤ 1', alto: 'Z > 1' };
 
@@ -7057,7 +7396,8 @@ function initGlosarioDelegacion() {
     window._glosarioHoverEl = el;
     var zRaw = el.getAttribute('data-glosario-z');
     var z = (zRaw === 'null' || zRaw === '' || zRaw == null) ? null : parseFloat(zRaw);
-    mostrarTooltipTest(e, el.getAttribute('data-glosario-test'), z);
+    var solo = el.getAttribute('data-glosario-solo') === '1';
+    mostrarTooltipTest(e, el.getAttribute('data-glosario-test'), z, solo);
   });
   document.body.addEventListener('mouseout', function(e) {
     var el = e.target.closest('[data-glosario-test]');
@@ -7074,25 +7414,45 @@ function ocultarTooltipTest() {
   if (tip) tip.style.display = 'none';
 }
 
-function mostrarTooltipTest(event, testNombre, zScore) {
+function mostrarTooltipTest(event, testNombre, zScore, soloInfo) {
   var clave = resolverTestGlosario(testNombre);
   if (!clave) return;
   var g = GLOSARIO_TESTS[clave];
   if (!g) return;
-  if (zScore === null || zScore === undefined || zScore === '' || isNaN(parseFloat(zScore))) return;
-  var z = parseFloat(zScore);
-  var cat = categoriaZGlosario(z, g.invertirZ);
   var tip = document.getElementById('tooltip-glosario');
   if (!tip) return;
+  if (soloInfo || g.soloInfo) {
+    var catInfo = 'normal';
+    var pregInfo = (g.preguntas[catInfo] || []).map(function(q) {
+      return '<li style="margin:4px 0 0 16px;">' + q + '</li>';
+    }).join('');
+    tip.innerHTML =
+      '<div class="tooltip-glosario-titulo">' + testNombre + '</div>' +
+      (g.dominio ? '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">' + g.dominio + '</div>' : '') +
+      '<div class="tooltip-glosario-seccion"><strong>Qué mide</strong><p>' + g.mide + '</p></div>' +
+      '<div class="tooltip-glosario-seccion"><strong>Preguntas disparadoras (guía clínica)</strong><ul style="margin:0;padding:0;list-style:disc;">' + pregInfo + '</ul></div>' +
+      '<p style="font-size:0.72rem;color:var(--muted);margin:8px 0 0;">Pasá el mouse sobre cada subescala en historial/informe para interpretación según el puntaje.</p>';
+    tip.style.display = 'block';
+    var pad0 = 14, x0 = (event.clientX || 0) + pad0, y0 = (event.clientY || 0) + pad0;
+    tip.style.left = x0 + 'px'; tip.style.top = y0 + 'px';
+    var rect0 = tip.getBoundingClientRect();
+    if (rect0.right > window.innerWidth - 8) tip.style.left = Math.max(8, x0 - rect0.width - pad0 * 2) + 'px';
+    if (rect0.bottom > window.innerHeight - 8) tip.style.top = Math.max(8, y0 - rect0.height - pad0 * 2) + 'px';
+    return;
+  }
+  if (zScore === null || zScore === undefined || zScore === '' || isNaN(parseFloat(zScore))) return;
+  var z = parseFloat(zScore);
+  var cat = categoriaGlosarioValor(z, g);
+  if (!cat) return;
   var preguntas = (g.preguntas[cat] || []).map(function(q) {
     return '<li style="margin:4px 0 0 16px;">' + q + '</li>';
   }).join('');
-  var zFmt = (Math.round(z * 100) / 100).toFixed(2);
   tip.innerHTML =
     '<div class="tooltip-glosario-titulo">' + testNombre + '</div>' +
+    (g.dominio ? '<div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">' + g.dominio + '</div>' : '') +
     '<div class="tooltip-glosario-seccion"><strong>Qué mide</strong><p>' + g.mide + '</p></div>' +
     '<div class="tooltip-glosario-seccion"><strong>Implicación clínica</strong>' +
-    '<span class="tooltip-glosario-badge" style="background:' + GLOSARIO_CAT_COLOR[cat] + ';">Z ' + zFmt + ' · ' + GLOSARIO_CAT_LABEL[cat] + '</span>' +
+    '<span class="tooltip-glosario-badge" style="background:' + GLOSARIO_CAT_COLOR[cat] + ';">' + etiquetaMetricaGlosario(z, cat, g) + '</span>' +
     '<p>' + g.interpretacion[cat] + '</p></div>' +
     '<div class="tooltip-glosario-seccion"><strong>Preguntas disparadoras</strong><ul style="margin:0;padding:0;list-style:disc;">' + preguntas + '</ul></div>';
   tip.style.display = 'block';
@@ -7128,10 +7488,7 @@ function renderHistorial() {
     datos.map(function(r) {
       var nomPac = r.psico_pacientes ? r.psico_pacientes.nombre : '—';
       var zColor = r.puntaje_z===null ? 'var(--muted)' : r.puntaje_z >= -1.0 ? 'var(--green)' : r.puntaje_z >= -1.5 ? 'var(--yellow)' : r.puntaje_z >= -2.0 ? 'var(--orange)' : 'var(--red)';
-      var zArg = (r.puntaje_z !== null && r.puntaje_z !== undefined) ? r.puntaje_z : 'null';
-      var testCell = resolverTestGlosario(r.test)
-        ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(r.test) + '" data-glosario-z="' + zArg + '">' + r.test + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
-        : r.test;
+      var testCell = buildHistorialTestCell(r);
       return '<tr style="border-bottom:1px solid var(--border);">' +
         '<td style="padding:10px 12px;font-size:0.84rem;">' + nomPac + '</td>' +
         '<td style="padding:10px 12px;font-size:0.84rem;font-weight:600;color:var(--accentdk);">' + testCell + '</td>' +
@@ -8311,10 +8668,10 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDarkC+'">Puntaje</th>'+
           '<th style="'+thDarkC+'">Z · Pc</th>'+
           '<th style="'+thDark+'">Interpretación</th></tr></thead><tbody>';
-        if (secA!==null) html+='<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">Sección A — Screener Kessler</td><td style="'+tdRC+'">'+secA+'/6</td><td style="'+tdRC+';font-family:inherit;">—</td><td style="'+tdRI+'">'+(positivo?'Screening positivo (≥4)':'Screening negativo')+'</td></tr>';
-        if (sI!==null)   html+='<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">Inatención (ASRS-I)</td><td style="'+tdRC+'">'+sI+'</td><td style="'+tdRC+'">'+(zI!=null?(zI>=0?'+':'')+zI:'—')+(pcI!=null?' · Pc '+pcI:'')+'</td><td style="'+tdRI+'">'+(pcI!=null?pcLblA(pcI):'—')+'</td></tr>';
-        if (sH!==null)   html+='<tr style="background:'+rowBg(2)+'"><td style="'+tdR+'">Hiperactividad/Impulsividad (ASRS-H)</td><td style="'+tdRC+'">'+sH+'</td><td style="'+tdRC+'">'+(zH!=null?(zH>=0?'+':'')+zH:'—')+(pcH!=null?' · Pc '+pcH:'')+'</td><td style="'+tdRI+'">'+(pcH!=null?pcLblA(pcH):'—')+'</td></tr>';
-        if (sT!==null)   html+='<tr style="background:#f0f0f0;"><td style="'+tdR+'font-weight:700;">Total (ASRS-T)</td><td style="'+tdRC+'">'+sT+'</td><td style="'+tdRC+'">'+(zT!=null?(zT>=0?'+':'')+zT:'—')+(pcT!=null?' · Pc '+pcT:'')+'</td><td style="'+tdRI+'">'+(pcT!=null?pcLblA(pcT):'—')+'</td></tr>';
+        if (secA!==null) html+='<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·SecA', secA, 'Sección A — Screener Kessler')+'</td><td style="'+tdRC+'">'+secA+'/6</td><td style="'+tdRC+';font-family:inherit;">—</td><td style="'+tdRI+'">'+(positivo?'Screening positivo (≥4)':'Screening negativo')+'</td></tr>';
+        if (sI!==null)   html+='<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·I', pcI != null ? pcI : zI, 'Inatención (ASRS-I)')+'</td><td style="'+tdRC+'">'+sI+'</td><td style="'+tdRC+'">'+(zI!=null?(zI>=0?'+':'')+zI:'—')+(pcI!=null?' · Pc '+pcI:'')+'</td><td style="'+tdRI+'">'+(pcI!=null?pcLblA(pcI):'—')+'</td></tr>';
+        if (sH!==null)   html+='<tr style="background:'+rowBg(2)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·H', pcH != null ? pcH : zH, 'Hiperactividad/Impulsividad (ASRS-H)')+'</td><td style="'+tdRC+'">'+sH+'</td><td style="'+tdRC+'">'+(zH!=null?(zH>=0?'+':'')+zH:'—')+(pcH!=null?' · Pc '+pcH:'')+'</td><td style="'+tdRI+'">'+(pcH!=null?pcLblA(pcH):'—')+'</td></tr>';
+        if (sT!==null)   html+='<tr style="background:#f0f0f0;"><td style="'+tdR+'font-weight:700;">'+htmlGlosarioCelda('ASRS·T', pcT != null ? pcT : zT, 'Total (ASRS-T)')+'</td><td style="'+tdRC+'">'+sT+'</td><td style="'+tdRC+'">'+(zT!=null?(zT>=0?'+':'')+zT:'—')+(pcT!=null?' · Pc '+pcT:'')+'</td><td style="'+tdRI+'">'+(pcT!=null?pcLblA(pcT):'—')+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Baremos: Scandar MG (2021) Rev Neurol 72(3) — n=1.173, Argentina.</div>';
         return;
@@ -8414,10 +8771,10 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDarkC+'">Puntaje</th>'+
           '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
         var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
-        html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">Parte A · Inatención (0–36)</td>'+
+        html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">'+htmlGlosarioCelda('EAVA·A', d.parte_a, 'Parte A · Inatención (0–36)')+'</td>'+
           '<td style="'+tdRC+'">'+(eA!='—'?eA+'/36':'—')+'</td>'+
           '<td style="'+tdRI+'">'+(d.cat_a||r.categoria||'—')+'</td></tr>';
-        html += '<tr style="background:#fff;"><td style="'+tdR+'">Parte B · Hiper./Impulsividad (0–36)</td>'+
+        html += '<tr style="background:#fff;"><td style="'+tdR+'">'+htmlGlosarioCelda('EAVA·B', d.parte_b, 'Parte B · Hiper./Impulsividad (0–36)')+'</td>'+
           '<td style="'+tdRC+'">'+(eB!='—'?eB+'/36':'—')+'</td>'+
           '<td style="'+tdRI+'">'+(d.cat_b||'—')+'</td></tr>';
         html += '</tbody></table>';
@@ -8478,16 +8835,16 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDark+'">Categoría</th>'+
           '</tr></thead><tbody>';
         var dexRows = [
-          { label:'Desorganización / Apatía',     score:d.desorg,  max:40, M:8.60,  DS:5.79,  z:d.zDesorg  },
-          { label:'Desinhibición / Impulsividad', score:d.desinhi, max:40, M:9.69,  DS:5.19,  z:d.zDesinhi },
-          { label:'Total DEX',                    score:d.total,   max:80, M:d.version==='hetero'?20.68:22.25, DS:d.version==='hetero'?14.77:10.10, z:d.zTotal }
+          { key:'DEX·Desorg',  label:'Desorganización / Apatía',     score:d.desorg,  max:40, M:8.60,  DS:5.79,  z:d.zDesorg  },
+          { key:'DEX·Desinhi', label:'Desinhibición / Impulsividad', score:d.desinhi, max:40, M:9.69,  DS:5.19,  z:d.zDesinhi },
+          { key:'DEX·Total',   label:'Total DEX',                    score:d.total,   max:80, M:d.version==='hetero'?20.68:22.25, DS:d.version==='hetero'?14.77:10.10, z:d.zTotal }
         ];
         dexRows.forEach(function(dr, ri) {
           var zStr = dr.z !== null && dr.z !== undefined ? (dr.z >= 0 ? '+' : '') + dr.z : '—';
           var cat = dr.z >= 2.0 ? 'Muy elevado' : dr.z >= 1.0 ? 'Elevado' : dr.z >= 0.5 ? 'Límite superior' : dr.z >= -0.5 ? 'Normal' : 'Bajo';
           var col = dr.z >= 2.0 ? '#E24B4A' : dr.z >= 1.0 ? '#D85A30' : dr.z >= 0.5 ? '#BA7517' : '#333';
           html += '<tr style="background:'+(ri%2===0?'#fff':'#f5fbf3')+';">'+
-            '<td style="'+tdR+'font-weight:700;">'+dr.label+'</td>'+
+            '<td style="'+tdR+'font-weight:700;">'+htmlGlosarioCelda(dr.key, dr.z, dr.label)+'</td>'+
             '<td style="'+tdRC+'">'+dr.score+'/'+dr.max+'</td>'+
             '<td style="'+tdRC+'">'+dr.M.toFixed(2)+'</td>'+
             '<td style="'+tdRC+'">'+dr.DS.toFixed(2)+'</td>'+
@@ -8499,7 +8856,27 @@ function renderCuestionariosFam(d) {
         return;
       }
 
-      // ── Resto de tests clínicos (BDI, PHQ-9, GAD-7, SPAI-B, WURS-25) ──
+      // ── WURS-25 ──
+      if (r.test === 'WURS-25') {
+        var wTot = d.total != null ? d.total : r.puntaje_total;
+        var wPc = d.pc != null ? d.pc : null;
+        var wZ = d.z != null ? d.z : r.puntaje_z;
+        html += clHeader('WURS-25 · Escala de Wender-Utah (retrospectiva infancia)');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDarkC+'">Z · Pc</th>'+
+          '<th style="'+thDark+'">Interpretación</th></tr></thead><tbody>';
+        html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">'+htmlGlosarioCelda('WURS·Total', wTot, 'Total WURS-25')+'</td>'+
+          '<td style="'+tdRC+'">'+(wTot!=null?wTot+'/75':'—')+'</td>'+
+          '<td style="'+tdRC+'">'+(wZ!=null?(wZ>=0?'+':'')+wZ:'—')+(wPc!=null?' · Pc '+wPc:'')+'</td>'+
+          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+        html += '</tbody></table>';
+        html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Cortes: &lt;36 sin síntomas · 36–45 probable · ≥46 compatible · Scandar (2021)</div>';
+        return;
+      }
+
+      // ── Resto de tests clínicos (BDI, PHQ-9, GAD-7, SPAI-B) ──
       var corte = CORTES[r.test];
       var pb = r.puntaje_total != null ? r.puntaje_total : '—';
       var cat = r.categoria || '—';
@@ -12069,6 +12446,7 @@ function _mostrarResultadoEAVA(ptA, ptB) {
 }
 
 function iniciarEAVA() {
+  aplicarTituloGlosario('eava-titulo-glosario', 'EAVA', 'EAVA · Escala de Autovaloración de TDAH en Adultos');
   function renderItems(items, containerId) {
     var wrap = document.getElementById(containerId);
     if (!wrap) return;
@@ -12618,6 +12996,7 @@ function guardarSCQ() {
 }
 
 function iniciarAsrs() {
+  aplicarTituloGlosario('asrs-titulo-glosario', 'ASRS-V1.1', 'ASRS-V1.1 · Escala de Autodetección de TDAH en Adultos');
   document.getElementById('asrs-fecha').value = new Date().toISOString().split('T')[0];
   var divA = document.getElementById('asrs-items-a');
   var divB = document.getElementById('asrs-items-b');
@@ -12683,6 +13062,7 @@ function calcularAsrs() {
   document.getElementById('asrs-interp').innerHTML=interp;
   document.getElementById('asrs-form').style.display='none';
   document.getElementById('asrs-resultado').style.display='block';
+  window._asrsData = { secA: positivos, sI: scoreI, sH: scoreH, sT: scoreT, pcI: pcI, pcH: pcH, pcT: pcT, zI: zI, zH: zH, zT: zT, grupo: grupo };
 }
 function guardarAsrs() {
   if(!SESSION)return;
@@ -12709,7 +13089,7 @@ function guardarAsrs() {
     user_id:SESSION.user.id,paciente_id:pacId,test:'ASRS-V1.1',fecha:fecha,
     puntaje_total:scoreT,puntaje_z:zT,
     categoria:positivos>=4?'Positivo para TDAH':'Negativo para TDAH',
-    datos:{parte_a_positivos:positivos,total_18:scoreT,scoreI:scoreI,scoreH:scoreH,scoreT:scoreT,pcI:pcI,pcH:pcH,pcT:pcT,grupo:grupo}
+    datos:{parte_a_positivos:positivos,total_18:scoreT,scoreI:scoreI,scoreH:scoreH,scoreT:scoreT,pcI:pcI,pcH:pcH,pcT:pcT,zI:window._asrsData&&window._asrsData.zI!=null?window._asrsData.zI:null,zH:window._asrsData&&window._asrsData.zH!=null?window._asrsData.zH:null,zT:zT,grupo:grupo}
   },SESSION.access_token).then(function(){
     window._asrsData=null;
     cargarResultados();toast('✓ Resultado guardado','success');
@@ -13918,6 +14298,7 @@ var DEX_BAR = {
 };
 
 function iniciarDEX() {
+  aplicarTituloGlosario('dex-titulo-glosario', 'DEX', 'DEX · Cuestionario Disejecutivo');
   document.getElementById('dex-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('dex-form').style.display = 'block';
   document.getElementById('dex-resultado').style.display = 'none';
@@ -14027,6 +14408,7 @@ function guardarDEX() {
 // ══ fin DEX ══════════════════════════════════════════════════════════════════
 
 function iniciarWurs() {
+  aplicarTituloGlosario('wurs-titulo-glosario', 'WURS-25', 'WURS-25 · Escala de Wender-Utah');
   document.getElementById('wurs-fecha').value = new Date().toISOString().split('T')[0];
   var div=document.getElementById('wurs-items');
   if(!div||div.innerHTML.trim())return;
