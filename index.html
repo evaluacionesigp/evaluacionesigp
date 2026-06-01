@@ -495,7 +495,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.2</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.3</div>
     </div>
   </aside>
 
@@ -5616,6 +5616,17 @@ var PAC_ACTIVO = null;
 
 // ══ SUPABASE HELPER ══════════════════════════════════════════════════════════
 function supaFetch(path, method, body, token, extraHeaders) {
+  if (method === 'POST' && path === '/rest/v1/psico_resultados' && window.RESULTADO_EDIT && window.RESULTADO_EDIT.id) {
+    var editId = window.RESULTADO_EDIT.id;
+    return supaFetch('/rest/v1/psico_resultados?id=eq.' + editId, 'PATCH', body, token, extraHeaders)
+      .then(function(res) {
+        if (res.ok) {
+          window.RESULTADO_EDIT = null;
+          ocultarBannerEdicionResultado();
+        }
+        return res;
+      });
+  }
   var headers = { 'Content-Type': 'application/json', 'apikey': SUPA_KEY };
   if (token) headers['Authorization'] = 'Bearer ' + token;
   if (method !== 'GET' && method !== 'DELETE') headers['Prefer'] = 'return=representation';
@@ -7584,7 +7595,7 @@ function renderHistorialFilaTabla(r, rowBg) {
     '<td style="padding:8px 10px;font-size:0.82rem;">' + (r.categoria || '—') + '</td>' +
     '<td style="padding:8px 10px;font-size:0.8rem;color:var(--muted);white-space:nowrap;">' + formatHistorialFecha(r.fecha) + '</td>' +
     '<td style="padding:6px 10px;text-align:center;white-space:nowrap;">' +
-    '<button type="button" class="btn-xs btn-xs-primary" data-editar-id="' + r.id + '" title="Editar fecha" style="margin-right:4px;">✏</button>' +
+    '<button type="button" class="btn-xs btn-xs-primary" data-editar-id="' + r.id + '" title="Editar test" style="margin-right:4px;">✏</button>' +
     '<button type="button" class="btn-xs btn-xs-danger" data-borrar-id="' + r.id + '" title="Borrar">✕</button>' +
     '</td></tr>';
 }
@@ -9205,37 +9216,278 @@ function renderCuestionariosFam(d) {
   setTimeout(function(){ win.print(); }, 800);
 }
 
+// ══ EDICIÓN DE RESULTADOS DESDE HISTORIAL ════════════════════════════════════
+var TEST_NOMBRE_A_VISTA = {
+  'BDI-II': 'bdi', 'STAI': 'stai', 'Rey Verbal': 'rey', 'TMT A-B': 'tmt',
+  'Fluencia Verbal': 'flv', 'PHQ-9': 'phq', 'GAD-7': 'gad', 'CRC': 'crc',
+  'PSS-10': 'pss', 'Holmes-Rahe': 'holmes', 'GDS-30': 'yesavage',
+  'Birleson': 'birleson', 'AAA': 'aaa', 'SPAI-B': 'spaib', 'MoCA': 'moca',
+  'WCST-64': 'wcst', 'FAB': 'fab', 'IFS': 'ifs', 'WAIS-IV': 'waisiv',
+  'WAIS-IV Perfil': 'waisperfil', 'EAVA': 'eava', 'ASRS-V1.1': 'asrs',
+  'BADS-Llaves': 'llaves', 'BADS-Juicio': 'juicio', 'BADS-Zoo': 'zoo',
+  'Test del Hotel': 'hotel', 'D2': 'd2', 'BTA': 'bta', 'DEX': 'dex',
+  'WURS-25': 'wurs', 'MBI-HSS': 'mbi', 'Test del Reloj (Cacho)': 'reloj',
+  'ACE-R': 'acer', 'SCL-90-R': 'scl90', 'Token Test': 'token', 'Stroop': 'stroop',
+  'CSI': 'csi', 'Figura Rey': 'fcr', 'TAVEC': 'tavec',
+  'Cuestionarios Familiares': 'familiar', 'AQ': 'aq', 'AQ-10': 'aq10',
+  'EQ': 'eq', 'EA': 'ea', 'SCQ': 'scq', 'PCS': 'pcs', 'CSQ': 'csq',
+  'PBQ': 'pbq', 'BPI': 'bpi', 'BEM 144 Signoret': 'signoret'
+};
+
+function resolverVistaDesdeTest(testName) {
+  if (!testName) return null;
+  if (testName.indexOf('SDMT-') === 0) return 'sdmt';
+  if (testName.indexOf('BNT-') === 0) return 'bnt';
+  return TEST_NOMBRE_A_VISTA[testName] || null;
+}
+
+function parseResultadoDatos(r) {
+  var d = r.datos;
+  if (!d) return {};
+  if (typeof d === 'string') {
+    try { return JSON.parse(d); } catch (e) { return {}; }
+  }
+  return d;
+}
+
+function edicionPacienteFecha(vistaId, r) {
+  pacSetVal(vistaId + '-paciente', r.paciente_id);
+  pacSetVal(vistaId + '-fecha', r.fecha);
+}
+
+function edicionItemsRadio(namePrefix, items) {
+  if (!items || !items.length) return false;
+  items.forEach(function(val, i) {
+    if (val === null || val === undefined) return;
+    document.querySelectorAll('[name="' + namePrefix + i + '"]').forEach(function(o) { o.checked = false; });
+    var sel = document.querySelector('[name="' + namePrefix + i + '"][value="' + val + '"]');
+    if (sel) sel.checked = true;
+  });
+  return true;
+}
+
+function edicionManualSimple(vistaId, total) {
+  if (!MANUAL_CAMPOS[vistaId] || total === null || total === undefined) return false;
+  setModo(vistaId, 'manual');
+  pacSetVal(MANUAL_CAMPOS[vistaId][0].id, total);
+  calcularManual(vistaId);
+  return true;
+}
+
+function edicionVariablesDesdeDatos(varDefs, datosVars, calcFn) {
+  if (!datosVars || !datosVars.length) return false;
+  var map = {};
+  datosVars.forEach(function(v) {
+    if (v.key !== undefined) map[v.key] = v.bruto;
+    if (v.label !== undefined) map[v.label] = v.bruto;
+  });
+  var filled = false;
+  varDefs.forEach(function(v) {
+    var val = map[v.key] !== undefined ? map[v.key] : map[v.label];
+    if (val !== undefined && val !== null) {
+      pacSetVal(v.id || ('rey-' + v.key), val);
+      filled = true;
+    }
+  });
+  if (filled && calcFn) calcFn();
+  return filled;
+}
+
+function edicionMostrarResultado(formId, resId) {
+  var f = document.getElementById(formId);
+  var r = document.getElementById(resId);
+  if (f) f.style.display = 'none';
+  if (r) r.style.display = 'block';
+}
+
+function mostrarBannerEdicionResultado(r) {
+  ocultarBannerEdicionResultado();
+  var v = document.querySelector('.vista.active');
+  if (!v) return;
+  var b = document.createElement('div');
+  b.id = 'resultado-edit-banner';
+  b.style.cssText = 'background:#fff8e6;border:1px solid #f0c040;border-radius:10px;padding:10px 16px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:0.84rem;flex-wrap:wrap;';
+  b.innerHTML =
+    '<span><strong>✏ Editando evaluación</strong> · ' + (r.test || '') + ' · ' + formatHistorialFecha(r.fecha) + ' — Al guardar se actualizará este registro.</span>' +
+    '<button type="button" class="btn-secondary" style="font-size:0.78rem;padding:4px 10px;white-space:nowrap;" onclick="cancelarEdicionResultado()">Cancelar edición</button>';
+  var header = v.querySelector('.vista-header');
+  if (header && header.nextSibling) v.insertBefore(b, header.nextSibling);
+  else if (header) header.parentNode.insertBefore(b, header.nextSibling);
+  else v.insertBefore(b, v.firstChild);
+}
+
+function ocultarBannerEdicionResultado() {
+  var b = document.getElementById('resultado-edit-banner');
+  if (b) b.remove();
+}
+
+function cancelarEdicionResultado() {
+  window.RESULTADO_EDIT = null;
+  ocultarBannerEdicionResultado();
+  irVista('historial');
+  toast('Edición cancelada');
+}
+
+function aplicarEdicionResultado(vistaId, r) {
+  var d = parseResultadoDatos(r);
+  edicionPacienteFecha(vistaId, r);
+
+  switch (vistaId) {
+    case 'bdi':
+      if (d.items && edicionItemsRadio('bdi_', d.items) && typeof calcularBDI === 'function') calcularBDI();
+      else edicionManualSimple('bdi', r.puntaje_total);
+      break;
+    case 'stai':
+      if (d.estado !== undefined && d.rasgo !== undefined) {
+        setModo('stai', 'manual');
+        pacSetVal('man-stai-e', d.estado);
+        pacSetVal('man-stai-r', d.rasgo);
+        calcularManual('stai');
+      } else if (r.puntaje_total != null) edicionManualSimple('stai', r.puntaje_total);
+      break;
+    case 'phq':
+    case 'gad':
+    case 'birleson':
+    case 'aaa':
+    case 'spaib':
+    case 'wurs':
+      if (d.total != null) edicionManualSimple(vistaId, d.total);
+      else edicionManualSimple(vistaId, r.puntaje_total);
+      break;
+    case 'asrs':
+      if (d.scoreI != null) {
+        setModo('asrs', 'manual');
+        pacSetVal('man-asrs-a', d.parte_a_positivos != null ? d.parte_a_positivos : 0);
+        pacSetVal('man-asrs-i', d.scoreI);
+        pacSetVal('man-asrs-h', d.scoreH);
+        pacSetVal('man-asrs-t', d.scoreT != null ? d.scoreT : r.puntaje_total);
+        if (d.grupo != null) pacSetVal('asrs-grupo', d.grupo);
+        calcularManual('asrs');
+      }
+      break;
+    case 'mbi':
+      if (d.CE != null) {
+        setModo('mbi', 'manual');
+        pacSetVal('man-mbi-ce', d.CE);
+        pacSetVal('man-mbi-dp', d.DP);
+        pacSetVal('man-mbi-rp', d.RP);
+        calcularManual('mbi');
+      }
+      break;
+    case 'csi':
+      if (d.REP && d.REP.score != null) {
+        setModo('csi', 'manual');
+        ['rep','auc','eem','psd','aps','rec','evp','res'].forEach(function(k) {
+          var K = k.toUpperCase();
+          if (d[K] && d[K].score != null) pacSetVal('man-csi-' + k, d[K].score);
+        });
+        calcularManual('csi');
+      }
+      break;
+    case 'tmt':
+      if (d.tmt_a_seg != null) pacSetVal('tmt-a', d.tmt_a_seg);
+      if (d.tmt_b_seg != null) pacSetVal('tmt-b', d.tmt_b_seg);
+      if ((document.getElementById('tmt-a') && document.getElementById('tmt-a').value) ||
+          (document.getElementById('tmt-b') && document.getElementById('tmt-b').value)) calcularTMT();
+      break;
+    case 'rey':
+      edicionVariablesDesdeDatos(REY_VARS, d.variables, calcularRey);
+      break;
+    case 'flv':
+      if (d.sexo) pacSetVal('flv-sexo', d.sexo);
+      if (d.ne) pacSetVal('flv-ne', d.ne);
+      if (d.edad_grupo !== undefined && d.edad_grupo !== '') pacSetVal('flv-edad', d.edad_grupo);
+      edicionVariablesDesdeDatos(FLV_VARS, d.variables, calcularFLV);
+      break;
+    case 'moca':
+      if (d.ne) pacSetVal('moca-ne', d.ne);
+      if (d.dominios) {
+        Object.keys(d.dominios).forEach(function(id) { pacSetVal(id, d.dominios[id]); });
+        calcularMoCA();
+      } else if (d.total != null) {
+        ['moca-visuo','moca-ident','moca-aten','moca-leng','moca-abst','moca-recu','moca-orie'].forEach(function(id) {
+          pacSetVal(id, 0);
+        });
+        pacSetVal('moca-visuo', d.total);
+        calcularMoCA();
+      }
+      break;
+    case 'sdmt':
+      if (r.test.indexOf('oral') !== -1) sdmtSetVersion('oral');
+      else sdmtSetVersion('escrita');
+      if (d.puntaje != null) pacSetVal('sdmt-puntaje', d.puntaje);
+      else if (r.puntaje_total != null) pacSetVal('sdmt-puntaje', r.puntaje_total);
+      if (d.gi != null) {
+        pacSetVal(r.test.indexOf('oral') !== -1 ? 'sdmt-edad-oral' : 'sdmt-edad-escrita', d.gi);
+      }
+      if (d.ei != null) {
+        pacSetVal(r.test.indexOf('oral') !== -1 ? 'sdmt-escol-oral' : 'sdmt-escol-escrita', d.ei);
+      }
+      if (document.getElementById('sdmt-puntaje') && document.getElementById('sdmt-puntaje').value) calcularSDMT();
+      break;
+    case 'crc':
+      if (typeof _mostrarResultadoCRC === 'function') _mostrarResultadoCRC(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'pss':
+      if (typeof _mostrarResultadoPSS === 'function') _mostrarResultadoPSS(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'holmes':
+      if (typeof _mostrarResultadoHolmes === 'function') _mostrarResultadoHolmes(d.total != null ? d.total : r.puntaje_total, d.eventos || []);
+      break;
+    case 'yesavage':
+      if (typeof _mostrarResultadoYesavage === 'function') _mostrarResultadoYesavage(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'aq':
+      if (typeof _mostrarAQ === 'function') _mostrarAQ(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'aq10':
+      if (typeof _mostrarAQ10 === 'function') _mostrarAQ10(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'eq':
+      if (typeof _mostrarEQ === 'function') _mostrarEQ(d.total != null ? d.total : r.puntaje_total);
+      break;
+    case 'ea':
+      if (typeof _mostrarEA === 'function' && d.score != null) _mostrarEA(d);
+      break;
+    case 'scq':
+      if (typeof _mostrarSCQ === 'function' && d.total != null) _mostrarSCQ(d);
+      break;
+    case 'eava':
+      if (typeof _mostrarResultadoEAVA === 'function' && d.ptA != null) _mostrarResultadoEAVA(d.ptA, d.ptB);
+      break;
+    case 'bnt': {
+      var verBnt = d.ver || (r.test === 'BNT-12' ? '12' : r.test === 'BNT-60' ? '60' : '');
+      if (verBnt) {
+        pacSetVal('bnt-version', verBnt);
+        bntActualizar();
+        var pbVal = d.pb != null ? d.pb : r.puntaje_total;
+        if (pbVal != null) {
+          pacSetVal(verBnt === '60' ? 'bnt60-pb' : 'bnt12-pb', pbVal);
+          if (d.educ != null) pacSetVal('bnt60-educ', d.educ);
+          bntActualizar();
+        }
+      }
+      break;
+    }
+    default:
+      if (MANUAL_CAMPOS[vistaId] && r.puntaje_total != null) {
+        edicionManualSimple(vistaId, r.puntaje_total);
+      }
+  }
+}
+
 function editarResultado(id) {
-  var r = RESULTADOS.find(function(x){ return String(x.id) === String(id); });
-  if (!r) { toast('Resultado no encontrado','error'); return; }
-  var modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML =
-    '<div style="background:var(--surface);border-radius:14px;padding:28px 32px;min-width:320px;max-width:440px;width:90%;box-shadow:0 8px 32px rgba(45,92,34,0.18);">' +
-    '<div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px;">Editar resultado</div>' +
-    '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:18px;">' + r.test + ' — ' + (r.psico_pacientes ? r.psico_pacientes.nombre : '') + '</div>' +
-    '<div class="field" style="margin-bottom:16px;"><label>Fecha de evaluación</label><input type="date" id="edit-res-fecha" value="' + (r.fecha||'') + '"></div>' +
-    '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
-    '<button class="btn-secondary" id="edit-res-cancel">Cancelar</button>' +
-    '<button class="btn-primary" id="edit-res-save">Guardar</button>' +
-    '</div></div>';
-  document.body.appendChild(modal);
-  modal.querySelector('#edit-res-cancel').onclick = function(){ document.body.removeChild(modal); };
-  modal.addEventListener('click', function(e){ if(e.target===modal) document.body.removeChild(modal); });
-  modal.querySelector('#edit-res-save').onclick = function(){
-    var nuevaFecha = modal.querySelector('#edit-res-fecha').value;
-    if (!nuevaFecha) { toast('Ingresá una fecha','error'); return; }
-    supaFetch('/rest/v1/psico_resultados?id=eq.'+id, 'PATCH',
-      { fecha: nuevaFecha },
-      SESSION.access_token
-    ).then(function(){
-      var idx = RESULTADOS.findIndex(function(x){ return String(x.id)===String(id); });
-      if (idx !== -1) RESULTADOS[idx].fecha = nuevaFecha;
-      document.body.removeChild(modal);
-      renderHistorial();
-      toast('✓ Fecha actualizada','success');
-    }).catch(function(){ toast('Error al guardar','error'); });
-  };
+  var r = RESULTADOS.find(function(x) { return String(x.id) === String(id); });
+  if (!r) { toast('Resultado no encontrado', 'error'); return; }
+  var vista = resolverVistaDesdeTest(r.test);
+  if (!vista) {
+    toast('No se puede abrir este test para editar', 'error');
+    return;
+  }
+  window.RESULTADO_EDIT = r;
+  window.RESULTADO_EDIT._vista = vista;
+  irTest(vista);
+  toast('Abriendo test para editar — al guardar se actualizará el registro');
 }
 
 function borrarResultado(id) {
@@ -9622,6 +9874,15 @@ function irTest(t) {
   if (t === 'holmes') iniciarHolmes();
   if (t === 'yesavage') iniciarYesavage();
   aplicarPacienteActivoATest(t);
+  if (window.RESULTADO_EDIT && window.RESULTADO_EDIT._vista === t) {
+    setTimeout(function() {
+      aplicarEdicionResultado(t, window.RESULTADO_EDIT);
+      mostrarBannerEdicionResultado(window.RESULTADO_EDIT);
+    }, 100);
+  } else if (window.RESULTADO_EDIT && window.RESULTADO_EDIT._vista !== t) {
+    window.RESULTADO_EDIT = null;
+    ocultarBannerEdicionResultado();
+  }
 }
 
 function volverSector() {
