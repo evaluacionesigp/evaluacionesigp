@@ -229,6 +229,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .paciente-item:hover { border-color: var(--accentlt); background: #fdf0e2; }
 .pac-nombre { font-weight: 500; color: var(--text); }
 .pac-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+.badge-inf {
+  display: inline-block; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  padding: 4px 12px; line-height: 1.35; margin-top: 4px;
+}
+.badge-inf-proceso { background: #fde8e8; color: #c0392b; border: 1px solid #e8a0a0; }
+.badge-inf-enviado { background: #e8f5e8; color: #2d6a2d; border: 1px solid #90c890; }
 .pac-acciones { display: flex; gap: 8px; }
 .btn-xs {
   padding: 5px 12px; border-radius: 5px; font-size: 0.75rem; font-weight: 600;
@@ -495,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.3</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.4</div>
     </div>
   </aside>
 
@@ -820,6 +826,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <img id="inf-firma-existente-img" style="display:block;max-height:80px;max-width:250px;border:1px solid var(--border);border-radius:6px;padding:4px;margin-top:4px;">
           </div>
         </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;" id="inf-estado-informe-card">
+        <div class="card-title">Estado del informe</div>
+        <div id="inf-estado-informe-control"></div>
       </div>
 
       <div style="display:flex;gap:10px;margin-bottom:32px;">
@@ -5726,6 +5737,7 @@ function renderPacientesInicio() {
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">' +
       '<div><div style="font-size:0.88rem;font-weight:600;color:var(--text);">' + p.nombre + '</div>' +
+      '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
       (meta ? '<div style="font-size:0.76rem;color:var(--muted);margin-top:1px;">' + meta + '</div>' : '') + '</div>' +
       '<div style="display:flex;gap:6px;">' +
       '<button class="btn-xs btn-xs-primary" data-ver-pac-id="' + p.id + '">Ver historial</button>' +
@@ -5762,6 +5774,7 @@ function renderPacientes() {
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
     return '<div class="paciente-item">' +
       '<div><div class="pac-nombre">' + p.nombre + '</div>' +
+      '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
       (meta ? '<div class="pac-meta">' + meta + '</div>' : '') + '</div>' +
       '<div class="pac-acciones">' +
       '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
@@ -6215,7 +6228,9 @@ function guardarPaciente() {
     fecha_nacimiento: document.getElementById('fp-fnac').value || null,
     sexo: document.getElementById('fp-sexo').value || null,
     escolaridad: document.getElementById('fp-escolaridad').value || null,
-    notas: document.getElementById('fp-notas').value || null
+    notas: document.getElementById('fp-notas').value || null,
+    estado_informe: 'en_proceso',
+    supervisor_informe: null
   };
   supaFetch('/rest/v1/psico_pacientes', 'POST', body, SESSION.access_token)
     .then(function(r){ return r.json(); })
@@ -7643,8 +7658,10 @@ function renderHistorialLista(el) {
   var html = '<p style="font-size:0.84rem;color:var(--muted);margin:0 0 14px;">Seleccioná un paciente para ver sus evaluaciones organizadas por dominio.</p>' +
     '<div class="hist-pac-grid">';
   pacientes.forEach(function(p) {
+    var pacFull = getPacienteById(p.id);
     html += '<div class="hist-pac-card" data-hist-pac-id="' + p.id + '" role="button" tabindex="0">' +
       '<div class="hist-pac-nombre">' + p.nombre + '</div>' +
+      '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(pacFull || { estado_informe: null }) + '</div>' +
       '<div class="hist-pac-meta">' + p.count + ' test' + (p.count !== 1 ? 's' : '') + ' cargado' + (p.count !== 1 ? 's' : '') + '</div>' +
       '<div class="hist-pac-meta">Último test: ' + formatHistorialFecha(p.ultimaFecha) + '</div>' +
       '<button type="button" class="btn-xs btn-xs-primary" data-hist-ver-id="' + p.id + '" style="margin-top:12px;">Ver evaluaciones</button>' +
@@ -7679,15 +7696,22 @@ function renderHistorialDetalle(el, pacId) {
   }
   var bloques = agruparResultadosPorDominio(datos);
   var html = '<div class="hist-detalle-hdr">' +
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;width:100%;">' +
+    '<div style="flex:1;min-width:200px;">' +
+    '<div data-estado-inf-badge="' + pacId + '" style="margin-bottom:8px;">' + badgeEstadoInformeHtml(pac || { estado_informe: null }) + '</div>' +
     '<div class="hist-detalle-titulo">' + nom + '</div>' +
     '<div style="font-size:0.8rem;color:var(--muted);">' + datos.length + ' evaluación' + (datos.length !== 1 ? 'es' : '') + '</div>' +
-    '</div>';
+    '</div>' +
+    '<div data-estado-inf-control="' + pacId + '" style="flex-shrink:0;"></div>' +
+    '</div></div>';
   bloques.forEach(function(bloque, idx) {
     html += '<div class="hist-dom-hdr" style="' + (idx === 0 ? 'margin-top:0;' : '') + '">' + bloque.label + '</div>' +
       '<div class="hist-dom-block">' + renderHistorialTablaDominio(bloque.rows) + '</div>';
   });
   el.innerHTML = html;
   bindHistorialAcciones(el);
+  var ctrlHist = el.querySelector('[data-estado-inf-control="' + pacId + '"]');
+  if (ctrlHist) renderControlEstadoInforme(pacId, ctrlHist);
 }
 
 function renderHistorial() {
@@ -15894,6 +15918,100 @@ function buildPruebasRealizadasHtml(datos) {
   return html;
 }
 
+// ══ ESTADO DEL INFORME (por paciente) ════════════════════════════════════════
+var SUPERVISORES_INFORME = ['JULI', 'DANIEL', 'ERWIN'];
+
+function getPacienteById(pacId) {
+  return PACIENTES.find(function(p) { return String(p.id) === String(pacId); });
+}
+
+function badgeEstadoInformeHtml(p) {
+  if (p && p.estado_informe === 'enviado' && p.supervisor_informe) {
+    return '<span class="badge-inf badge-inf-enviado">Enviado a ' + escHtml(p.supervisor_informe) + '</span>';
+  }
+  return '<span class="badge-inf badge-inf-proceso">En redacción</span>';
+}
+
+function pillEstadoInformeControlHtml(p) {
+  if (p && p.estado_informe === 'enviado' && p.supervisor_informe) {
+    return '<span class="badge-inf badge-inf-enviado">🟢 Enviado a ' + escHtml(p.supervisor_informe) + '</span>';
+  }
+  return '<span class="badge-inf badge-inf-proceso">🔴 En redacción</span>';
+}
+
+function renderControlEstadoInforme(pacId, containerEl) {
+  var p = getPacienteById(pacId);
+  if (!p || !containerEl) return;
+  var enviado = p.estado_informe === 'enviado';
+  var supBtns = SUPERVISORES_INFORME.map(function(s) {
+    return '<button type="button" class="btn-xs" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:20px;" onclick="confirmarEnvioInforme(\'' + pacId + '\',\'' + s + '\')">' + s + '</button>';
+  }).join('');
+  if (!enviado) {
+    containerEl.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+      pillEstadoInformeControlHtml(p) +
+      '<button type="button" class="btn-secondary" style="font-size:0.82rem;padding:7px 14px;" onclick="toggleSelectorSupervisor(\'' + pacId + '\')">Marcar como enviado</button>' +
+      '</div>' +
+      '<div id="sup-selector-' + pacId + '" data-estado-inf-selector="' + pacId + '" style="display:none;margin-top:14px;padding:14px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">' +
+      '<div style="font-size:0.82rem;font-weight:600;margin-bottom:10px;color:var(--text);">Seleccioná supervisor</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + supBtns + '</div>' +
+      '</div>';
+  } else {
+    containerEl.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+      pillEstadoInformeControlHtml(p) +
+      '<button type="button" class="btn-secondary" style="font-size:0.82rem;padding:7px 14px;" onclick="revertirEstadoInforme(\'' + pacId + '\')">Revertir a en redacción</button>' +
+      '</div>';
+  }
+}
+
+function toggleSelectorSupervisor(pacId) {
+  document.querySelectorAll('[data-estado-inf-selector]').forEach(function(el) {
+    if (el.getAttribute('data-estado-inf-selector') !== String(pacId)) el.style.display = 'none';
+  });
+  var el = document.getElementById('sup-selector-' + pacId);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function syncEstadoInformeUI(pacId) {
+  var p = getPacienteById(pacId);
+  if (!p) return;
+  document.querySelectorAll('[data-estado-inf-badge="' + pacId + '"]').forEach(function(el) {
+    el.innerHTML = badgeEstadoInformeHtml(p);
+  });
+  document.querySelectorAll('[data-estado-inf-control="' + pacId + '"]').forEach(function(el) {
+    renderControlEstadoInforme(pacId, el);
+  });
+}
+
+function actualizarEstadoInformePaciente(pacId, estado, supervisor) {
+  if (!SESSION || !pacId) return Promise.reject();
+  var updates = {
+    estado_informe: estado,
+    supervisor_informe: estado === 'enviado' ? supervisor : null
+  };
+  return supaFetch('/rest/v1/psico_pacientes?id=eq.' + pacId, 'PATCH', updates, SESSION.access_token)
+    .then(function(r) {
+      if (!r.ok) throw new Error('patch failed');
+      var idx = PACIENTES.findIndex(function(x) { return String(x.id) === String(pacId); });
+      if (idx !== -1) Object.assign(PACIENTES[idx], updates);
+      if (PAC_ACTIVO && String(PAC_ACTIVO.id) === String(pacId)) Object.assign(PAC_ACTIVO, updates);
+      syncEstadoInformeUI(pacId);
+      toast(estado === 'enviado' ? '✓ Informe marcado como enviado' : 'Informe revertido a en redacción', 'success');
+    })
+    .catch(function() { toast('Error al actualizar estado del informe', 'error'); });
+}
+
+function confirmarEnvioInforme(pacId, supervisor) {
+  if (!confirm('¿Marcar informe como enviado a ' + supervisor + '?')) return;
+  actualizarEstadoInformePaciente(pacId, 'enviado', supervisor);
+}
+
+function revertirEstadoInforme(pacId) {
+  if (!confirm('¿Revertir el informe a en redacción?')) return;
+  actualizarEstadoInformePaciente(pacId, 'en_proceso', null);
+}
+
 // ══ INFORME NEUROPSICOLÓGICO ══════════════════════════════════════════════════
 var INFORME_PAC_ID = null;
 
@@ -15926,6 +16044,11 @@ function abrirInforme() {
   cargarLogosUI();
   // Cargar datos existentes
   cargarInforme(pacId);
+  var ctrlInf = document.getElementById('inf-estado-informe-control');
+  if (ctrlInf) {
+    ctrlInf.setAttribute('data-estado-inf-control', pacId);
+    renderControlEstadoInforme(pacId, ctrlInf);
+  }
   irVista('informe');
 }
 
