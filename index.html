@@ -248,6 +248,23 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
 .empty-txt { font-size: 0.9rem; }
 
+/* Historial — cards y dominios */
+.hist-pac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.hist-pac-card {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 18px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.hist-pac-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(26,80,80,0.1); }
+.hist-pac-nombre { font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 8px; }
+.hist-pac-meta { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+.hist-dom-hdr {
+  background: var(--accentdk); color: #fff; padding: 8px 12px; border-radius: 6px 6px 0 0;
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 16px;
+}
+.hist-dom-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 0 0 6px 6px; overflow: hidden; }
+.hist-detalle-hdr { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.hist-detalle-titulo { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--accentdk); }
+
 /* ══ FORMULARIOS ══ */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -478,7 +495,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.1</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.2</div>
     </div>
   </aside>
 
@@ -616,16 +633,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <button class="btn-primary" onclick="generarPDFHistorial()">📄 Generar informe PDF</button>
         <button class="btn-secondary" onclick="generarWordHistorial()" style="margin-left:8px;">📝 Generar informe Word</button>
       </div>
-      <div class="card" style="margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <label style="font-size:0.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;">Filtrar por paciente</label>
-            <select id="historial-filtro-pac" onchange="filtrarHistorial()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);font-size:0.88rem;color:var(--text);min-width:200px;">
-              <option value="">— Todos los pacientes —</option>
-            </select>
-          </div>
-          <button id="btn-redactar-informe" onclick="abrirInforme()" class="btn-secondary" style="display:none;">✏️ Redactar informe</button>
-        </div>
+      <select id="historial-filtro-pac" onchange="filtrarHistorial()" style="display:none;" aria-hidden="true">
+        <option value="">— Todos los pacientes —</option>
+      </select>
+      <div id="historial-toolbar" style="display:none;margin-bottom:14px;align-items:center;gap:10px;flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="btn-historial-volver" onclick="volverHistorialLista()">← Volver a pacientes</button>
+        <button id="btn-redactar-informe" onclick="abrirInforme()" class="btn-secondary" style="display:none;">✏️ Redactar informe</button>
       </div>
       <div class="card">
         <div id="historial-contenido"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-txt">No hay evaluaciones registradas aún.</div></div></div>
@@ -5712,11 +5725,8 @@ function renderPacientesInicio() {
   el.querySelectorAll('[data-ver-pac-id]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-ver-pac-id');
-      // Ir a historial filtrado por este paciente
-      var filtro = document.getElementById('historial-filtro-pac');
-      if (filtro) filtro.value = id;
       irVista('historial');
-      filtrarHistorial();
+      abrirHistorialPaciente(id, false);
     });
   });
   el.querySelectorAll('[data-borrar-pac-id]').forEach(function(btn) {
@@ -7467,56 +7477,241 @@ function mostrarTooltipTest(event, testNombre, zScore, soloInfo) {
 }
 
 // ══ HISTORIAL ════════════════════════════════════════════════════════════════
-function renderHistorial() {
-  actualizarStatsHome();
+var HISTORIAL_VISTA = 'lista';
+var HISTORIAL_PAC_SEL = null;
+var HISTORIAL_ENTRADA_AUTO = false;
+
+var HISTORIAL_DOMINIOS = [
+  { label: '1. Cognitivo global', tests: ['MoCA', 'ACE-R', 'Test del Reloj (Cacho)'] },
+  { label: '2. Memoria', tests: ['TAVEC', 'Rey Verbal', 'BEM 144 Signoret', 'Figura Rey'] },
+  { label: '3. Atención y velocidad', tests: ['TMT A-B', 'SDMT-escrita', 'SDMT-oral', 'BTA', 'D2'] },
+  { label: '4. Funciones ejecutivas', tests: ['FAB', 'IFS', 'WCST-64', 'Stroop', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'Test del Hotel'] },
+  { label: '5. Lenguaje', tests: ['BNT-60', 'BNT-12', 'Fluencia Verbal', 'Token Test'] },
+  { label: '6. Visoconstructivo', tests: ['Figura Rey', 'Test del Reloj (Cacho)'] },
+  { label: '7. WAIS-IV', tests: ['WAIS-IV', 'WAIS-IV Perfil'] },
+  { label: '8. Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'PSS-10', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'Holmes-Rahe', 'GDS-30', 'AQ', 'AQ-10', 'EQ', 'EA', 'SCQ'] },
+  { label: '9. TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
+  { label: '10. Dolor', tests: ['PCS', 'PBQ', 'CSQ', 'BPI'] },
+  { label: '11. Familiar / acompañante', tests: ['Cuestionarios Familiares'] }
+];
+
+function historialZColor(z) {
+  if (z === null || z === undefined) return 'var(--muted)';
+  if (z >= -1.0) return 'var(--green)';
+  if (z >= -1.5) return 'var(--yellow)';
+  if (z >= -2.0) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function syncHistorialFiltroPac(pacId) {
   var filtro = document.getElementById('historial-filtro-pac');
-  var pacSel = filtro ? filtro.value : '';
-  var el = document.getElementById('historial-contenido');
-  var datos = pacSel ? RESULTADOS.filter(function(r){ return String(r.paciente_id) === String(pacSel); }) : RESULTADOS;
-  if (!datos.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-txt">No hay evaluaciones registradas.</div></div>'; return; }
+  if (filtro) filtro.value = pacId || '';
+  var btn = document.getElementById('btn-redactar-informe');
+  if (btn) btn.style.display = pacId ? 'inline-flex' : 'none';
+}
+
+function abrirHistorialPaciente(pacId, desdeAuto) {
+  if (!pacId) return;
+  HISTORIAL_VISTA = 'detalle';
+  HISTORIAL_PAC_SEL = String(pacId);
+  if (desdeAuto === false) HISTORIAL_ENTRADA_AUTO = false;
+  syncHistorialFiltroPac(HISTORIAL_PAC_SEL);
+  renderHistorial();
+}
+
+function volverHistorialLista() {
+  HISTORIAL_VISTA = 'lista';
+  HISTORIAL_PAC_SEL = null;
+  HISTORIAL_ENTRADA_AUTO = false;
+  syncHistorialFiltroPac('');
+  renderHistorial();
+}
+
+function getHistorialPacientesConDatos() {
+  var map = {};
+  RESULTADOS.forEach(function(r) {
+    var pid = String(r.paciente_id);
+    if (!map[pid]) map[pid] = { id: pid, count: 0, ultimaFecha: '' };
+    map[pid].count++;
+    if (r.fecha && (!map[pid].ultimaFecha || r.fecha > map[pid].ultimaFecha)) map[pid].ultimaFecha = r.fecha;
+  });
+  return Object.keys(map).map(function(pid) {
+    var p = PACIENTES.find(function(x) { return String(x.id) === pid; });
+    var sample = RESULTADOS.find(function(r) { return String(r.paciente_id) === pid; });
+    var nom = p ? p.nombre : (sample && sample.psico_pacientes ? sample.psico_pacientes.nombre : 'Paciente');
+    return { id: pid, nombre: nom, count: map[pid].count, ultimaFecha: map[pid].ultimaFecha };
+  }).sort(function(a, b) { return a.nombre.localeCompare(b.nombre, 'es'); });
+}
+
+function formatHistorialFecha(f) {
+  if (!f) return '—';
+  try {
+    var p = f.split('-');
+    if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+  } catch (e) {}
+  return f;
+}
+
+function agruparResultadosPorDominio(datos) {
+  var bloques = [];
+  var testsEnDominios = {};
+  HISTORIAL_DOMINIOS.forEach(function(dom) {
+    if (!dom.tests.length) return;
+    var rows = [];
+    dom.tests.forEach(function(tn) {
+      testsEnDominios[tn] = true;
+      datos.filter(function(r) { return r.test === tn; }).forEach(function(r) { rows.push(r); });
+    });
+    if (!rows.length) return;
+    rows.sort(function(a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); });
+    bloques.push({ label: dom.label, rows: rows });
+  });
+  var resto = datos.filter(function(r) { return !testsEnDominios[r.test]; });
+  if (resto.length) {
+    resto.sort(function(a, b) { return (b.fecha || '').localeCompare(a.fecha || ''); });
+    bloques.push({ label: 'Otros', rows: resto });
+  }
+  return bloques;
+}
+
+function renderHistorialFilaTabla(r, rowBg) {
+  var zColor = historialZColor(r.puntaje_z);
+  var testCell = buildHistorialTestCell(r);
+  return '<tr style="background:' + rowBg + ';border-bottom:1px solid var(--border);">' +
+    '<td style="padding:8px 10px;font-size:0.83rem;font-weight:600;color:var(--accentdk);">' + testCell + '</td>' +
+    '<td style="padding:8px 10px;font-size:0.83rem;text-align:center;font-family:\'DM Mono\',monospace;">' + (r.puntaje_total !== null && r.puntaje_total !== undefined ? r.puntaje_total : '—') + '</td>' +
+    '<td style="padding:8px 10px;font-size:0.83rem;text-align:center;font-family:\'DM Mono\',monospace;font-weight:700;color:' + zColor + ';">' + (r.puntaje_z !== null && r.puntaje_z !== undefined ? r.puntaje_z : '—') + '</td>' +
+    '<td style="padding:8px 10px;font-size:0.82rem;">' + (r.categoria || '—') + '</td>' +
+    '<td style="padding:8px 10px;font-size:0.8rem;color:var(--muted);white-space:nowrap;">' + formatHistorialFecha(r.fecha) + '</td>' +
+    '<td style="padding:6px 10px;text-align:center;white-space:nowrap;">' +
+    '<button type="button" class="btn-xs btn-xs-primary" data-editar-id="' + r.id + '" title="Editar fecha" style="margin-right:4px;">✏</button>' +
+    '<button type="button" class="btn-xs btn-xs-danger" data-borrar-id="' + r.id + '" title="Borrar">✕</button>' +
+    '</td></tr>';
+}
+
+function renderHistorialTablaDominio(rows) {
+  var th = 'text-align:left;padding:6px 10px;font-size:0.68rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);background:#fff;';
+  var thC = th.replace('text-align:left', 'text-align:center');
   var html = '<table style="width:100%;border-collapse:collapse;">' +
     '<thead><tr>' +
-    '<th style="text-align:left;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Paciente</th>' +
-    '<th style="text-align:left;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Test</th>' +
-    '<th style="text-align:center;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Puntaje</th>' +
-    '<th style="text-align:center;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Z</th>' +
-    '<th style="text-align:center;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">T</th>' +
-    '<th style="text-align:left;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Categoría</th>' +
-    '<th style="text-align:left;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Fecha</th>' +
-    '<th style="text-align:center;padding:8px 12px;font-size:0.72rem;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);">Acciones</th>' +
-    '</tr></thead><tbody>' +
-    datos.map(function(r) {
-      var nomPac = r.psico_pacientes ? r.psico_pacientes.nombre : '—';
-      var zColor = r.puntaje_z===null ? 'var(--muted)' : r.puntaje_z >= -1.0 ? 'var(--green)' : r.puntaje_z >= -1.5 ? 'var(--yellow)' : r.puntaje_z >= -2.0 ? 'var(--orange)' : 'var(--red)';
-      var testCell = buildHistorialTestCell(r);
-      return '<tr style="border-bottom:1px solid var(--border);">' +
-        '<td style="padding:10px 12px;font-size:0.84rem;">' + nomPac + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;font-weight:600;color:var(--accentdk);">' + testCell + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;">' + (r.puntaje_total !== null ? r.puntaje_total : '—') + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;font-weight:700;color:'+zColor+';">' + (r.puntaje_z !== null ? r.puntaje_z : '—') + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;text-align:center;font-family:\'DM Mono\',monospace;">' + (r.puntaje_t !== null ? r.puntaje_t : '—') + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.84rem;">' + (r.categoria || '—') + '</td>' +
-        '<td style="padding:10px 12px;font-size:0.82rem;color:var(--muted);">' + (r.fecha || '') + '</td>' +
-        '<td style="padding:6px 12px;text-align:center;white-space:nowrap;">' +
-        '<button class="btn-xs btn-xs-primary" data-editar-id="' + r.id + '" title="Editar fecha" style="margin-right:4px;">✏</button>' +
-        '<button class="btn-xs btn-xs-danger" data-borrar-id="' + r.id + '" title="Borrar">✕</button>' +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-  el.innerHTML = html;
-  // Delegación para botones borrar
-  el.querySelectorAll('[data-borrar-id]').forEach(function(btn) {
-    btn.addEventListener('click', function() { borrarResultado(this.getAttribute('data-borrar-id')); });
+    '<th style="' + th + '">Test</th>' +
+    '<th style="' + thC + '">Puntaje</th>' +
+    '<th style="' + thC + '">Z</th>' +
+    '<th style="' + th + '">Categoría</th>' +
+    '<th style="' + th + '">Fecha</th>' +
+    '<th style="' + thC + '">Acciones</th>' +
+    '</tr></thead><tbody>';
+  rows.forEach(function(r, i) {
+    html += renderHistorialFilaTabla(r, i % 2 === 0 ? 'var(--surface2)' : '#fff');
   });
-  el.querySelectorAll('[data-editar-id]').forEach(function(btn) {
-    btn.addEventListener('click', function() { editarResultado(this.getAttribute('data-editar-id')); });
+  return html + '</tbody></table>';
+}
+
+function bindHistorialAcciones(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-borrar-id]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      borrarResultado(this.getAttribute('data-borrar-id'));
+    });
+  });
+  container.querySelectorAll('[data-editar-id]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      editarResultado(this.getAttribute('data-editar-id'));
+    });
   });
 }
 
+function renderHistorialLista(el) {
+  var pacientes = getHistorialPacientesConDatos();
+  if (!pacientes.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-txt">No hay evaluaciones registradas.</div></div>';
+    return;
+  }
+  var html = '<p style="font-size:0.84rem;color:var(--muted);margin:0 0 14px;">Seleccioná un paciente para ver sus evaluaciones organizadas por dominio.</p>' +
+    '<div class="hist-pac-grid">';
+  pacientes.forEach(function(p) {
+    html += '<div class="hist-pac-card" data-hist-pac-id="' + p.id + '" role="button" tabindex="0">' +
+      '<div class="hist-pac-nombre">' + p.nombre + '</div>' +
+      '<div class="hist-pac-meta">' + p.count + ' test' + (p.count !== 1 ? 's' : '') + ' cargado' + (p.count !== 1 ? 's' : '') + '</div>' +
+      '<div class="hist-pac-meta">Último test: ' + formatHistorialFecha(p.ultimaFecha) + '</div>' +
+      '<button type="button" class="btn-xs btn-xs-primary" data-hist-ver-id="' + p.id + '" style="margin-top:12px;">Ver evaluaciones</button>' +
+      '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+  el.querySelectorAll('.hist-pac-card').forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('[data-hist-ver-id]')) return;
+      abrirHistorialPaciente(card.getAttribute('data-hist-pac-id'), false);
+    });
+    card.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirHistorialPaciente(card.getAttribute('data-hist-pac-id'), false); }
+    });
+  });
+  el.querySelectorAll('[data-hist-ver-id]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      abrirHistorialPaciente(btn.getAttribute('data-hist-ver-id'), false);
+    });
+  });
+}
+
+function renderHistorialDetalle(el, pacId) {
+  var datos = RESULTADOS.filter(function(r) { return String(r.paciente_id) === String(pacId); });
+  var pac = PACIENTES.find(function(p) { return String(p.id) === String(pacId); });
+  var nom = pac ? pac.nombre : (datos[0] && datos[0].psico_pacientes ? datos[0].psico_pacientes.nombre : 'Paciente');
+  if (!datos.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-txt">Este paciente no tiene evaluaciones registradas.</div></div>';
+    return;
+  }
+  var bloques = agruparResultadosPorDominio(datos);
+  var html = '<div class="hist-detalle-hdr">' +
+    '<div class="hist-detalle-titulo">' + nom + '</div>' +
+    '<div style="font-size:0.8rem;color:var(--muted);">' + datos.length + ' evaluación' + (datos.length !== 1 ? 'es' : '') + '</div>' +
+    '</div>';
+  bloques.forEach(function(bloque, idx) {
+    html += '<div class="hist-dom-hdr" style="' + (idx === 0 ? 'margin-top:0;' : '') + '">' + bloque.label + '</div>' +
+      '<div class="hist-dom-block">' + renderHistorialTablaDominio(bloque.rows) + '</div>';
+  });
+  el.innerHTML = html;
+  bindHistorialAcciones(el);
+}
+
+function renderHistorial() {
+  actualizarStatsHome();
+  var el = document.getElementById('historial-contenido');
+  var toolbar = document.getElementById('historial-toolbar');
+  var btnVolver = document.getElementById('btn-historial-volver');
+  if (!el) return;
+
+  if (HISTORIAL_VISTA === 'detalle' && HISTORIAL_PAC_SEL) {
+    if (toolbar) toolbar.style.display = 'flex';
+    if (btnVolver) {
+      btnVolver.style.display = 'inline-flex';
+      btnVolver.textContent = HISTORIAL_ENTRADA_AUTO ? '← Ver todos los pacientes' : '← Volver a pacientes';
+    }
+    syncHistorialFiltroPac(HISTORIAL_PAC_SEL);
+    renderHistorialDetalle(el, HISTORIAL_PAC_SEL);
+    return;
+  }
+
+  HISTORIAL_VISTA = 'lista';
+  HISTORIAL_PAC_SEL = null;
+  if (toolbar) toolbar.style.display = 'none';
+  if (btnVolver) btnVolver.style.display = 'none';
+  syncHistorialFiltroPac('');
+  renderHistorialLista(el);
+}
+
 function filtrarHistorial() {
-  renderHistorial();
   var filtro = document.getElementById('historial-filtro-pac');
-  var btn = document.getElementById('btn-redactar-informe');
-  if (btn) btn.style.display = (filtro && filtro.value) ? 'inline-flex' : 'none';
+  if (filtro && filtro.value) {
+    abrirHistorialPaciente(filtro.value, false);
+  } else {
+    volverHistorialLista();
+  }
 }
 
 function renderFiltroHistorial() {
@@ -7524,10 +7719,11 @@ function renderFiltroHistorial() {
   if (!sel) return;
   var curr = sel.value;
   sel.innerHTML = '<option value="">— Todos los pacientes —</option>';
-  PACIENTES.forEach(function(p){
+  PACIENTES.forEach(function(p) {
     var opt = document.createElement('option');
-    opt.value = p.id; opt.textContent = p.nombre;
-    if(p.id === curr) opt.selected = true;
+    opt.value = p.id;
+    opt.textContent = p.nombre;
+    if (String(p.id) === String(curr)) opt.selected = true;
     sel.appendChild(opt);
   });
 }
@@ -9071,7 +9267,20 @@ function irVista(v) {
   document.querySelectorAll('.sidebar-section').forEach(function(el){ el.classList.remove('active'); });
   var map = {inicio:'snav-inicio', pacientes:'snav-pacientes', historial:'snav-historial', informe:'snav-historial'};
   if(map[v]) { var s=document.getElementById(map[v]); if(s) s.classList.add('active'); }
-  if(v === 'historial') { renderFiltroHistorial(); renderHistorial(); }
+  if (v === 'historial') {
+    renderFiltroHistorial();
+    HISTORIAL_ENTRADA_AUTO = !!(PAC_ACTIVO && PAC_ACTIVO.id);
+    if (PAC_ACTIVO && PAC_ACTIVO.id) {
+      HISTORIAL_VISTA = 'detalle';
+      HISTORIAL_PAC_SEL = String(PAC_ACTIVO.id);
+      syncHistorialFiltroPac(HISTORIAL_PAC_SEL);
+    } else {
+      HISTORIAL_VISTA = 'lista';
+      HISTORIAL_PAC_SEL = null;
+      syncHistorialFiltroPac('');
+    }
+    renderHistorial();
+  }
 }
 
 var NP_TESTS = [
