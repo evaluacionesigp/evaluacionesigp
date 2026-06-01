@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.4</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.5</div>
     </div>
   </aside>
 
@@ -576,6 +576,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <span class="sector-tag">WURS-25</span>
             <span class="sector-tag">AQ · EQ</span>
             <span class="sector-tag">EA · SCQ</span>
+            <span class="sector-tag">Dislexia</span>
           </div>
         </div>
       </div>
@@ -4811,6 +4812,241 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="scq-resultado" style="display:none;"><div class="resultado-box"><div class="resultado-detalle" id="scq-detalle"></div><div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="scq-interp"></div></div></div><div class="btn-row" style="margin-top:16px;"><button class="btn-secondary" onclick="document.getElementById('scq-resultado').style.display='none';document.getElementById('scq-form').style.display='block';">← Modificar</button><button class="btn-primary" onclick="guardarSCQ()">💾 Guardar</button></div></div>
 </div>
 
+
+<!-- ══ DISLEXIA ══════════════════════════════════════════════════════════ -->
+
+<!-- ── Cuestionario Breve Dislexia Adultos ── -->
+<div class="vista" id="vista-dislex1">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">Breve Cuestionario para Valorar Dislexia en Adultos</div></div>
+  <div id="dislex1-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="dislex1-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="dislex1-fecha"></div>
+      </div>
+    </div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);">
+      <p style="font-size:0.83rem;color:var(--muted);margin:0;">Marque los ítems que aplican al paciente. Corte: <strong>1–4 No significativo · 5–10 Significativo</strong>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Ítems del cuestionario</div>
+      <div id="dislex1-items-wrap"></div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;display:flex;align-items:center;gap:16px;">
+        <div style="font-size:0.85rem;color:var(--muted);">Ítems marcados:</div>
+        <div id="dislex1-live" style="font-family:monospace;font-size:1.4rem;font-weight:700;color:var(--accent);">0 / 10</div>
+        <div id="dislex1-live-cat" style="font-size:0.82rem;font-weight:600;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Afirmaciones seleccionadas (resumen)</div>
+      <textarea id="dislex1-obs" rows="3" style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.88rem;background:var(--bg);color:var(--text);" placeholder="Observaciones cualitativas del evaluador..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarDislex1()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularDislex1()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="dislex1-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="dislex1-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Ítems marcados (sobre 10)</div>
+          <div class="puntaje-categoria" id="dislex1-cat">—</div>
+          <span class="badge-grande" id="dislex1-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="dislex1-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('dislex1-resultado').style.display='none';document.getElementById('dislex1-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarDislex1()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Lista Revisada Dislexia Adultos ── -->
+<div class="vista" id="vista-dislex2">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">Lista Revisada de Dislexia en Adultos</div></div>
+  <div id="dislex2-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="dislex2-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="dislex2-fecha"></div>
+      </div>
+    </div>
+    <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);">
+      <p style="font-size:0.83rem;color:var(--muted);margin:0;">Respuesta Sí/No. Los ítems marcados con <strong style="color:var(--red);">(*)</strong> son indicadores importantes de dislexia. Corte: <strong>1–8 No significativo · 9–20 Significativo</strong>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Ítems del cuestionario</div>
+      <div id="dislex2-items-wrap"></div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;display:flex;align-items:center;gap:16px;">
+        <div style="font-size:0.85rem;color:var(--muted);">Respuestas Sí:</div>
+        <div id="dislex2-live" style="font-family:monospace;font-size:1.4rem;font-weight:700;color:var(--accent);">0 / 20</div>
+        <div id="dislex2-live-cat" style="font-size:0.82rem;font-weight:600;color:var(--muted);"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Respuestas afirmativas destacadas (resumen)</div>
+      <textarea id="dislex2-obs" rows="3" style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.88rem;background:var(--bg);color:var(--text);" placeholder="Observaciones cualitativas del evaluador..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarDislex2()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="calcularDislex2()">Calcular resultado →</button>
+    </div>
+  </div>
+  <div id="dislex2-resultado" style="display:none;">
+    <div class="resultado-box">
+      <div class="resultado-puntaje">
+        <div class="puntaje-grande" id="dislex2-pts">0</div>
+        <div class="puntaje-info">
+          <div class="puntaje-label">Respuestas Sí (sobre 20)</div>
+          <div class="puntaje-categoria" id="dislex2-cat">—</div>
+          <span class="badge-grande" id="dislex2-badge">—</span>
+        </div>
+      </div>
+      <div class="interp-box"><div class="interp-titulo">📋 Interpretación</div><div class="interp-texto" id="dislex2-interp"></div></div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="document.getElementById('dislex2-resultado').style.display='none';document.getElementById('dislex2-form').style.display='block';">← Modificar</button>
+      <button class="btn-primary" onclick="guardarDislex2()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Identificación de Palabras con Sentido ── -->
+<div class="vista" id="vista-dislex3">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">Identificación de Palabras con Sentido</div></div>
+  <div id="dislex3-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="dislex3-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="dislex3-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Puntajes</div>
+      <div class="form-grid-3">
+        <div class="field">
+          <label>PB — Palabras con sentido seleccionadas</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="dislex3-pb" min="0" max="52" placeholder="0–52" style="flex:1;">
+            <span style="font-size:0.9rem;color:var(--muted);font-family:monospace;">/ 52</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>FP — Falsos positivos (palabras sin sentido seleccionadas)</label>
+          <input type="number" id="dislex3-fp" min="0" placeholder="0–N">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Observaciones</div>
+      <textarea id="dislex3-obs" rows="3" style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.88rem;background:var(--bg);color:var(--text);" placeholder="Observaciones cualitativas..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarDislex3()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="guardarDislex3()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TECLE ── -->
+<div class="vista" id="vista-tecle">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">TECLE · Test de Competencia Lectora</div></div>
+  <div id="tecle-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="tecle-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="tecle-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Puntaje y baremo</div>
+      <div class="form-grid-3">
+        <div class="field"><label>PB — Puntaje bruto</label><input type="number" id="tecle-pb" min="0" placeholder="Puntaje bruto" oninput="tecleActualizar()"></div>
+        <div class="field">
+          <label>Escolaridad *</label>
+          <select id="tecle-escol" onchange="tecleActualizar()">
+            <option value="">— Seleccionar —</option>
+            <option value="5a7">5 a 7 años</option>
+            <option value="8a12">8 a 12 años</option>
+            <option value="13mas">13 o más años</option>
+          </select>
+        </div>
+        <div class="field" style="opacity:0.7;">
+          <label>Edad (del paciente activo)</label>
+          <input type="text" id="tecle-edad-display" disabled placeholder="Se toma de PAC_ACTIVO">
+        </div>
+      </div>
+      <div id="tecle-calc-wrap" style="display:none;margin-top:14px;padding:12px;background:var(--bg);border-radius:8px;">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+          <div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">M</div><div style="font-family:monospace;font-size:1.2rem;font-weight:700;" id="tecle-m">—</div></div>
+          <div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">DS</div><div style="font-family:monospace;font-size:1.2rem;font-weight:700;" id="tecle-ds">—</div></div>
+          <div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Z</div><div style="font-family:monospace;font-size:1.4rem;font-weight:700;color:var(--accent);" id="tecle-z">—</div></div>
+          <div><div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Clasificación</div><div id="tecle-clf" style="font-size:0.9rem;font-weight:700;margin-top:4px;">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Observaciones</div>
+      <textarea id="tecle-obs" rows="3" style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.88rem;background:var(--bg);color:var(--text);" placeholder="Observaciones cualitativas..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarTecle()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="guardarTecle()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Lectura de Palabras y Pseudopalabras ── -->
+<div class="vista" id="vista-dislex5">
+  <div class="back-btn" onclick="volverSector()">← Volver</div>
+  <div class="vista-header"><div class="vista-titulo">Lectura de Palabras y Pseudopalabras</div></div>
+  <div id="dislex5-form">
+    <div class="card">
+      <div class="card-title">Datos de la evaluación</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Paciente *</label><select id="dislex5-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="dislex5-fecha"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Palabras — Tiempos en segundos</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Col. 1 — Sílabas directas</label><input type="number" id="dislex5-p1" min="0" step="0.1" placeholder="seg"></div>
+        <div class="field"><label>Col. 3 — Sílabas directas inversas y mixtas</label><input type="number" id="dislex5-p3" min="0" step="0.1" placeholder="seg"></div>
+        <div class="field"><label>Col. 5 — Todas las estructuras</label><input type="number" id="dislex5-p5" min="0" step="0.1" placeholder="seg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pseudopalabras — Tiempos en segundos</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Col. 2 — Sílabas directas</label><input type="number" id="dislex5-pp2" min="0" step="0.1" placeholder="seg"></div>
+        <div class="field"><label>Col. 4 — Sílabas directas inversas y mixtas</label><input type="number" id="dislex5-pp4" min="0" step="0.1" placeholder="seg"></div>
+        <div class="field"><label>Col. 6 — Todas las estructuras</label><input type="number" id="dislex5-pp6" min="0" step="0.1" placeholder="seg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Palabras con dificultad y características de la dificultad</div>
+      <textarea id="dislex5-obs" rows="4" style="width:100%;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px;font-size:0.88rem;background:var(--bg);color:var(--text);" placeholder="Información cualitativa: palabras con dificultad, tipo de error, etc."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="limpiarDislex5()">🗑 Limpiar</button>
+      <button class="btn-primary" onclick="guardarDislex5()">💾 Guardar resultado</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── TEST ASRS-V1.1 ── -->
 
 <div class="vista" id="vista-asrs">
@@ -6200,7 +6436,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -7824,7 +8060,12 @@ var PDF_BLANK_MAP = {
   'pcs':   { vistaId:'vista-pcs',   titulo:'PCS · Escala de Catastrofización del Dolor' },
   'csq':   { vistaId:'vista-csq',   titulo:'CSQ · Cuestionario de Estrategias de Afrontamiento' },
   'pbq':   { vistaId:'vista-pbq',   titulo:'PBQ · Cuestionario de Conductas de Dolor' },
-  'bpi':   { vistaId:'vista-bpi',   titulo:'BPI · Inventario Breve de Dolor' }
+  'bpi':   { vistaId:'vista-bpi',   titulo:'BPI · Inventario Breve de Dolor' },
+  'dislex1':{ vistaId:'vista-dislex1', titulo:'Breve Cuestionario para Valorar Dislexia en Adultos' },
+  'dislex2':{ vistaId:'vista-dislex2', titulo:'Lista Revisada de Dislexia en Adultos' },
+  'dislex3':{ vistaId:'vista-dislex3', titulo:'Identificación de Palabras con Sentido' },
+  'tecle':  { vistaId:'vista-tecle',   titulo:'TECLE · Test de Competencia Lectora' },
+  'dislex5':{ vistaId:'vista-dislex5', titulo:'Lectura de Palabras y Pseudopalabras' }
 };
 
 function generarPDF(tipo) {
@@ -9831,6 +10072,37 @@ function irSector(s) {
         '<div class="test-nombre">SCQ · Forma A</div>' +
         '<div class="test-desc">Cuestionario de Comunicación Social · Informante · Corte ≥15</div>' +
         '<span class="test-tag">Rutter et al. · DC · IS · CRR</span>' +
+      '</div>' +
+      '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 2px;padding-left:4px;">Dislexia</div>' +
+      '<div class="test-card" onclick="irTest(\'dislex1\')">' +
+        '<div class="test-icon">📖</div>' +
+        '<div class="test-nombre">Cuest. Dislexia Adultos</div>' +
+        '<div class="test-desc">Breve cuestionario de 10 ítems para valorar dislexia en adultos</div>' +
+        '<span class="test-tag">10 ítems · Checklist</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'dislex2\')">' +
+        '<div class="test-icon">✅</div>' +
+        '<div class="test-nombre">Lista Revisada Dislexia</div>' +
+        '<div class="test-desc">Lista revisada de 20 ítems Sí/No con indicadores importantes marcados</div>' +
+        '<span class="test-tag">20 ítems · Sí/No · (*) indicadores</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'dislex3\')">' +
+        '<div class="test-icon">🔤</div>' +
+        '<div class="test-nombre">Identificación Palabras</div>' +
+        '<div class="test-desc">Identificación de Palabras con Sentido — PB y falsos positivos</div>' +
+        '<span class="test-tag">PB/52 · Falsos positivos</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'tecle\')">' +
+        '<div class="test-icon">📊</div>' +
+        '<div class="test-nombre">TECLE</div>' +
+        '<div class="test-desc">Test de Competencia Lectora — Baremo por edad y escolaridad · Z automático</div>' +
+        '<span class="test-tag">Baremo argentino · Z score</span>' +
+      '</div>' +
+      '<div class="test-card" onclick="irTest(\'dislex5\')">' +
+        '<div class="test-icon">⏱</div>' +
+        '<div class="test-nombre">Lectura Palabras y PP</div>' +
+        '<div class="test-desc">Lectura de Palabras y Pseudopalabras — Tiempos por columna</div>' +
+        '<span class="test-tag">6 columnas · Tiempos en seg</span>' +
       '</div>';
   }
 }
@@ -9874,6 +10146,11 @@ function irTest(t) {
   if (t === 'eq') iniciarEQ();
   if (t === 'ea') iniciarEA();
   if (t === 'scq') iniciarSCQ();
+  if (t === 'dislex1') iniciarDislex1();
+  if (t === 'dislex2') iniciarDislex2();
+  if (t === 'dislex3') iniciarDislex3();
+  if (t === 'tecle')   iniciarTecle();
+  if (t === 'dislex5') iniciarDislex5();
   if (t === 'waisiv') iniciarWaisiv();
   if (t === 'waisperfil') iniciarWaisperfil();
   if (t === 'asrs') iniciarAsrs();
@@ -13489,6 +13766,364 @@ function guardarSCQ() {
   ndGuardar('SCQ', 'scq-paciente', 'scq-fecha', d.total, d.total >= 15 ? 'Sobre corte (≥15)' : 'Bajo corte', d);
 }
 
+
+// ══ DISLEXIA ══════════════════════════════════════════════════════════════════
+
+// ── Instrumento 1: Breve Cuestionario para Valorar Dislexia en Adultos ───────
+var DISLEX1_ITEMS = [
+  'Aprende a leer más tarde que sus compañeros a pesar de los esfuerzos.',
+  'No encuentra causa de su dificultad para aprender a leer.',
+  'Competente en áreas como deportes, habilidades sociales, manualidades, pero inseguro en temas relacionados con lectura, colegio, etc.',
+  'Mucha dedicación en estudio sin lograr los resultados esperados.',
+  'Preferencia por actividades que no requieran lectura ni escritura.',
+  'Dificultades en la comprensión de textos, aun siendo simples y leyendo de forma pausada.',
+  'Frecuentes errores ortográficos o duda recurrente entre las letras que debe escribir.',
+  'Al leer ocurren algunas de estas cosas: confusión de palabras, salto de palabras cortas, dificultad para leer palabras largas y nuevas, salteo de renglones, etc.',
+  'Dificultad en el aprendizaje de idiomas, sobre todo la escritura.',
+  'Aun teniendo la idea clara, dificultad en la organización para su expresión ya sea oral o escrita.'
+];
+
+function iniciarDislex1() {
+  var wrap = document.getElementById('dislex1-items-wrap');
+  wrap.innerHTML = DISLEX1_ITEMS.map(function(txt, i) {
+    return '<label style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;">' +
+      '<input type="checkbox" name="dislex1_item" value="' + (i+1) + '" onchange="dislex1Update()" style="margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex-shrink:0;">' +
+      '<span style="font-size:0.88rem;"><strong>' + (i+1) + '.</strong> ' + txt + '</span></label>';
+  }).join('');
+  document.getElementById('dislex1-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dislex1-form').style.display = 'block';
+  document.getElementById('dislex1-resultado').style.display = 'none';
+  dislex1Update();
+}
+
+function dislex1Update() {
+  var checked = document.querySelectorAll('input[name="dislex1_item"]:checked').length;
+  var cat = checked >= 5 ? 'Significativo' : 'No significativo';
+  document.getElementById('dislex1-live').textContent = checked + ' / 10';
+  document.getElementById('dislex1-live-cat').textContent = checked > 0 ? '— ' + cat : '';
+}
+
+function limpiarDislex1() {
+  if (!confirm('¿Limpiar?')) return;
+  document.querySelectorAll('input[name="dislex1_item"]').forEach(function(cb){ cb.checked = false; });
+  document.getElementById('dislex1-obs').value = '';
+  dislex1Update();
+}
+
+function calcularDislex1() {
+  var marcados = [];
+  document.querySelectorAll('input[name="dislex1_item"]:checked').forEach(function(cb){ marcados.push(parseInt(cb.value)); });
+  var total = marcados.length;
+  var cat = total >= 5 ? 'Significativo' : 'No significativo';
+  var badge = total >= 5 ? 'bg-grave' : 'bg-minima';
+  var interp = '<p>Puntaje: <strong>' + total + '/10</strong> — <strong>' + cat + '</strong>.</p>';
+  if (total >= 5) interp += '<p>La cantidad de indicadores marcados sugiere la presencia de características compatibles con dislexia. Se recomienda evaluación complementaria.</p>';
+  else interp += '<p>La cantidad de indicadores marcados no alcanza el umbral sugestivo de dislexia.</p>';
+  if (marcados.length) interp += '<p>Ítems marcados: ' + marcados.join(', ') + '.</p>';
+  var obs = document.getElementById('dislex1-obs').value.trim();
+  if (obs) interp += '<p><em>Observaciones: ' + obs + '</em></p>';
+
+  document.getElementById('dislex1-pts').textContent = total;
+  document.getElementById('dislex1-cat').textContent = cat;
+  document.getElementById('dislex1-badge').textContent = cat;
+  document.getElementById('dislex1-badge').className = 'badge-grande ' + badge;
+  document.getElementById('dislex1-interp').innerHTML = interp;
+  document.getElementById('dislex1-form').style.display = 'none';
+  document.getElementById('dislex1-resultado').style.display = 'block';
+  window._dislex1 = { total: total, cat: cat, marcados: marcados, obs: obs };
+}
+
+function guardarDislex1() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('dislex1-paciente').value;
+  var fecha = document.getElementById('dislex1-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  var d = window._dislex1 || { total: 0, cat: '—', marcados: [], obs: '' };
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'Cuest. Dislexia Adultos', fecha: fecha,
+    puntaje_total: d.total, categoria: d.cat,
+    datos: { puntaje_sobre: 10, items_marcados: d.marcados, observaciones: d.obs }
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ Guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ── Instrumento 2: Lista Revisada de Dislexia en Adultos ─────────────────────
+var DISLEX2_ITEMS = [
+  { n:1,  txt:'Dificultad en diferenciar izquierda y derecha', imp:true },
+  { n:2,  txt:'Dificultad en comprender un mapa u orientarse en un lugar desconocido.', imp:false },
+  { n:3,  txt:'Desagrado en leer en voz alta.', imp:false },
+  { n:4,  txt:'Demora más al leer una página de un libro', imp:true },
+  { n:5,  txt:'Dificultad en recordar el sentido de lo leído.', imp:false },
+  { n:6,  txt:'Desagrado por leer libros largos.', imp:false },
+  { n:7,  txt:'Mala ortografía', imp:true },
+  { n:8,  txt:'Dificultad de leer lo que escribe.', imp:false },
+  { n:9,  txt:'Confusiones al hablar en público.', imp:false },
+  { n:10, txt:'Dificultad al recibir mensajes telefónicos y pasarlos correctamente', imp:true },
+  { n:11, txt:'Dificultad en la pronunciación de palabras largas', imp:true },
+  { n:12, txt:'Dificultad en realizar sumas sin apoyo de los dedos o un papel.', imp:false },
+  { n:13, txt:'Confusión al marcar números telefónicos', imp:true },
+  { n:14, txt:'Dificultad al decir los meses del año de manera directa y fluida', imp:true },
+  { n:15, txt:'Dificultad al decir los meses del año hacia atrás.', imp:false },
+  { n:16, txt:'Confusión de fechas y horarios', imp:true },
+  { n:17, txt:'Cometer con frecuencia errores al escribir', imp:true },
+  { n:18, txt:'Dificultad para completar formularios', imp:true },
+  { n:19, txt:'Mezcla números', imp:true },
+  { n:20, txt:'Dificultad para aprender las tablas de multiplicar', imp:true }
+];
+
+function iniciarDislex2() {
+  var wrap = document.getElementById('dislex2-items-wrap');
+  wrap.innerHTML = DISLEX2_ITEMS.map(function(item) {
+    var badge = item.imp ? ' <span style="font-size:0.7rem;font-weight:700;color:var(--red);background:#fff0f0;border:1px solid var(--red);border-radius:4px;padding:1px 5px;">* indicador</span>' : '';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:12px;">' +
+      '<span style="font-size:0.88rem;flex:1;"><strong>' + item.n + '.</strong> ' + item.txt + badge + '</span>' +
+      '<div style="display:flex;gap:8px;flex-shrink:0;">' +
+        '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.88rem;font-weight:600;">' +
+          '<input type="radio" name="dislex2_' + item.n + '" value="si" onchange="dislex2Update()" style="accent-color:var(--accent);"> Sí</label>' +
+        '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:0.88rem;">' +
+          '<input type="radio" name="dislex2_' + item.n + '" value="no" onchange="dislex2Update()" style="accent-color:var(--accent);"> No</label>' +
+      '</div></div>';
+  }).join('');
+  document.getElementById('dislex2-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dislex2-form').style.display = 'block';
+  document.getElementById('dislex2-resultado').style.display = 'none';
+  dislex2Update();
+}
+
+function dislex2Update() {
+  var si = document.querySelectorAll('input[name^="dislex2_"][value="si"]:checked').length;
+  var cat = si >= 9 ? 'Significativo' : 'No significativo';
+  document.getElementById('dislex2-live').textContent = si + ' / 20';
+  document.getElementById('dislex2-live-cat').textContent = si > 0 ? '— ' + cat : '';
+}
+
+function limpiarDislex2() {
+  if (!confirm('¿Limpiar?')) return;
+  for (var i = 1; i <= 20; i++) {
+    document.querySelectorAll('input[name="dislex2_' + i + '"]').forEach(function(r){ r.checked = false; });
+  }
+  document.getElementById('dislex2-obs').value = '';
+  dislex2Update();
+}
+
+function calcularDislex2() {
+  var itemsSi = [];
+  DISLEX2_ITEMS.forEach(function(item) {
+    var s = document.querySelector('input[name="dislex2_' + item.n + '"][value="si"]:checked');
+    if (s) itemsSi.push(item.n);
+  });
+  var total = itemsSi.length;
+  var cat = total >= 9 ? 'Significativo' : 'No significativo';
+  var badge = total >= 9 ? 'bg-grave' : 'bg-minima';
+  var impMarcados = DISLEX2_ITEMS.filter(function(it){ return itemsSi.indexOf(it.n) >= 0 && it.imp; });
+  var interp = '<p>Puntaje: <strong>' + total + '/20</strong> — <strong>' + cat + '</strong>.</p>';
+  if (impMarcados.length) interp += '<p>Indicadores importantes marcados (' + impMarcados.length + '): ítems ' + impMarcados.map(function(i){return i.n;}).join(', ') + '.</p>';
+  if (total >= 9) interp += '<p>La cantidad de respuestas afirmativas supera el umbral de significancia clínica, sugiriendo indicadores compatibles con dislexia. Se recomienda evaluación complementaria.</p>';
+  else interp += '<p>La cantidad de respuestas afirmativas no alcanza el umbral de significancia.</p>';
+  var obs = document.getElementById('dislex2-obs').value.trim();
+  if (obs) interp += '<p><em>Observaciones: ' + obs + '</em></p>';
+
+  document.getElementById('dislex2-pts').textContent = total;
+  document.getElementById('dislex2-cat').textContent = cat;
+  document.getElementById('dislex2-badge').textContent = cat;
+  document.getElementById('dislex2-badge').className = 'badge-grande ' + badge;
+  document.getElementById('dislex2-interp').innerHTML = interp;
+  document.getElementById('dislex2-form').style.display = 'none';
+  document.getElementById('dislex2-resultado').style.display = 'block';
+  window._dislex2 = { total: total, cat: cat, itemsSi: itemsSi, obs: obs };
+}
+
+function guardarDislex2() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('dislex2-paciente').value;
+  var fecha = document.getElementById('dislex2-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  var d = window._dislex2 || { total: 0, cat: '—', itemsSi: [], obs: '' };
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'Lista Revisada Dislexia', fecha: fecha,
+    puntaje_total: d.total, categoria: d.cat,
+    datos: { puntaje_sobre: 20, items_si: d.itemsSi, observaciones: d.obs }
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ Guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ── Instrumento 3: Identificación de Palabras con Sentido ────────────────────
+function iniciarDislex3() {
+  document.getElementById('dislex3-fecha').value = new Date().toISOString().split('T')[0];
+}
+
+function limpiarDislex3() {
+  document.getElementById('dislex3-pb').value = '';
+  document.getElementById('dislex3-fp').value = '';
+  document.getElementById('dislex3-obs').value = '';
+}
+
+function guardarDislex3() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('dislex3-paciente').value;
+  var fecha = document.getElementById('dislex3-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  var pb = parseInt(document.getElementById('dislex3-pb').value) || 0;
+  var fp = parseInt(document.getElementById('dislex3-fp').value) || 0;
+  var obs = document.getElementById('dislex3-obs').value.trim();
+  if (!pb && !fp) { toast('Ingresá al menos el puntaje bruto', 'error'); return; }
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'Identificación Palabras con Sentido', fecha: fecha,
+    puntaje_total: pb, categoria: pb + '/52' + (fp ? ' · FP:' + fp : ''),
+    datos: { puntaje_sobre: 52, falsos_positivos: fp, observaciones: obs }
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ Guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ── Instrumento 4: TECLE ─────────────────────────────────────────────────────
+var TECLE_BAR = {
+  '5a7': {
+    '18-34': {m:37.00,    ds:8.43},
+    '35-49': {m:28.23,    ds:8.92},
+    '50-64': {m:28.71,    ds:5.96},
+    '65+':   {m:26.43,    ds:9.18}
+  },
+  '8a12': {
+    '18-34': {m:36.90,    ds:8.73},
+    '35-49': {m:35.93,    ds:6.78},
+    '50-64': {m:34.80,    ds:10.06},
+    '65+':   {m:31.00,    ds:9.32}
+  },
+  '13mas': {
+    '18-34': {m:46.10,    ds:8.32},
+    '35-49': {m:46.73,    ds:8.03},
+    '50-64': {m:40.57,    ds:9.35},
+    '65+':   {m:38.60,    ds:8.51}
+  }
+};
+
+function tecleGetEdadRango(edad) {
+  if (!edad || isNaN(edad)) return null;
+  if (edad <= 34) return '18-34';
+  if (edad <= 49) return '35-49';
+  if (edad <= 64) return '50-64';
+  return '65+';
+}
+
+function tecleActualizar() {
+  var pb    = parseFloat(document.getElementById('tecle-pb').value);
+  var escol = document.getElementById('tecle-escol').value;
+  var edad  = PAC_ACTIVO ? parseInt(PAC_ACTIVO.edad) : null;
+  var eRango = tecleGetEdadRango(edad);
+  document.getElementById('tecle-edad-display').value = edad ? edad + ' años (' + (eRango || '—') + ')' : '—';
+  if (!escol || !eRango || isNaN(pb)) {
+    document.getElementById('tecle-calc-wrap').style.display = 'none';
+    return;
+  }
+  var bar = TECLE_BAR[escol][eRango];
+  var z   = (pb - bar.m) / bar.ds;
+  var clf, color;
+  if (z >= -1.0)      { clf = 'Normal';           color = 'var(--green)'; }
+  else if (z >= -1.5) { clf = 'Leve ↓';           color = 'var(--yellow)'; }
+  else if (z >= -2.0) { clf = 'Moderado ↓';       color = 'var(--orange)'; }
+  else                { clf = 'Bajo ↓ (déficit)';  color = 'var(--red)'; }
+  document.getElementById('tecle-m').textContent  = bar.m;
+  document.getElementById('tecle-ds').textContent = bar.ds;
+  document.getElementById('tecle-z').textContent  = (z >= 0 ? '+' : '') + z.toFixed(2);
+  document.getElementById('tecle-z').style.color  = color;
+  document.getElementById('tecle-clf').textContent = clf;
+  document.getElementById('tecle-clf').style.color = color;
+  document.getElementById('tecle-calc-wrap').style.display = 'block';
+  window._tecleZ    = z;
+  window._tecleM    = bar.m;
+  window._tecleDS   = bar.ds;
+  window._tecleEscol = escol;
+  window._tecleErad  = eRango;
+}
+
+function iniciarTecle() {
+  document.getElementById('tecle-fecha').value = new Date().toISOString().split('T')[0];
+  if (PAC_ACTIVO && PAC_ACTIVO.edad) {
+    var eRango = tecleGetEdadRango(parseInt(PAC_ACTIVO.edad));
+    document.getElementById('tecle-edad-display').value = PAC_ACTIVO.edad + ' años (' + (eRango || '—') + ')';
+  }
+  tecleActualizar();
+}
+
+function limpiarTecle() {
+  document.getElementById('tecle-pb').value = '';
+  document.getElementById('tecle-escol').value = '';
+  document.getElementById('tecle-obs').value = '';
+  document.getElementById('tecle-calc-wrap').style.display = 'none';
+}
+
+function guardarTecle() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('tecle-paciente').value;
+  var fecha = document.getElementById('tecle-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  var pb    = parseFloat(document.getElementById('tecle-pb').value);
+  var escol = document.getElementById('tecle-escol').value;
+  var obs   = document.getElementById('tecle-obs').value.trim();
+  if (isNaN(pb)) { toast('Ingresá el puntaje bruto', 'error'); return; }
+  if (!escol)    { toast('Seleccioná escolaridad', 'error'); return; }
+  var z = window._tecleZ != null ? parseFloat(window._tecleZ.toFixed(2)) : null;
+  var escolLabel = {
+    '5a7':'5 a 7 años', '8a12':'8 a 12 años', '13mas':'13 o más años'
+  }[escol] || escol;
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'TECLE', fecha: fecha,
+    puntaje_total: pb, puntaje_z: z,
+    categoria: z != null ? (z >= -1 ? 'Normal' : z >= -1.5 ? 'Leve ↓' : z >= -2 ? 'Moderado ↓' : 'Bajo ↓') : pb + ' PB',
+    datos: {
+      media: window._tecleM || null, ds: window._tecleDS || null,
+      escolaridad_rango: escolLabel,
+      edad_rango: window._tecleErad || null,
+      observaciones: obs
+    }
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ TECLE guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+// ── Instrumento 5: Lectura de Palabras y Pseudopalabras ──────────────────────
+function iniciarDislex5() {
+  document.getElementById('dislex5-fecha').value = new Date().toISOString().split('T')[0];
+}
+
+function limpiarDislex5() {
+  ['dislex5-p1','dislex5-p3','dislex5-p5','dislex5-pp2','dislex5-pp4','dislex5-pp6'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('dislex5-obs').value = '';
+}
+
+function guardarDislex5() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('dislex5-paciente').value;
+  var fecha = document.getElementById('dislex5-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero', 'error'); return; }
+  function getN(id){ var v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
+  var datos = {
+    palabras:       { col1:getN('dislex5-p1'),  col3:getN('dislex5-p3'),  col5:getN('dislex5-p5') },
+    pseudopalabras: { col2:getN('dislex5-pp2'), col4:getN('dislex5-pp4'), col6:getN('dislex5-pp6') },
+    observaciones:  document.getElementById('dislex5-obs').value.trim()
+  };
+  var hasTiempos = Object.values(datos.palabras).some(function(v){return v!=null;}) ||
+                   Object.values(datos.pseudopalabras).some(function(v){return v!=null;});
+  if (!hasTiempos && !datos.observaciones) { toast('Ingresá al menos un tiempo o una observación', 'error'); return; }
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId,
+    test: 'Lectura Palabras y Pseudopalabras', fecha: fecha,
+    puntaje_total: null, categoria: 'Registro de tiempos',
+    datos: datos
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ Guardado', 'success');
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
 function iniciarAsrs() {
   aplicarTituloGlosario('asrs-titulo-glosario', 'ASRS-V1.1', 'ASRS-V1.1 · Escala de Autodetección de TDAH en Adultos');
   document.getElementById('asrs-fecha').value = new Date().toISOString().split('T')[0];
@@ -15897,6 +16532,7 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
     { label: 'Cuestionarios Neurodesarrollo · TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
     { label: 'Cuestionarios Neurodesarrollo · TEA', tests: ['AQ', 'AQ-10', 'EQ', 'EA', 'SCQ'] },
+    { label: 'Cuestionarios Neurodesarrollo · Dislexia', tests: ['Cuest. Dislexia Adultos', 'Lista Revisada Dislexia', 'Identificación Palabras con Sentido', 'TECLE', 'Lectura Palabras y Pseudopalabras'] },
     { label: 'Psicología clínica', tests: ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'Birleson', 'AAA', 'SPAI-B', 'SCL-90-R', 'MBI-HSS', 'CSI', 'CRC', 'PSS-10', 'Holmes-Rahe', 'GDS-30'] },
     { label: 'Evaluación del dolor', tests: ['PCS', 'CSQ', 'PBQ', 'BPI'] },
     { label: 'Cuestionarios familiares', tests: ['Cuestionarios Familiares'] }
@@ -18235,7 +18871,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // ── Clasificar tests (igual que PDF) ──
   var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
-  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ'];
+  var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ','Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
   function tipoTest(t){return NP_LIST.indexOf(t)!==-1?'np':CL_LIST.indexOf(t)!==-1?'cl':TD_LIST.indexOf(t)!==-1?'td':DO_LIST.indexOf(t)!==-1?'do':'cl';}
   var testsNP    = datos.filter(function(r){return tipoTest(r.test)==='np';});
@@ -18738,6 +19374,42 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wTable([
       _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
     ].concat(teaRows),COL_CL);
+    body+=_wPar('',{before:0,after:80});
+  }
+
+  // TABLA DISLEXIA
+  var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
+  var dlxRows=[];
+  testsTD.filter(function(r){return TD_DISLEX_LIST.indexOf(r.test)>=0;}).forEach(function(r){
+    var d=r.datos||{};
+    var pb='—', res='—';
+    if(r.test==='Cuest. Dislexia Adultos'){
+      pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/10';
+      res=r.categoria||'—';
+    } else if(r.test==='Lista Revisada Dislexia'){
+      pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/20';
+      res=r.categoria||'—';
+    } else if(r.test==='Identificación Palabras con Sentido'){
+      pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/52'+(d.falsos_positivos!=null?' FP:'+d.falsos_positivos:'');
+      res='—';
+    } else if(r.test==='TECLE'){
+      pb=r.puntaje_total!=null?r.puntaje_total:'—';
+      var zv=r.puntaje_z!=null?parseFloat(r.puntaje_z).toFixed(2):null;
+      res=(r.categoria||'—')+(zv?' (Z='+zv+')':'');
+    } else if(r.test==='Lectura Palabras y Pseudopalabras'){
+      var pp=d.palabras||{},ppp=d.pseudopalabras||{};
+      var ts=[pp.col1,pp.col3,pp.col5,ppp.col2,ppp.col4,ppp.col6].filter(function(v){return v!=null;});
+      pb=ts.length?ts.join(' / ')+' seg':'—';
+      res='Tiempos';
+    }
+    var bg=dlxRows.length%2===0?'F2F2F2':'FFFFFF';
+    dlxRows.push(_wRow([clCell(r.test,COL_CL[0],bg),clCell(String(pb),COL_CL[1],bg,true),clCell(res,COL_CL[2],bg)]));
+  });
+  if(dlxRows.length){
+    body+=_wPar(_wRun('Neurodesarrollo · Dislexia',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
+    body+=_wTable([
+      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje / Tiempos',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
+    ].concat(dlxRows),COL_CL);
     body+=_wPar('',{before:0,after:80});
   }
 
