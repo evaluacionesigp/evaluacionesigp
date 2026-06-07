@@ -19224,12 +19224,51 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return rows.length > 1 ? { rows: rows, cols: COL_WAIS } : null;
   }
 
-  // ── Tabla simple para CL/TD/DO (Instrumento | Puntaje | Resultado) ──
+  // ── Tabla simple para CL/TD/DO (Test | Puntaje | Resultado) ──
   var COL_CL=_wordScaleCols([3200,1200,4960],WORD_CONTENT_W);
   var COL_DP=_wordScaleCols([2600,6760],WORD_CONTENT_W);
+  var CL_ORDEN_WORD=['BDI-II','STAI','SPAI-B','PHQ-9','GAD-7','Birleson','AAA','CSI','MBI-HSS','CRC','PSS-10','Holmes-Rahe','GDS-30'];
+  var TD_TDAH_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
+  var TD_TEA_LIST=['AQ','AQ-10','EQ','EA','SCQ'];
+  var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
+  function sortTestsByOrder(list,orden){
+    var out=[],seen={};
+    orden.forEach(function(t){
+      list.forEach(function(r){if(r.test===t&&!seen[r.test]){out.push(r);seen[r.test]=true;}});
+    });
+    list.forEach(function(r){if(!seen[r.test])out.push(r);});
+    return out;
+  }
   function clHdr(txt,w){return _wCell(_wPar(_wRun(txt,{sz:18,bold:true,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:w,fill:'F2F2F2',hdrBorder:true});}
   function clCell(txt,w,bg,center){return _wCell(_wPar(_wRun(txt||'—',{sz:20,font:'Arial',color:'000000'}),{align:center?'center':'left',before:20,after:20}),{w:w,fill:bg||'FFFFFF'});}
   function clDomHdr(txt){return _wRow([_wCell(_wPar(_wRun(txt,{bold:true,sz:20,color:'000000',font:'Arial'}),{before:25,after:25,shading:'D9D9D9'}),{w:WORD_CONTENT_W,fill:'D9D9D9',span:3})]);}
+  function appendWordSimpleTable(title,rows,colHdrs){
+    if(!rows||!rows.length)return;
+    if(title)body+=_wPar(_wRun(title,{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
+    body+=_wTable([
+      _wRow([clHdr(colHdrs[0],COL_CL[0]),clHdr(colHdrs[1],COL_CL[1]),clHdr(colHdrs[2],COL_CL[2])],{hdr:true})
+    ].concat(rows),COL_CL);
+    body+=_wPar('',{before:0,after:80});
+  }
+  function buildScl90WordRows(r){
+    if(!r||r.test!=='SCL-90-R')return [];
+    var d=r.datos||{},rows=[],rc=0;
+    function sclSigLabel(t){return(t!=null&&t>=65)?'Significativo':'No significativo';}
+    function addScl(lbl,pbpt,res){
+      var bg=rc%2===0?'F2F2F2':'FFFFFF';
+      rows.push(_wRow([clCell(lbl,COL_CL[0],bg),clCell(pbpt,COL_CL[1],bg,true),clCell(res,COL_CL[2],bg)]));
+      rc++;
+    }
+    var igt=d.igt!=null?Math.round(parseFloat(d.igt)):null;
+    var igsV=d.igs_avg!=null?parseFloat(d.igs_avg).toFixed(2):'—';
+    var tspV=d.tsp!=null?d.tsp:'—';
+    var imspV=d.imsp!=null?parseFloat(d.imsp).toFixed(2):'—';
+    addScl('Índice de severidad global',igsV+(igt!=null?' / T'+igt:''),sclSigLabel(igt));
+    addScl('Total de síntomas positivos',tspV+(d.tsp_t!=null?' / T'+d.tsp_t:''),sclSigLabel(d.tsp_t));
+    addScl('Índice de Malestar Positivo',imspV+(d.imsp_t!=null?' / T'+d.imsp_t:''),sclSigLabel(d.imsp_t));
+    return rows;
+  }
+
   function buildSimpleRows(list){
     if(!list.length)return[];
     var rows=[],rc=0;
@@ -19249,18 +19288,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       else if(r.test==='Birleson'){addCL('Birleson (PACES) · Depresión Adolescente',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='AAA'){addCL('AAA · Autoreporte de Ansiedad (Adolescentes)',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='SPAI-B'){addCL('SPAI-B · Inventario de Fobia y Ansiedad Social',r.puntaje_total,r.categoria||'—');}
-      else if(r.test==='SCL-90-R'){
-        var igsT=d.igt!=null?Math.round(parseFloat(d.igt)):null;
-        var tspT=d.tsp_t!=null?d.tsp_t:null;
-        var imspT=d.imsp_t!=null?d.imsp_t:null;
-        function sclSigLabel(t){return(t!=null&&t>=65)?'Significativo':'No significativo';}
-        var igsV=d.igs_avg!=null?parseFloat(d.igs_avg).toFixed(2):'—';
-        var tspV=d.tsp!=null?d.tsp:'—';
-        var imspV=d.imsp!=null?parseFloat(d.imsp).toFixed(2):'—';
-        addCL('SCL-90-R · Índice de Severidad Global (IGS)', igsV, sclSigLabel(igsT));
-        addCL('SCL-90-R · Total Síntomas Positivos (TSP)', tspV, sclSigLabel(tspT));
-        addCL('SCL-90-R · Índice de Malestar Positivo (IMSP)', imspV, sclSigLabel(imspT));
-      }
+      else if(r.test==='SCL-90-R'){/* tabla aparte — buildScl90WordRows */}
       else if(r.test==='MBI-HSS'){
         if(d.CE!=null)addCL('MBI-HSS · Cansancio Emocional',d.CE,d.CE_cat||'—');
         if(d.DP!=null)addCL('MBI-HSS · Despersonalización',d.DP,d.DP_cat||'—');
@@ -19465,28 +19493,25 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body += _wPar('', { before: 0, after: 80 });
   }
 
-  // TABLA Cuestionarios Neurodesarrollo (TDAH + TEA)
-  var TD_TDAH_LIST = ['ASRS-V1.1','WURS-25','DEX','EAVA'];
-  var TD_TEA_LIST  = ['AQ','AQ-10','EQ','EA','SCQ'];
-  var tdahRows = buildSimpleRows(testsTD.filter(function(r){ return TD_TDAH_LIST.indexOf(r.test) >= 0; }));
-  var teaRows  = buildSimpleRows(testsTD.filter(function(r){ return TD_TEA_LIST.indexOf(r.test) >= 0; }));
-  if(tdahRows.length){
-    body+=_wPar(_wRun('Cuestionarios Neurodesarrollo · TDAH',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([
-      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(tdahRows),COL_CL);
-    body+=_wPar('',{before:0,after:80});
-  }
-  if(teaRows.length){
-    body+=_wPar(_wRun('Cuestionarios Neurodesarrollo · TEA',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([
-      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(teaRows),COL_CL);
-    body+=_wPar('',{before:0,after:80});
-  }
+  // Psicología clínica → TDAH → Autismo → SCL-90-R (aparte) → Dolor → Dislexia
+  var testsClSinScl=sortTestsByOrder(testsCL.filter(function(r){return r.test!=='SCL-90-R';}),CL_ORDEN_WORD);
+  var sclResult=testsCL.filter(function(r){return r.test==='SCL-90-R';})[0]||null;
+  var clRows=buildSimpleRows(testsClSinScl);
+  appendWordSimpleTable('Psicología Clínica',clRows,['Test','Puntaje','Resultado']);
+
+  var tdahRows=buildSimpleRows(sortTestsByOrder(testsTD.filter(function(r){return TD_TDAH_LIST.indexOf(r.test)>=0;}),TD_TDAH_LIST));
+  appendWordSimpleTable('Cuestionarios Neurodesarrollo · TDAH',tdahRows,['Test','Puntaje','Resultado']);
+
+  var teaRows=buildSimpleRows(sortTestsByOrder(testsTD.filter(function(r){return TD_TEA_LIST.indexOf(r.test)>=0;}),TD_TEA_LIST));
+  appendWordSimpleTable('Cuestionarios Neurodesarrollo · Autismo (TEA)',teaRows,['Test','Puntaje','Resultado']);
+
+  var sclRows=buildScl90WordRows(sclResult);
+  appendWordSimpleTable('SCL-90-R',sclRows,['SCL-90-R Escalas Globales','PB / PT','Resultado']);
+
+  var doRows=buildSimpleRows(testsDO);
+  appendWordSimpleTable('Evaluación del Dolor',doRows,['Test','Puntaje','Resultado']);
 
   // TABLA DISLEXIA
-  var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
   var dlxRows=[];
   testsTD.filter(function(r){return TD_DISLEX_LIST.indexOf(r.test)>=0;}).forEach(function(r){
     var d=r.datos||{};
@@ -19513,33 +19538,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var bg=dlxRows.length%2===0?'F2F2F2':'FFFFFF';
     dlxRows.push(_wRow([clCell(r.test,COL_CL[0],bg),clCell(String(pb),COL_CL[1],bg,true),clCell(res,COL_CL[2],bg)]));
   });
-  if(dlxRows.length){
-    body+=_wPar(_wRun('Neurodesarrollo · Dislexia',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([
-      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje / Tiempos',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(dlxRows),COL_CL);
-    body+=_wPar('',{before:0,after:80});
-  }
-
-  // TABLA DOLOR
-  var doRows=buildSimpleRows(testsDO);
-  if(doRows.length){
-    body+=_wPar(_wRun('Evaluación del Dolor',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([
-      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(doRows),COL_CL);
-    body+=_wPar('',{before:0,after:80});
-  }
-
-  // TABLA PSICOLOGÍA CLÍNICA
-  var clRows=buildSimpleRows(testsCL);
-  if(clRows.length){
-    body+=_wPar(_wRun('Psicología Clínica',{bold:true,sz:20,font:'Arial',color:'000000'}),{before:80,after:40});
-    body+=_wTable([
-      _wRow([clHdr('Instrumento',COL_CL[0]),clHdr('Puntaje',COL_CL[1]),clHdr('Resultado',COL_CL[2])],{hdr:true})
-    ].concat(clRows),COL_CL);
-    body+=_wPar('',{before:0,after:80});
-  }
+  appendWordSimpleTable('Neurodesarrollo · Dislexia',dlxRows,['Test','Puntaje / Tiempos','Resultado']);
 
   // 10. CUESTIONARIOS FAMILIARES (sección separada con tabla de síntomas)
   if(famResults.length){
