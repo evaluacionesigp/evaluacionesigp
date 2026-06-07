@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.6</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.7</div>
     </div>
   </aside>
 
@@ -18768,7 +18768,8 @@ function _wCell(content, opts) {
   tcp += '<w:right  w:val="single" w:sz="'+bSz+'" w:color="'+bColor+'"/>';
   tcp += '</w:tcBorders>';
   if (opts.noWrap) tcp += '<w:noWrap/>';
-  tcp += '<w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:left w:w="30" w:type="dxa"/><w:right w:w="30" w:type="dxa"/></w:tcMar>';
+  var mLR = opts.compact ? 0 : 30;
+  tcp += '<w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:left w:w="'+mLR+'" w:type="dxa"/><w:right w:w="'+mLR+'" w:type="dxa"/></w:tcMar>';
   tcp += '</w:tcPr>';
   return '<w:tc>'+tcp+content+'</w:tc>';
 }
@@ -18804,12 +18805,9 @@ function _wTable(rows, colWidths) {
 // La grilla tiene 13 columnas: -3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3
 // Zona normativa: -1 a +1 (posiciones 4..8 inclusive) → sombreado verde
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
-var ZCOL_W = 290; // 290 DXA ≈ 5.1mm por columna × 13 = 3770 DXA
-
-// anchos de columnas fijas: Variable(2600) | PB(620) | M(620) | DS(620) | Z(620) | 13×grilla(290×13=3770) | Interp(1510) = total 10360
-// Ajustamos a A4: ~9360 DXA (A4 con márgenes 1134 each → content = 11906-2268 = 9638, usamos 9360)
-// Variable(2200) | PB(560) | M(560) | DS(560) | Z(560) | 13×grilla(240×13=3120) | Interp(1800) = 9360
-var _Z_BASE_COLS = [2200, 560, 560, 560, 560].concat(ZCOLS.map(function(){return 240;})).concat([1800]);
+// Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
+// Grilla más ancha (300) para encabezados decimales (-1.5, +2.5) en una sola línea
+var _Z_BASE_COLS = [2100, 540, 540, 540, 540].concat(ZCOLS.map(function(){return 300;})).concat([1700]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
@@ -18884,7 +18882,7 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
     var content = isMarked
       ? _wPar(_wRun('X',{sz:18,bold:true,font:'Arial',color:'000000'}),{align:'center',before:40,after:40})
       : _wPar('',{before:40,after:40});
-    cells.push(_wCell(content, {w:COL_WIDTHS_HDR[5+i], fill:cellFill, noWrap:true}));
+    cells.push(_wCell(content, {w:COL_WIDTHS_HDR[5+i], fill:cellFill, noWrap:true, compact:true}));
   });
   // Interpretación (opcional: texto TAVEC; siempre negro, igual que el resto de la tabla)
   var interpTxt = interpCustom && interpCustom.label ? interpCustom.label : zInterp(z);
@@ -18894,11 +18892,16 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 }
 
 function _zHdrRow() {
-  // Etiquetas de encabezado de la grilla: enteros con signo; .5 como decimal
+  // Etiquetas de encabezado de la grilla: enteros con signo; .5 como decimal en una línea
   var cells = [];
   var hdrFill = 'F2F2F2';
-  function hc(txt, w) {
-    return _wCell(_wPar(_wRun(txt,{sz:18,bold:true,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:w,fill:hdrFill,hdrBorder:true,noWrap:true});
+  function hc(txt, w, compact) {
+    var sz = compact ? 16 : 18;
+    var pad = compact ? 12 : 20;
+    return _wCell(
+      _wPar(_wRun(txt,{sz:sz,bold:true,color:'000000',font:'Arial'}),{align:'center',before:pad,after:pad}),
+      {w:w,fill:hdrFill,hdrBorder:true,noWrap:true,compact:!!compact}
+    );
   }
   cells.push(hc('Variable', COL_WIDTHS_HDR[0]));
   cells.push(hc('PB',       COL_WIDTHS_HDR[1]));
@@ -18912,7 +18915,7 @@ function _zHdrRow() {
     } else {
       lbl = (v > 0 ? '+' : '') + v;
     }
-    cells.push(hc(lbl, COL_WIDTHS_HDR[5+i]));
+    cells.push(hc(lbl, COL_WIDTHS_HDR[5+i], true));
   });
   cells.push(hc('Interpretación', COL_WIDTHS_HDR[18]));
   return _wRow(cells, {hdr:true});
