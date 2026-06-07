@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.0</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.1</div>
     </div>
   </aside>
 
@@ -9018,8 +9018,8 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDarkC+'">Puntaje</th>'+
           '<th style="'+thDark+'">Interpretación</th>'+
           '</tr></thead><tbody>';
-        if (stE !== null) html += '<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">Estado</td><td style="'+tdRC+'">'+stE+'/60</td><td style="'+tdRI+'">'+catE+'</td></tr>';
-        if (stR !== null) html += '<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">Rasgo</td><td style="'+tdRC+'">'+stR+'/60</td><td style="'+tdRI+'">'+catR+'</td></tr>';
+        if (stE !== null) html += '<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">Estado</td><td style="'+tdRC+'">'+stE+'/60</td><td style="'+tdRI+'">'+informeStaiResultado(catE)+'</td></tr>';
+        if (stR !== null) html += '<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">Rasgo</td><td style="'+tdRC+'">'+stR+'/60</td><td style="'+tdRI+'">'+informeStaiResultado(catR)+'</td></tr>';
         html += '</tbody></table>';
         return;
       }
@@ -9104,10 +9104,10 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDarkC+'">Puntaje</th>'+
           '<th style="'+thDarkC+'">Z · Pc</th>'+
           '<th style="'+thDark+'">Interpretación</th></tr></thead><tbody>';
-        if (secA!==null) html+='<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·SecA', secA, 'Sección A — Screener Kessler')+'</td><td style="'+tdRC+'">'+secA+'/6</td><td style="'+tdRC+';font-family:inherit;">—</td><td style="'+tdRI+'">'+(positivo?'Screening positivo (≥4)':'Screening negativo')+'</td></tr>';
-        if (sI!==null)   html+='<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·I', pcI != null ? pcI : zI, 'Inatención (ASRS-I)')+'</td><td style="'+tdRC+'">'+sI+'</td><td style="'+tdRC+'">'+(zI!=null?(zI>=0?'+':'')+zI:'—')+(pcI!=null?' · Pc '+pcI:'')+'</td><td style="'+tdRI+'">'+(pcI!=null?pcLblA(pcI):'—')+'</td></tr>';
-        if (sH!==null)   html+='<tr style="background:'+rowBg(2)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·H', pcH != null ? pcH : zH, 'Hiperactividad/Impulsividad (ASRS-H)')+'</td><td style="'+tdRC+'">'+sH+'</td><td style="'+tdRC+'">'+(zH!=null?(zH>=0?'+':'')+zH:'—')+(pcH!=null?' · Pc '+pcH:'')+'</td><td style="'+tdRI+'">'+(pcH!=null?pcLblA(pcH):'—')+'</td></tr>';
-        if (sT!==null)   html+='<tr style="background:#f0f0f0;"><td style="'+tdR+'font-weight:700;">'+htmlGlosarioCelda('ASRS·T', pcT != null ? pcT : zT, 'Total (ASRS-T)')+'</td><td style="'+tdRC+'">'+sT+'</td><td style="'+tdRC+'">'+(zT!=null?(zT>=0?'+':'')+zT:'—')+(pcT!=null?' · Pc '+pcT:'')+'</td><td style="'+tdRI+'">'+(pcT!=null?pcLblA(pcT):'—')+'</td></tr>';
+        if (secA!==null) html+='<tr style="background:'+rowBg(0)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·SecA', secA, 'Sección A — Screener Kessler')+'</td><td style="'+tdRC+'">'+secA+'/6</td><td style="'+tdRC+';font-family:inherit;">—</td><td style="'+tdRI+'">'+informeAsrsSecA(secA)+'</td></tr>';
+        if (sI!==null)   html+='<tr style="background:'+rowBg(1)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·I', pcI != null ? pcI : zI, 'Inatención (ASRS-I)')+'</td><td style="'+tdRC+'">'+sI+'</td><td style="'+tdRC+'">'+(zI!=null?(zI>=0?'+':'')+zI:'—')+(pcI!=null?' · Pc '+pcI:'')+'</td><td style="'+tdRI+'">'+informeAsrsSubescala(pcI,zI)+'</td></tr>';
+        if (sH!==null)   html+='<tr style="background:'+rowBg(2)+'"><td style="'+tdR+'">'+htmlGlosarioCelda('ASRS·H', pcH != null ? pcH : zH, 'Hiperactividad/Impulsividad (ASRS-H)')+'</td><td style="'+tdRC+'">'+sH+'</td><td style="'+tdRC+'">'+(zH!=null?(zH>=0?'+':'')+zH:'—')+(pcH!=null?' · Pc '+pcH:'')+'</td><td style="'+tdRI+'">'+informeAsrsSubescala(pcH,zH)+'</td></tr>';
+        if (sT!==null)   html+='<tr style="background:#f0f0f0;"><td style="'+tdR+'font-weight:700;">'+htmlGlosarioCelda('ASRS·T', pcT != null ? pcT : zT, 'Total (ASRS-T)')+'</td><td style="'+tdRC+'">'+sT+'</td><td style="'+tdRC+'">'+(zT!=null?(zT>=0?'+':'')+zT:'—')+(pcT!=null?' · Pc '+pcT:'')+'</td><td style="'+tdRI+'">'+informeAsrsSubescala(pcT,zT)+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Baremos: Scandar MG (2021) Rev Neurol 72(3) — n=1.173, Argentina.</div>';
         return;
@@ -9176,7 +9176,7 @@ function renderCuestionariosFam(d) {
           '<th style="'+thDark+'">Riesgo</th></tr></thead><tbody>';
         html += '<tr><td style="'+tdR+'">Total acumulado (LCU)</td>'+
           '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
-          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+          '<td style="'+tdRI+'">'+informeHolmesEstresores(r.puntaje_total, r.categoria)+'</td></tr>';
         if(d.eventos&&d.eventos.length>0){
           html+='<tr><td colspan="3" style="padding:4px 8px;border:0.5px solid #ddd;font-size:8px;color:#555;">Eventos: '+
             d.eventos.map(function(e){return e.label+' ('+e.val+')'}).join(' · ')+'</td></tr>';
@@ -9209,10 +9209,10 @@ function renderCuestionariosFam(d) {
         var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
         html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">'+htmlGlosarioCelda('EAVA·A', d.parte_a, 'Parte A · Inatención (0–36)')+'</td>'+
           '<td style="'+tdRC+'">'+(eA!='—'?eA+'/36':'—')+'</td>'+
-          '<td style="'+tdRI+'">'+(d.cat_a||r.categoria||'—')+'</td></tr>';
+          '<td style="'+tdRI+'">'+informeEavaResultado(d.cat_a,d.parte_a)+'</td></tr>';
         html += '<tr style="background:#fff;"><td style="'+tdR+'">'+htmlGlosarioCelda('EAVA·B', d.parte_b, 'Parte B · Hiper./Impulsividad (0–36)')+'</td>'+
           '<td style="'+tdRC+'">'+(eB!='—'?eB+'/36':'—')+'</td>'+
-          '<td style="'+tdRI+'">'+(d.cat_b||'—')+'</td></tr>';
+          '<td style="'+tdRI+'">'+informeEavaResultado(d.cat_b,d.parte_b)+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Corte por subescala: ≥24 muy probable · 17–23 probable · 0–16 baja probabilidad</div>';
         return;
@@ -9306,7 +9306,7 @@ function renderCuestionariosFam(d) {
         html += '<tr style="background:#f5fbf3;"><td style="'+tdR+'">'+htmlGlosarioCelda('WURS·Total', wTot, 'Total WURS-25')+'</td>'+
           '<td style="'+tdRC+'">'+(wTot!=null?wTot+'/75':'—')+'</td>'+
           '<td style="'+tdRC+'">'+(wZ!=null?(wZ>=0?'+':'')+wZ:'—')+(wPc!=null?' · Pc '+wPc:'')+'</td>'+
-          '<td style="'+tdRI+'">'+(r.categoria||'—')+'</td></tr>';
+          '<td style="'+tdRI+'">'+informeWursResultado(wTot,r.categoria)+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Cortes: &lt;36 sin síntomas · 36–45 probable · ≥46 compatible · Scandar (2021)</div>';
         return;
@@ -9315,7 +9315,7 @@ function renderCuestionariosFam(d) {
       // ── Resto de tests clínicos (BDI, PHQ-9, GAD-7, SPAI-B) ──
       var corte = CORTES[r.test];
       var pb = r.puntaje_total != null ? r.puntaje_total : '—';
-      var cat = r.categoria || '—';
+      var cat = r.test === 'BDI-II' ? informeBdiResultado(r.puntaje_total, r.categoria) : (r.categoria || '—');
       var puntajeStr = pb;
       if (corte) puntajeStr = pb + ' / ' + corte.max;
       html += clHeader(r.test + (corte ? ' · Corte ≥' + corte.cut : ''));
@@ -11241,6 +11241,84 @@ function guardarResultadoTMT() {
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
   });
+}
+
+// ── Etiquetas simplificadas informe (Apéndice B Word/PDF) ──
+var SINT_AUS = 'Ausencia de sintomatología';
+var SINT_SIG = 'Sintomatología significativa';
+
+function informeBdiResultado(puntaje, categoria) {
+  if (puntaje != null && !isNaN(parseFloat(puntaje))) {
+    return parseFloat(puntaje) <= 19 ? SINT_AUS : SINT_SIG;
+  }
+  var c = String(categoria || '').toLowerCase();
+  if (/grave|moderad/.test(c)) return SINT_SIG;
+  if (/m[ií]nim|leve/.test(c)) return SINT_AUS;
+  return categoria || '—';
+}
+
+function informeStaiResultado(catStr) {
+  if (!catStr) return '—';
+  var c = String(catStr).replace(/^(Estado|Rasgo):\s*/i, '').trim().toLowerCase();
+  if (c === 'alto' || c === 'medio-alto') return SINT_SIG;
+  if (c === 'bajo' || c === 'medio-bajo') return SINT_AUS;
+  return '—';
+}
+
+function informeHolmesEstresores(total, categoria) {
+  if (total != null && !isNaN(parseFloat(total))) {
+    var t = parseFloat(total);
+    if (t < 180) return 'Estresores leves';
+    if (t <= 320) return 'Estresores moderados';
+    return 'Estresores severos';
+  }
+  var c = String(categoria || '').toLowerCase();
+  if (/bajo/.test(c)) return 'Estresores leves';
+  if (/intermedio|moderado/.test(c)) return 'Estresores moderados';
+  if (/alto|severo/.test(c)) return 'Estresores severos';
+  return '—';
+}
+
+function informeAsrsSecA(pos) {
+  if (pos == null || isNaN(parseFloat(pos))) return '—';
+  return parseFloat(pos) >= 4 ? SINT_SIG : SINT_AUS;
+}
+
+function informeAsrsSubescala(pc, z) {
+  if (pc != null && !isNaN(parseFloat(pc))) {
+    return parseFloat(pc) >= 75 ? SINT_SIG : SINT_AUS;
+  }
+  if (z != null && !isNaN(parseFloat(z))) {
+    return parseFloat(z) >= 0.67 ? SINT_SIG : SINT_AUS;
+  }
+  return '—';
+}
+
+function informeWursResultado(total, categoria) {
+  if (total != null && !isNaN(parseFloat(total))) {
+    return parseFloat(total) >= 36 ? SINT_SIG : SINT_AUS;
+  }
+  var c = String(categoria || '').toLowerCase();
+  if (/significativ|probable|compatible/.test(c)) return SINT_SIG;
+  if (/sin s[ií]ntomas/.test(c)) return SINT_AUS;
+  return '—';
+}
+
+function informeEavaResultado(catStr, score) {
+  if (score != null && !isNaN(parseFloat(score))) {
+    return parseFloat(score) >= 17 ? SINT_SIG : SINT_AUS;
+  }
+  var c = String(catStr || '').toLowerCase();
+  if (/muy probable|probable/.test(c)) return SINT_SIG;
+  if (/baja probabilidad|sin|no significativ/.test(c)) return SINT_AUS;
+  return '—';
+}
+
+function informeTdahBinario(categoria) {
+  var c = String(categoria || '').toLowerCase();
+  if (/significativ|positiv|probable|compatible|elev|alter|deficit|grave|moderad/.test(c)) return SINT_SIG;
+  if (/sin s[ií]ntomas|negativ|bajo|normal|preserv|ausencia/.test(c)) return SINT_AUS;
+  return categoria || '—';
 }
 
 // ══ FLUENCIA VERBAL — BAREMOS ════════════════════════════════════════════════
@@ -19333,10 +19411,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         rows.push(_wRow([clCell(lbl,COL_CL[0],bg),clCell(String(pb!=null?pb:'—'),COL_CL[1],bg,true),clCell(res||'—',COL_CL[2],bg)]));
         rc++;
       }
-      if(r.test==='BDI-II'){addCL('Escala de Depresión de Beck (BDI-II)',r.puntaje_total,r.categoria||'—');}
+      if(r.test==='BDI-II'){addCL('Escala de Depresión de Beck (BDI-II)',r.puntaje_total,informeBdiResultado(r.puntaje_total,r.categoria));}
       else if(r.test==='STAI'){
-        if(d.estado!=null)addCL('Inv. de Ansiedad STAI — Estado (X1)',d.estado+'/60',d.cat_estado||'—');
-        if(d.rasgo!=null) addCL('Inv. de Ansiedad STAI — Rasgo (X2)', d.rasgo+'/60', d.cat_rasgo||'—');
+        if(d.estado!=null)addCL('Inv. de Ansiedad STAI — Estado (X1)',d.estado+'/60',informeStaiResultado(d.cat_estado));
+        if(d.rasgo!=null) addCL('Inv. de Ansiedad STAI — Rasgo (X2)', d.rasgo+'/60', informeStaiResultado(d.cat_rasgo));
       } else if(r.test==='PHQ-9'){addCL('PHQ-9 · Cuestionario de Salud del Paciente',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='GAD-7'){addCL('GAD-7 · Escala de Ansiedad Generalizada',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='Birleson'){addCL('Birleson (PACES) · Depresión Adolescente',r.puntaje_total,r.categoria||'—');}
@@ -19353,15 +19431,17 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         var csiLbls={REP:'Resolución de problemas',AUC:'Autocrítica',EEM:'Expresión emocional',PSD:'Pensamiento desiderativo',APS:'Apoyo social',REC:'Reestructuración cognitiva',EVP:'Evitación de problemas',RES:'Retirada social'};
         csiSubs.forEach(function(sub){var sd=d[sub]||{};addCL('CSI — '+csiLbls[sub],sd.score!=null?sd.score:'—',sd.pc!=null?'Pc '+sd.pc:'—');});
       } else if(r.test==='ASRS-V1.1'){
-        if(d.parte_a_positivos!=null)addCL('ASRS — Secc. A (Kessler)',d.parte_a_positivos+'/6',d.parte_a_positivos>=4?'Screening positivo':'Screening negativo');
-        if(d.scoreI!=null)addCL('ASRS — Inatención',d.scoreI,d.pcI?'Pc '+d.pcI:'—');
-        if(d.scoreH!=null)addCL('ASRS — Hiper./Impulsividad',d.scoreH,d.pcH?'Pc '+d.pcH:'—');
-        if(d.scoreT!=null||d.total_18!=null)addCL('ASRS — Total',d.scoreT||d.total_18,d.pcT?'Pc '+d.pcT:'—');
-      } else if(r.test==='WURS-25'){addCL('WURS-25 · Síntomas TDAH en la Infancia',r.puntaje_total!=null?r.puntaje_total:r.datos&&r.datos.total!=null?r.datos.total:'—',r.categoria||'—');}
-      else if(r.test==='EAVA'){
+        if(d.parte_a_positivos!=null)addCL('ASRS — Secc. A (Kessler)',d.parte_a_positivos+'/6',informeAsrsSecA(d.parte_a_positivos));
+        if(d.scoreI!=null)addCL('ASRS — Inatención',d.scoreI,informeAsrsSubescala(d.pcI,d.zI));
+        if(d.scoreH!=null)addCL('ASRS — Hiper./Impulsividad',d.scoreH,informeAsrsSubescala(d.pcH,d.zH));
+        if(d.scoreT!=null||d.total_18!=null)addCL('ASRS — Total',d.scoreT||d.total_18,informeAsrsSubescala(d.pcT,d.zT));
+      } else if(r.test==='WURS-25'){
+        var wTot=r.puntaje_total!=null?r.puntaje_total:(d.total!=null?d.total:null);
+        addCL('WURS-25 · Síntomas TDAH en la Infancia',wTot,informeWursResultado(wTot,r.categoria));
+      } else if(r.test==='EAVA'){
         var eA=d.parte_a!=null?d.parte_a:'—',eB=d.parte_b!=null?d.parte_b:'—';
-        addCL('EAVA · Inatención (Parte A)',eA!='—'?eA+'/36':'—',d.cat_a||'—');
-        addCL('EAVA · Hiper./Impulsividad (Parte B)',eB!='—'?eB+'/36':'—',d.cat_b||'—');
+        addCL('EAVA · Inatención (Parte A)',eA!='—'?eA+'/36':'—',informeEavaResultado(d.cat_a,d.parte_a));
+        addCL('EAVA · Hiper./Impulsividad (Parte B)',eB!='—'?eB+'/36':'—',informeEavaResultado(d.cat_b,d.parte_b));
       }
       else if(r.test==='AQ'){addCL('AQ · Cociente del Espectro Autista',r.puntaje_total!=null?r.puntaje_total+'/50':'—',(r.categoria||'—')+(d.fenotipo?' · '+d.fenotipo:''));}
       else if(r.test==='AQ-10'){addCL('AQ-10 · Cribado autista',r.puntaje_total!=null?r.puntaje_total+'/10':'—',r.categoria||'—');}
@@ -19373,10 +19453,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.is!=null)addCL('SCQ · IS Interacción social',d.is,'—');
         if(d.crr!=null)addCL('SCQ · CRR Cond. repetitivas',d.crr,'—');
       }
-      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,r.categoria||'—');}
+      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,informeTdahBinario(r.categoria));}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
       else if(r.test==='PSS-10'){addCL('PSS-10 · Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
-      else if(r.test==='Holmes-Rahe'){addCL('Holmes & Rahe · Reajuste Psicosocial',r.puntaje_total!=null?r.puntaje_total+' LCU':'—',r.categoria||'—');}
+      else if(r.test==='Holmes-Rahe'){addCL('Holmes & Rahe · Reajuste Psicosocial',r.puntaje_total!=null?r.puntaje_total+' LCU':'—',informeHolmesEstresores(r.puntaje_total,r.categoria));}
       else if(r.test==='GDS-30'){addCL('GDS-30 Yesavage · Depresión Geriátrica',r.puntaje_total!=null?r.puntaje_total+'/30':'—',r.categoria||'—');}
       else if(r.test==='PCS'){addCL('PCS · Catastrofización del Dolor',r.puntaje_total,r.categoria||'—');}
       else if(r.test==='BPI'){
