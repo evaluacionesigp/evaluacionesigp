@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.8</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.9</div>
     </div>
   </aside>
 
@@ -17090,6 +17090,8 @@ function _prepareLogoPngBytes(logoB64OrDataUrl) {
 
 // A4 vertical, márgenes 720: ancho útil ~10260 DXA (~18 cm)
 var WORD_CONTENT_W = 10260;
+var WORD_SZ_BUMP = 3; // +1,5 pt global (sz en half-points)
+function _wordSz(n) { return n + WORD_SZ_BUMP; }
 var WORD_LOGO_COL_W = 2800;
 var WORD_LOGO_EMU_W = 1900000;
 var WORD_LOGO_EMU_H = 1100000;
@@ -17143,7 +17145,7 @@ function buildWordHeaderXml(hasGp, hasCt) {
     '<w:insideH w:val="none"/><w:insideV w:val="none"/></w:tblBorders></w:tblPr>' +
     '<w:tr><w:tc><w:tcPr><w:tcW w:w="'+WORD_CONTENT_W+'" w:type="dxa"/></w:tcPr>' +
     '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>' +
-    '<w:r><w:rPr><w:b/><w:sz w:val="18"/><w:szCs w:val="18"/><w:color w:val="2a6e6e"/>' +
+    '<w:r><w:rPr><w:b/><w:sz w:val="'+_wordSz(18)+'"/><w:szCs w:val="'+_wordSz(18)+'"/><w:color w:val="2a6e6e"/>' +
     '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>' +
     '<w:t>CENTRO DE REHABILITACIÓN GONZÁLEZ PALAU — FUNDACIÓN CIATEC</w:t></w:r></w:p>' +
     '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
@@ -18733,9 +18735,8 @@ function _wRun(txt, opts) {
   if (opts.bold)    rpr += '<w:b/>';
   if (opts.ital)    rpr += '<w:i/>';
   if (opts.color)   rpr += '<w:color w:val="'+opts.color+'"/>';
-  if (opts.sz)      rpr += '<w:sz w:val="'+opts.sz+'"/><w:szCs w:val="'+opts.sz+'"/>';
+  if (opts.sz)      rpr += '<w:sz w:val="'+_wordSz(opts.sz)+'"/><w:szCs w:val="'+_wordSz(opts.sz)+'"/>';
   if (opts.font)    rpr += '<w:rFonts w:ascii="'+opts.font+'" w:hAnsi="'+opts.font+'" w:cs="'+opts.font+'"/>';
-  if (opts.spacing) rpr += '<w:spacing w:val="'+opts.spacing+'"/>';
   rpr += '</w:rPr>';
   return '<w:r>'+rpr+'<w:t xml:space="preserve">'+_xe(txt)+'</w:t></w:r>';
 }
@@ -18769,7 +18770,6 @@ function _wCell(content, opts) {
   tcp += '<w:right  w:val="single" w:sz="'+bSz+'" w:color="'+bColor+'"/>';
   tcp += '</w:tcBorders>';
   if (opts.noWrap) tcp += '<w:noWrap/>';
-  if (opts.fitText) tcp += '<w:tcFitText w:val="true"/>';
   var mLR = opts.compact ? 0 : 30;
   tcp += '<w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:left w:w="'+mLR+'" w:type="dxa"/><w:right w:w="'+mLR+'" w:type="dxa"/></w:tcMar>';
   tcp += '</w:tcPr>';
@@ -18808,8 +18808,8 @@ function _wTable(rows, colWidths) {
 // Zona normativa: -1 a +1 (posiciones 4..8 inclusive) → sombreado verde
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
 // Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
-// Grilla ancha (330) + fitText en encabezados para decimales ± en una sola línea
-var _Z_BASE_COLS = [2000, 520, 520, 520, 520].concat(ZCOLS.map(function(){return 330;})).concat([1650]);
+// Grilla ancha (450) para encabezados decimales legibles sin fitText
+var _Z_BASE_COLS = [1450, 430, 430, 430, 430].concat(ZCOLS.map(function(){return 450;})).concat([1200]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
@@ -18895,23 +18895,16 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 
 function _zHdrZLabel(v) {
   if (v % 1 === 0) return v > 0 ? '+'+v : String(v);
-  // Positivos .5: "+" pegado al entero evita corte en "+0." / "+1." dentro de la celda
-  if (v > 0) return '+' + Math.trunc(v) + '.5';
-  return String(v);
+  return (v > 0 ? '+' : '') + v;
 }
 
 function _zHdrRow() {
-  // Etiquetas de encabezado de la grilla: enteros con signo; .5 como decimal en una línea
   var cells = [];
   var hdrFill = 'F2F2F2';
-  function hc(txt, w, compact) {
-    var sz = compact ? 14 : 18;
-    var pad = compact ? 10 : 20;
-    var runOpts = {sz:sz,bold:true,color:'000000',font:'Arial'};
-    if (compact) runOpts.spacing = -4;
+  function hc(txt, w, grilla) {
     return _wCell(
-      _wPar(_wRun(txt, runOpts), {align:'center',before:pad,after:pad}),
-      {w:w,fill:hdrFill,hdrBorder:true,noWrap:true,compact:!!compact,fitText:!!compact}
+      _wPar(_wRun(txt,{sz:grilla?16:18,bold:true,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),
+      {w:w,fill:hdrFill,hdrBorder:true,noWrap:true,compact:!!grilla}
     );
   }
   cells.push(hc('Variable', COL_WIDTHS_HDR[0]));
@@ -19459,13 +19452,13 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=secTit('6. Sugerencias');
     function wEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     items.forEach(function(t,i){
-      body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(i+1)+'.  '+wEsc(t)+'</w:t></w:r></w:p>';
+      body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(i+1)+'.  '+wEsc(t)+'</w:t></w:r></w:p>';
     });
     if(extra && extra.trim()){
       var startN = items.length + 1;
       extra.trim().split('\n').forEach(function(line,j){
         if(!line.trim()) return;
-        body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(startN+j)+'.  '+wEsc(line.trim())+'</w:t></w:r></w:p>';
+        body+='<w:p><w:pPr><w:ind w:left="360" w:hanging="360"/><w:spacing w:before="0" w:after="80"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">'+(startN+j)+'.  '+wEsc(line.trim())+'</w:t></w:r></w:p>';
       });
     }
     body+=_wPar('',{before:0,after:80});
@@ -19476,7 +19469,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=secTit('7. Apéndice A: Sugerencias para Mantener su Mente Activa');
     body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
     INF_APENDICE_A_ITEMS.forEach(function(t){
-      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
+      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
     });
     body+=_wPar('',{before:0,after:120});
   }
@@ -19690,19 +19683,19 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       '</w:p>'+
       '<w:p>'+
         '<w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-        '<w:r><w:rPr><w:b/><w:sz w:val="14"/><w:szCs w:val="14"/><w:color w:val="2a6e6e"/>'+
+        '<w:r><w:rPr><w:b/><w:sz w:val="'+_wordSz(14)+'"/><w:szCs w:val="'+_wordSz(14)+'"/><w:color w:val="2a6e6e"/>'+
         '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>'+
         '<w:t>CENTRO DE REHABILITACIÓN GONZÁLEZ PALAU - FUNDACIÓN CIATEC</w:t></w:r>'+
       '</w:p>'+
       '<w:p>'+
         '<w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-        '<w:r><w:rPr><w:sz w:val="13"/><w:szCs w:val="13"/><w:color w:val="444444"/>'+
+        '<w:r><w:rPr><w:sz w:val="'+_wordSz(13)+'"/><w:szCs w:val="'+_wordSz(13)+'"/><w:color w:val="444444"/>'+
         '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>'+
         '<w:t>Neuropsicología – Neuro rehabilitación – Psicoterapia</w:t></w:r>'+
       '</w:p>'+
       '<w:p>'+
         '<w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-        '<w:r><w:rPr><w:sz w:val="13"/><w:szCs w:val="13"/><w:color w:val="444444"/>'+
+        '<w:r><w:rPr><w:sz w:val="'+_wordSz(13)+'"/><w:szCs w:val="'+_wordSz(13)+'"/><w:color w:val="444444"/>'+
         '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>'+
         '<w:t>Av. Laplace 5264 – Villa Belgrano, Córdoba – Tel/whatsapp: 3515513257 – E-mail: secretariafgonzalezp@gmail.com</w:t></w:r>'+
       '</w:p>'+
@@ -19725,7 +19718,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'+
     '<w:docDefaults><w:rPrDefault><w:rPr>'+
     '<w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>'+
-    '<w:sz w:val="20"/><w:szCs w:val="20"/>'+
+    '<w:sz w:val="'+_wordSz(20)+'"/><w:szCs w:val="'+_wordSz(20)+'"/>'+
     '</w:rPr></w:rPrDefault></w:docDefaults></w:styles>';
 
   var topRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
