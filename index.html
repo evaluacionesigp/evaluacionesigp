@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.5</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.6</div>
     </div>
   </aside>
 
@@ -8204,7 +8204,12 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     var dynCols = COLS.slice();
     var zClamped = z;
     var hds = dynCols.map(function(v){
-      var lbl = (v % 0.5 === 0) ? (v>0?'+'+v:String(v)) : '';
+      var lbl;
+      if (v % 1 === 0) {
+        lbl = v > 0 ? '+'+v : String(v);
+      } else {
+        lbl = (v > 0 ? '+' : '') + v;
+      }
       return '<td style="width:14px;font-size:7px;text-align:center;color:#000;padding:0 0 1px 0;border:none;font-family:monospace;font-weight:900;white-space:nowrap;">'+lbl+'</td>';
     }).join('');
     var cells = dynCols.map(function(v){
@@ -18889,7 +18894,7 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 }
 
 function _zHdrRow() {
-  // Etiquetas de encabezado de la grilla: enteros con signo, vacío para .5
+  // Etiquetas de encabezado de la grilla: enteros con signo; .5 como decimal
   var cells = [];
   var hdrFill = 'F2F2F2';
   function hc(txt, w) {
@@ -18905,9 +18910,7 @@ function _zHdrRow() {
     if (v % 1 === 0) {
       lbl = v > 0 ? '+'+v : String(v);
     } else {
-      // Usar ½ para evitar wrap en PDF
-      var base = Math.trunc(v);
-      lbl = (base > 0 ? '+' : '') + base + '½';
+      lbl = (v > 0 ? '+' : '') + v;
     }
     cells.push(hc(lbl, COL_WIDTHS_HDR[5+i]));
   });
