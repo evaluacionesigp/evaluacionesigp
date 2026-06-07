@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.7</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.8</div>
     </div>
   </aside>
 
@@ -18735,6 +18735,7 @@ function _wRun(txt, opts) {
   if (opts.color)   rpr += '<w:color w:val="'+opts.color+'"/>';
   if (opts.sz)      rpr += '<w:sz w:val="'+opts.sz+'"/><w:szCs w:val="'+opts.sz+'"/>';
   if (opts.font)    rpr += '<w:rFonts w:ascii="'+opts.font+'" w:hAnsi="'+opts.font+'" w:cs="'+opts.font+'"/>';
+  if (opts.spacing) rpr += '<w:spacing w:val="'+opts.spacing+'"/>';
   rpr += '</w:rPr>';
   return '<w:r>'+rpr+'<w:t xml:space="preserve">'+_xe(txt)+'</w:t></w:r>';
 }
@@ -18768,6 +18769,7 @@ function _wCell(content, opts) {
   tcp += '<w:right  w:val="single" w:sz="'+bSz+'" w:color="'+bColor+'"/>';
   tcp += '</w:tcBorders>';
   if (opts.noWrap) tcp += '<w:noWrap/>';
+  if (opts.fitText) tcp += '<w:tcFitText w:val="true"/>';
   var mLR = opts.compact ? 0 : 30;
   tcp += '<w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:left w:w="'+mLR+'" w:type="dxa"/><w:right w:w="'+mLR+'" w:type="dxa"/></w:tcMar>';
   tcp += '</w:tcPr>';
@@ -18806,8 +18808,8 @@ function _wTable(rows, colWidths) {
 // Zona normativa: -1 a +1 (posiciones 4..8 inclusive) → sombreado verde
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
 // Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
-// Grilla más ancha (300) para encabezados decimales (-1.5, +2.5) en una sola línea
-var _Z_BASE_COLS = [2100, 540, 540, 540, 540].concat(ZCOLS.map(function(){return 300;})).concat([1700]);
+// Grilla ancha (330) + fitText en encabezados para decimales ± en una sola línea
+var _Z_BASE_COLS = [2000, 520, 520, 520, 520].concat(ZCOLS.map(function(){return 330;})).concat([1650]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
@@ -18891,16 +18893,25 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
   return _wRow(cells);
 }
 
+function _zHdrZLabel(v) {
+  if (v % 1 === 0) return v > 0 ? '+'+v : String(v);
+  // Positivos .5: "+" pegado al entero evita corte en "+0." / "+1." dentro de la celda
+  if (v > 0) return '+' + Math.trunc(v) + '.5';
+  return String(v);
+}
+
 function _zHdrRow() {
   // Etiquetas de encabezado de la grilla: enteros con signo; .5 como decimal en una línea
   var cells = [];
   var hdrFill = 'F2F2F2';
   function hc(txt, w, compact) {
-    var sz = compact ? 16 : 18;
-    var pad = compact ? 12 : 20;
+    var sz = compact ? 14 : 18;
+    var pad = compact ? 10 : 20;
+    var runOpts = {sz:sz,bold:true,color:'000000',font:'Arial'};
+    if (compact) runOpts.spacing = -4;
     return _wCell(
-      _wPar(_wRun(txt,{sz:sz,bold:true,color:'000000',font:'Arial'}),{align:'center',before:pad,after:pad}),
-      {w:w,fill:hdrFill,hdrBorder:true,noWrap:true,compact:!!compact}
+      _wPar(_wRun(txt, runOpts), {align:'center',before:pad,after:pad}),
+      {w:w,fill:hdrFill,hdrBorder:true,noWrap:true,compact:!!compact,fitText:!!compact}
     );
   }
   cells.push(hc('Variable', COL_WIDTHS_HDR[0]));
@@ -18909,13 +18920,7 @@ function _zHdrRow() {
   cells.push(hc('DS',       COL_WIDTHS_HDR[3]));
   cells.push(hc('Z',        COL_WIDTHS_HDR[4]));
   ZCOLS.forEach(function(v,i){
-    var lbl;
-    if (v % 1 === 0) {
-      lbl = v > 0 ? '+'+v : String(v);
-    } else {
-      lbl = (v > 0 ? '+' : '') + v;
-    }
-    cells.push(hc(lbl, COL_WIDTHS_HDR[5+i], true));
+    cells.push(hc(_zHdrZLabel(v), COL_WIDTHS_HDR[5+i], true));
   });
   cells.push(hc('Interpretación', COL_WIDTHS_HDR[18]));
   return _wRow(cells, {hdr:true});
