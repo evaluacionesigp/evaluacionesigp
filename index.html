@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.11.9</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.0</div>
     </div>
   </aside>
 
@@ -1265,28 +1265,29 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="form-grid-3">
             <div class="field">
               <label>Grupo de edad *</label>
-              <select id="tmt-edad">
+              <select id="tmt-edad" onchange="tmtActualizarForm()">
                 <option value="">— Seleccionar —</option>
-                <option value="0">16–29 años</option>
-                <option value="1">30–49 años</option>
-                <option value="2">50–64 años</option>
-                <option value="3">65 o más años</option>
+                <option value="joven">15–59 años</option>
+                <option value="mayor">60–70 años</option>
               </select>
             </div>
             <div class="field">
               <label>Escolaridad *</label>
-              <select id="tmt-escol">
-                <option value="">— Seleccionar —</option>
-                <option value="baja">0–6 años (baja)</option>
-                <option value="media">7–10 años (media)</option>
-                <option value="alta">11 o más años (alta)</option>
+              <select id="tmt-escol" onchange="tmtActualizarOcup()">
+                <option value="">— Seleccionar edad primero —</option>
               </select>
             </div>
-            <div class="field" style="opacity:0.5;">
-              <label>Nota</label>
-              <input type="text" disabled placeholder="Baja escolaridad: sin división por edad">
+            <div class="field" id="tmt-ocup-field" style="display:none;">
+              <label>Ocupación (TMT-B) *</label>
+              <select id="tmt-ocup">
+                <option value="">— Seleccionar escolaridad —</option>
+              </select>
             </div>
           </div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:10px;line-height:1.5;">
+            Baremos: Fernández, Marino &amp; Alderete (2002) · <em>Revista Neurológica Argentina</em>, 27(2), 83–88 · n=251 · Córdoba · 15–70 años.<br>
+            TMT-A: edad + escolaridad. TMT-B (15–59): edad + escolaridad + ocupación.
+          </p>
         </div>
 
         <div class="card">
@@ -6106,18 +6107,26 @@ function grupoRey(edad) {
 }
 
 function grupoTmt(edad) {
-  if (edad === null || edad < 16) return '';
-  if (edad <= 29) return '0';
-  if (edad <= 49) return '1';
-  if (edad <= 64) return '2';
-  return '3';
+  if (edad === null || edad < 15) return '';
+  if (edad <= 59) return 'joven';
+  return 'mayor';
 }
 
-function escolTmt(anios) {
+function escolTmtJoven(anios) {
   if (anios === null) return '';
-  if (anios <= 6) return 'baja';
-  if (anios <= 10) return 'media';
-  return 'alta';
+  if (anios <= 6) return 'primario';
+  if (anios <= 12) return 'secundario';
+  return 'terciario';
+}
+
+function escolTmtMayor(anios) {
+  if (anios === null) return '';
+  return anios > 12 ? 'alto' : 'bajo';
+}
+
+function escolTmtForPaciente(edad, anios) {
+  if (edad === null || edad < 15) return '';
+  return edad <= 59 ? escolTmtJoven(anios) : escolTmtMayor(anios);
 }
 
 function grupoFlv(edad) {
@@ -6283,6 +6292,9 @@ function aplicarPacienteActivoATest(testId) {
   if (edad !== null) {
     pacSetVal('rey-edad', grupoRey(edad));
     pacSetVal('tmt-edad', grupoTmt(edad));
+    tmtActualizarForm();
+    pacSetVal('tmt-escol', escolTmtForPaciente(edad, anios));
+    tmtActualizarOcup();
     pacSetVal('flv-edad', grupoFlv(edad));
     pacSetVal('stroop-edad', grupoStroop(edad));
     pacSetVal('spaib-edad', grupoSpaib(edad));
@@ -6306,7 +6318,6 @@ function aplicarPacienteActivoATest(testId) {
   pacSetVal('rey-sexo', sexoARey(p.sexo));
 
   if (anios !== null) {
-    pacSetVal('tmt-escol', escolTmt(anios));
     pacSetVal('flv-ne', neFlv(anios));
     pacSetVal('ifs-ne', neIfs(anios));
     pacSetVal('wcst-ne', neAltoBajo(anios));
@@ -9608,6 +9619,13 @@ function aplicarEdicionResultado(vistaId, r) {
     case 'tmt':
       if (d.tmt_a_seg != null) pacSetVal('tmt-a', d.tmt_a_seg);
       if (d.tmt_b_seg != null) pacSetVal('tmt-b', d.tmt_b_seg);
+      if (d.tmt_edad_grupo) {
+        pacSetVal('tmt-edad', d.tmt_edad_grupo);
+        tmtActualizarForm();
+        pacSetVal('tmt-escol', d.tmt_escol);
+        tmtActualizarOcup();
+        pacSetVal('tmt-ocup', d.tmt_ocup);
+      }
       if ((document.getElementById('tmt-a') && document.getElementById('tmt-a').value) ||
           (document.getElementById('tmt-b') && document.getElementById('tmt-b').value)) calcularTMT();
       break;
@@ -10944,86 +10962,112 @@ function guardarResultadoRey() {
 }
 
 // ══ TMT — BAREMOS ════════════════════════════════════════════════════════════
-// Tablas de percentiles del artículo (Margulis et al., 2018)
-// Formato: arrays de {p, tA, tB} — tiempo en segundos
-// Para baja escolaridad: sin división por edad
-// Para media/alta: 4 grupos edad x 2 niveles escolaridad
-// En TMT: más tiempo = peor rendimiento → Z = (bruto - M) / DS (Z positivo = peor)
+// Fernández, Marino & Alderete (2002) — Rev. Neurológica Argentina 27(2):83-88
+// n=251 · Córdoba · 15–70 años · más tiempo = peor · Z = (M − bruto) / DS
 
-var TMT_M_DS = {
-  baja: {
-    a: {m:67.2, ds:42.0},
-    b: {m:212.9, ds:140.1}
+var TMT_ARG_REF = 'Fernández, Marino & Alderete (2002) — Revista Neurológica Argentina, 27(2), 83–88. n=251, adultos argentinos 15–70 años, Córdoba.';
+
+var TMT_ARG_2002 = {
+  joven: {
+    a: {
+      primario:   {m:62,    ds:14.98},
+      secundario: {m:44.47, ds:17.32},
+      terciario:  {m:37.4,  ds:10.77}
+    },
+    b: {
+      primario: {
+        calificados:    {m:112.2, ds:48},
+        no_calificados: {m:128.9, ds:23.1}
+      },
+      secundario: {
+        profesionales:  {m:73.4,  ds:16.9},
+        calificados:    {m:91.5,  ds:26.5},
+        no_calificados: {m:108,   ds:55.5}
+      },
+      terciario: {
+        profesionales: {m:66.4, ds:18.14},
+        calificados:   {m:74.4, ds:16.4}
+      }
+    }
   },
-  media: [
-    {a:{m:39.9,ds:11.7}, b:{m:94.1,ds:53.3}},   // 16-29
-    {a:{m:43.5,ds:16.9}, b:{m:99.2,ds:36.5}},   // 30-49
-    {a:{m:52.0,ds:21.6}, b:{m:142.5,ds:64.6}},  // 50-64
-    {a:{m:55.8,ds:24.5}, b:{m:129.2,ds:55.4}}   // 65+
-  ],
-  alta: [
-    {a:{m:29.5,ds:10.2}, b:{m:71.3,ds:25.7}},   // 16-29
-    {a:{m:30.6,ds:10.5}, b:{m:67.9,ds:39.9}},   // 30-49
-    {a:{m:36.1,ds:11.2}, b:{m:85.3,ds:28.2}},   // 50-64
-    {a:{m:55.8,ds:24.5}, b:{m:129.2,ds:55.4}}   // 65+ (unificado media+alta)
-  ]
+  mayor: {
+    a: {
+      bajo: {m:73.68, ds:30.84},
+      alto: {m:47.89, ds:11.33}
+    },
+    b: {
+      bajo: {m:160.5,  ds:59.72},
+      alto: {m:103.67, ds:29.92}
+    }
+  }
 };
 
-// Percentiles TMT-A: {escol, edad_idx} → array [{p, val}]
-// Baja escolaridad (sin edad)
-var TMT_PC_BAJA_A = [
-  {p:95,v:33},{p:90,v:36},{p:85,v:38},{p:80,v:43},{p:75,v:46},
-  {p:70,v:47},{p:65,v:50},{p:60,v:51},{p:55,v:56},{p:50,v:57},
-  {p:45,v:60},{p:40,v:61},{p:35,v:64},{p:30,v:68},{p:25,v:85},
-  {p:20,v:99},{p:15,v:126},{p:10,v:129},{p:6,v:169},{p:2,v:230}
-];
-var TMT_PC_BAJA_B = [
-  {p:95,v:85},{p:90,v:112},{p:85,v:120},{p:80,v:123},{p:75,v:125},
-  {p:70,v:126},{p:65,v:126},{p:60,v:128},{p:55,v:152},{p:50,v:166},
-  {p:45,v:205},{p:40,v:215},{p:35,v:237},{p:30,v:265},{p:25,v:284},
-  {p:20,v:409},{p:15,v:494},{p:10,v:550},{p:6,v:582},{p:2,v:632}
-];
+function tmtZ(bruto, m, ds) {
+  return (m - bruto) / ds;
+}
 
-// Media/Alta escolaridad — TMT-A
-// [edad0..edad3][escol: 0=media, 1=alta]
-var TMT_PC_A = [
-  // 16-29
-  [[{p:95,v:23},{p:90,v:27},{p:85,v:29},{p:80,v:30},{p:75,v:31},{p:70,v:32},{p:65,v:33},{p:60,v:34},{p:55,v:38},{p:50,v:39},{p:45,v:40},{p:40,v:41},{p:35,v:42},{p:30,v:46},{p:25,v:49},{p:20,v:51},{p:15,v:52},{p:10,v:57},{p:6,v:62},{p:2,v:74}],
-   [{p:95,v:18},{p:90,v:19},{p:85,v:21},{p:80,v:22},{p:75,v:23},{p:70,v:23},{p:65,v:24},{p:60,v:25},{p:55,v:26},{p:50,v:28},{p:45,v:29},{p:40,v:29},{p:35,v:31},{p:30,v:32},{p:25,v:34},{p:20,v:37},{p:15,v:41},{p:10,v:43},{p:6,v:48},{p:2,v:63}]],
-  // 30-49
-  [[{p:95,v:25},{p:90,v:28},{p:85,v:29},{p:80,v:30},{p:75,v:31},{p:70,v:32},{p:65,v:33},{p:60,v:36},{p:55,v:37},{p:50,v:38},{p:45,v:42},{p:40,v:43},{p:35,v:49},{p:30,v:51},{p:25,v:57},{p:20,v:60},{p:15,v:68},{p:10,v:91},{p:6,v:100},{p:2,v:101}],
-   [{p:95,v:18},{p:90,v:20},{p:85,v:21},{p:80,v:22},{p:75,v:23},{p:70,v:24},{p:65,v:25},{p:60,v:26},{p:55,v:28},{p:50,v:29},{p:45,v:29},{p:40,v:30},{p:35,v:33},{p:30,v:34},{p:25,v:39},{p:20,v:40},{p:15,v:44},{p:10,v:54},{p:6,v:59},{p:2,v:62}]],
-  // 50-64
-  [[{p:95,v:30},{p:90,v:31},{p:85,v:31},{p:80,v:32},{p:75,v:34},{p:70,v:39},{p:65,v:40},{p:60,v:41},{p:55,v:43},{p:50,v:45},{p:45,v:47},{p:40,v:55},{p:35,v:61},{p:30,v:62},{p:25,v:64},{p:20,v:65},{p:15,v:86},{p:10,v:95},{p:6,v:120},{p:2,v:130}],
-   [{p:95,v:22},{p:90,v:24},{p:85,v:25},{p:80,v:27},{p:75,v:30},{p:70,v:31},{p:65,v:31},{p:60,v:32},{p:55,v:32},{p:50,v:34},{p:45,v:36},{p:40,v:37},{p:35,v:39},{p:30,v:40},{p:25,v:40},{p:20,v:43},{p:15,v:45},{p:10,v:58},{p:6,v:80},{p:2,v:90}]],
-  // 65+
-  [[{p:95,v:27},{p:90,v:30},{p:85,v:33},{p:80,v:36},{p:75,v:38},{p:70,v:39},{p:65,v:45},{p:60,v:48},{p:55,v:49},{p:50,v:51},{p:45,v:55},{p:40,v:64},{p:35,v:69},{p:30,v:71},{p:25,v:79},{p:20,v:81},{p:15,v:84},{p:10,v:100},{p:6,v:124},{p:2,v:125}],
-   [{p:95,v:27},{p:90,v:30},{p:85,v:33},{p:80,v:36},{p:75,v:38},{p:70,v:39},{p:65,v:45},{p:60,v:48},{p:55,v:49},{p:50,v:51},{p:45,v:55},{p:40,v:64},{p:35,v:69},{p:30,v:71},{p:25,v:79},{p:20,v:81},{p:15,v:84},{p:10,v:100},{p:6,v:124},{p:2,v:125}]]
-];
+function tmtPercentil(z) {
+  return Math.max(1, Math.min(99, Math.round(50 + 28.57 * z)));
+}
 
-// Media/Alta escolaridad — TMT-B
-var TMT_PC_B = [
-  // 16-29
-  [[{p:95,v:48},{p:90,v:51},{p:85,v:55},{p:80,v:61},{p:75,v:67},{p:70,v:69},{p:65,v:70},{p:60,v:73},{p:55,v:80},{p:50,v:84},{p:45,v:87},{p:40,v:91},{p:35,v:96},{p:30,v:106},{p:25,v:136},{p:20,v:145},{p:15,v:150},{p:10,v:169},{p:6,v:200},{p:2,v:353}],
-   [{p:95,v:47},{p:90,v:50},{p:85,v:51},{p:80,v:53},{p:75,v:54},{p:70,v:56},{p:65,v:59},{p:60,v:60},{p:55,v:62},{p:50,v:64},{p:45,v:68},{p:40,v:71},{p:35,v:78},{p:30,v:86},{p:25,v:89},{p:20,v:100},{p:15,v:106},{p:10,v:114},{p:6,v:187},{p:2,v:200}]],
-  // 30-49
-  [[{p:95,v:57},{p:90,v:63},{p:85,v:65},{p:80,v:68},{p:75,v:71},{p:70,v:74},{p:65,v:81},{p:60,v:86},{p:55,v:90},{p:50,v:99},{p:45,v:100},{p:40,v:110},{p:35,v:113},{p:30,v:118},{p:25,v:126},{p:20,v:139},{p:15,v:156},{p:10,v:189},{p:6,v:192},{p:2,v:208}],
-   [{p:95,v:40},{p:90,v:41},{p:85,v:44},{p:80,v:46},{p:75,v:47},{p:70,v:49},{p:65,v:54},{p:60,v:56},{p:55,v:57},{p:50,v:58},{p:45,v:61},{p:40,v:63},{p:35,v:67},{p:30,v:73},{p:25,v:87},{p:20,v:97},{p:15,v:104},{p:10,v:121},{p:6,v:247},{p:2,v:288}]],
-  // 50-64
-  [[{p:95,v:88},{p:90,v:95},{p:85,v:101},{p:80,v:106},{p:75,v:115},{p:70,v:118},{p:65,v:119},{p:60,v:120},{p:55,v:120},{p:50,v:120},{p:45,v:123},{p:40,v:132},{p:35,v:133},{p:30,v:160},{p:25,v:187},{p:20,v:199},{p:15,v:269},{p:10,v:344},{p:6,v:350},{p:2,v:360}],
-   [{p:95,v:59},{p:90,v:60},{p:85,v:60},{p:80,v:63},{p:75,v:67},{p:70,v:70},{p:65,v:73},{p:60,v:75},{p:55,v:77},{p:50,v:82},{p:45,v:86},{p:40,v:90},{p:35,v:94},{p:30,v:99},{p:25,v:102},{p:20,v:105},{p:15,v:117},{p:10,v:150},{p:6,v:175},{p:2,v:180}]],
-  // 65+ (unificado)
-  [[{p:95,v:69},{p:90,v:76},{p:85,v:78},{p:80,v:82},{p:75,v:90},{p:70,v:98},{p:65,v:105},{p:60,v:111},{p:55,v:121},{p:50,v:123},{p:45,v:135},{p:40,v:138},{p:35,v:146},{p:30,v:149},{p:25,v:172},{p:20,v:191},{p:15,v:214},{p:10,v:238},{p:6,v:274},{p:2,v:275}],
-   [{p:95,v:69},{p:90,v:76},{p:85,v:78},{p:80,v:82},{p:75,v:90},{p:70,v:98},{p:65,v:105},{p:60,v:111},{p:55,v:121},{p:50,v:123},{p:45,v:135},{p:40,v:138},{p:35,v:146},{p:30,v:149},{p:25,v:172},{p:20,v:191},{p:15,v:214},{p:10,v:238},{p:6,v:274},{p:2,v:275}]]
-];
+function tmtBaremoA(edadG, escol) {
+  return TMT_ARG_2002[edadG].a[escol];
+}
 
-function buscarPercentilTMT(tabla, bruto) {
-  // tabla ordenada p95→p2, valores crecientes (más seg = peor = menor percentil)
-  // recorremos de mejor a peor: si bruto <= valor del pc actual, ese es su percentil
-  for (var i = 0; i < tabla.length; i++) {
-    if (bruto <= tabla[i].v) return tabla[i].p;
+function tmtBaremoB(edadG, escol, ocup) {
+  if (edadG === 'mayor') return TMT_ARG_2002.mayor.b[escol];
+  return TMT_ARG_2002.joven.b[escol][ocup];
+}
+
+function tmtActualizarForm() {
+  var edad = document.getElementById('tmt-edad').value;
+  var escolSel = document.getElementById('tmt-escol');
+  var ocupField = document.getElementById('tmt-ocup-field');
+  if (!escolSel) return;
+  if (edad === 'joven') {
+    escolSel.innerHTML =
+      '<option value="">— Seleccionar —</option>' +
+      '<option value="primario">Primario (0–6 años)</option>' +
+      '<option value="secundario">Secundario (7–12 años)</option>' +
+      '<option value="terciario">Terciario (13+ años)</option>';
+    if (ocupField) ocupField.style.display = '';
+  } else if (edad === 'mayor') {
+    escolSel.innerHTML =
+      '<option value="">— Seleccionar —</option>' +
+      '<option value="bajo">Bajo (0–12 años)</option>' +
+      '<option value="alto">Alto (más de 12 años)</option>';
+    if (ocupField) ocupField.style.display = 'none';
+  } else {
+    escolSel.innerHTML = '<option value="">— Seleccionar edad primero —</option>';
+    if (ocupField) ocupField.style.display = 'none';
   }
-  return 1; // más lento que el p2 → p1
+  tmtActualizarOcup();
+}
+
+function tmtActualizarOcup() {
+  var edad = document.getElementById('tmt-edad').value;
+  var escol = document.getElementById('tmt-escol').value;
+  var ocupSel = document.getElementById('tmt-ocup');
+  if (!ocupSel) return;
+  if (edad !== 'joven') {
+    ocupSel.innerHTML = '<option value="">— No aplica (60–70 años) —</option>';
+    return;
+  }
+  var opts = '<option value="">— Seleccionar —</option>';
+  if (escol === 'primario') {
+    opts += '<option value="calificados">Empleados calificados</option>';
+    opts += '<option value="no_calificados">Empleados no calificados</option>';
+  } else if (escol === 'secundario') {
+    opts += '<option value="profesionales">Profesionales / Estudiantes</option>';
+    opts += '<option value="calificados">Empleados calificados</option>';
+    opts += '<option value="no_calificados">Empleados no calificados</option>';
+  } else if (escol === 'terciario') {
+    opts += '<option value="profesionales">Profesionales / Estudiantes</option>';
+    opts += '<option value="calificados">Empleados calificados</option>';
+  } else {
+    opts = '<option value="">— Seleccionar escolaridad —</option>';
+  }
+  ocupSel.innerHTML = opts;
 }
 
 function clasificarTMT(z) {
@@ -11038,7 +11082,7 @@ function iniciarTMT() {
   document.getElementById('tmt-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('tmt-form').style.display = 'block';
   document.getElementById('tmt-resultado').style.display = 'none';
-  // llenar select pacientes
+  tmtActualizarForm();
   var opts = '<option value="">— Seleccionar paciente —</option>' +
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   document.getElementById('tmt-paciente').innerHTML = opts;
@@ -11050,22 +11094,22 @@ function limpiarTMT() {
 }
 
 function calcularTMT() {
+  var edadG  = document.getElementById('tmt-edad').value;
   var escol  = document.getElementById('tmt-escol').value;
-  var edadI  = document.getElementById('tmt-edad').value;
+  var ocup   = document.getElementById('tmt-ocup').value;
   var tA     = document.getElementById('tmt-a').value;
   var tB     = document.getElementById('tmt-b').value;
 
+  if (!edadG) { alert('Seleccioná el grupo de edad.'); return; }
   if (!escol) { alert('Seleccioná el nivel de escolaridad.'); return; }
-  if (escol !== 'baja' && edadI === '') { alert('Seleccioná el grupo de edad.'); return; }
+  if (edadG === 'joven' && tB !== '' && !ocup) { alert('Seleccioná la ocupación para TMT-B (15–59 años).'); return; }
   if (!tA && !tB) { alert('Ingresá al menos uno de los tiempos.'); return; }
 
-  var gi = parseInt(edadI);
-  var escolIdx = escol === 'media' ? 0 : 1;
-  var edadLabel = edadI !== '' ? document.getElementById('tmt-edad').selectedOptions[0].text : '—';
+  var edadLabel = document.getElementById('tmt-edad').selectedOptions[0].text;
   var escolLabel = document.getElementById('tmt-escol').selectedOptions[0].text;
-
-  document.getElementById('tmt-res-meta').textContent =
-    (escol === 'baja' ? 'Baja escolaridad (sin división por edad)' : edadLabel + ' · ' + escolLabel);
+  var metaParts = [edadLabel, escolLabel];
+  if (edadG === 'joven' && ocup) metaParts.push(document.getElementById('tmt-ocup').selectedOptions[0].text);
+  document.getElementById('tmt-res-meta').textContent = metaParts.join(' · ');
 
   var cards = '';
   var interpA = '', interpB = '';
@@ -11073,9 +11117,9 @@ function calcularTMT() {
   // ── TMT-A ──
   if (tA !== '') {
     var brutoA = parseFloat(tA);
-    var mdsA   = escol === 'baja' ? TMT_M_DS.baja.a : TMT_M_DS[escol][gi].a;
-    var zA     = (mdsA.m - brutoA) / mdsA.ds;  // invertido: negativo = más lento = peor
-    var pcA    = escol === 'baja' ? buscarPercentilTMT(TMT_PC_BAJA_A, brutoA) : buscarPercentilTMT(TMT_PC_A[gi][escolIdx], brutoA);
+    var mdsA   = tmtBaremoA(edadG, escol);
+    var zA     = tmtZ(brutoA, mdsA.m, mdsA.ds);
+    var pcA    = tmtPercentil(zA);
     var clfA   = clasificarTMT(zA);
 
     cards += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;">' +
@@ -11107,9 +11151,9 @@ function calcularTMT() {
   // ── TMT-B ──
   if (tB !== '') {
     var brutoB = parseFloat(tB);
-    var mdsB   = escol === 'baja' ? TMT_M_DS.baja.b : TMT_M_DS[escol][gi].b;
-    var zB     = (mdsB.m - brutoB) / mdsB.ds;  // invertido: negativo = más lento = peor
-    var pcB    = escol === 'baja' ? buscarPercentilTMT(TMT_PC_BAJA_B, brutoB) : buscarPercentilTMT(TMT_PC_B[gi][escolIdx], brutoB);
+    var mdsB   = tmtBaremoB(edadG, escol, ocup);
+    var zB     = tmtZ(brutoB, mdsB.m, mdsB.ds);
+    var pcB    = tmtPercentil(zB);
     var clfB   = clasificarTMT(zB);
 
     cards += '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px 22px;">' +
@@ -11142,7 +11186,7 @@ function calcularTMT() {
   var interp = '';
   if (interpA) interp += '<p>' + interpA + '</p>';
   if (interpB) interp += '<p>' + interpB + '</p>';
-  interp += '<p><em>Baremo: Margulis, Squillace & Ferreres (2018) — Población CABA y Gran Buenos Aires. Esta interpretación es orientativa y debe integrarse con el juicio clínico del profesional.</em></p>';
+  interp += '<p><em>Baremo: ' + TMT_ARG_REF + ' Esta interpretación es orientativa y debe integrarse con el juicio clínico del profesional.</em></p>';
   document.getElementById('tmt-interp').innerHTML = interp;
 
   document.getElementById('tmt-form').style.display = 'none';
@@ -11155,22 +11199,28 @@ function guardarResultadoTMT() {
   var fecha = document.getElementById('tmt-fecha').value;
   var tA    = document.getElementById('tmt-a').value;
   var tB    = document.getElementById('tmt-b').value;
+  var edadG = document.getElementById('tmt-edad').value;
   var escol = document.getElementById('tmt-escol').value;
-  var edadI = document.getElementById('tmt-edad').value;
+  var ocup  = document.getElementById('tmt-ocup').value;
   if (!pacId) { toast('Seleccioná un paciente primero'); return; }
   var cat = 'A:' + (tA||'—') + 's / B:' + (tB||'—') + 's';
-  var datosObj = { tmt_a_seg: tA ? parseFloat(tA) : null, tmt_b_seg: tB ? parseFloat(tB) : null };
-  // Calcular Z si hay baremos disponibles
-  if (escol && edadI !== '') {
-    var gi = parseInt(edadI);
+  var datosObj = {
+    tmt_a_seg: tA ? parseFloat(tA) : null,
+    tmt_b_seg: tB ? parseFloat(tB) : null,
+    tmt_edad_grupo: edadG || null,
+    tmt_escol: escol || null,
+    tmt_ocup: ocup || null,
+    tmt_baremo: 'Fernández, Marino & Alderete (2002)'
+  };
+  if (edadG && escol) {
     if (tA !== '') {
-      var mdsA = escol === 'baja' ? TMT_M_DS.baja.a : TMT_M_DS[escol][gi].a;
-      datosObj.tmt_a_z = parseFloat(((mdsA.m - parseFloat(tA)) / mdsA.ds).toFixed(2));
+      var mdsA = tmtBaremoA(edadG, escol);
+      datosObj.tmt_a_z = parseFloat(tmtZ(parseFloat(tA), mdsA.m, mdsA.ds).toFixed(2));
       datosObj.tmt_a_m = mdsA.m; datosObj.tmt_a_ds = mdsA.ds;
     }
-    if (tB !== '') {
-      var mdsB = escol === 'baja' ? TMT_M_DS.baja.b : TMT_M_DS[escol][gi].b;
-      datosObj.tmt_b_z = parseFloat(((mdsB.m - parseFloat(tB)) / mdsB.ds).toFixed(2));
+    if (tB !== '' && (edadG === 'mayor' || ocup)) {
+      var mdsB = tmtBaremoB(edadG, escol, ocup);
+      datosObj.tmt_b_z = parseFloat(tmtZ(parseFloat(tB), mdsB.m, mdsB.ds).toFixed(2));
       datosObj.tmt_b_m = mdsB.m; datosObj.tmt_b_ds = mdsB.ds;
     }
   }
