@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.2</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.4</div>
     </div>
   </aside>
 
@@ -4536,19 +4536,19 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           </div>
         </div>
         <div class="card">
-          <div class="card-title">Puntajes · Memoria de trabajo visual</div>
-          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá el <strong>Pe (puntaje escalado)</strong> de cada condición según el cuaderillo WMS-III. El <strong>total</strong> es la suma de ambas (como Retención de Dígitos en WAIS). Z = (Total − M) / DT según el grupo etario (Tablas A.1–A.6).</p>
+          <div class="card-title">Puntajes brutos · Memoria de trabajo visual</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá los <strong>puntajes brutos</strong> de cada condición (como Retención de Dígitos en WAIS). El <strong>total bruto</strong> es la suma de ambas. El sistema convierte PB → Pe con la tabla del manual y calcula Z = (Pe − M) / DT (Tablas A.1–A.6).</p>
           <div class="form-grid-3">
             <div class="field">
-              <label>Condición directa (Pe)</label>
-              <input type="number" id="loes-parte-a" min="1" max="19" step="1" placeholder="Pe 1–19" oninput="loesActualizar()">
+              <label>Condición directa (bruto)</label>
+              <input type="number" id="loes-parte-a" min="0" max="16" step="1" placeholder="0–16" oninput="loesActualizar()">
             </div>
             <div class="field">
-              <label>Condición inversa (Pe)</label>
-              <input type="number" id="loes-parte-b" min="1" max="19" step="1" placeholder="Pe 1–19" oninput="loesActualizar()">
+              <label>Condición inversa (bruto)</label>
+              <input type="number" id="loes-parte-b" min="0" max="16" step="1" placeholder="0–16" oninput="loesActualizar()">
             </div>
             <div class="field">
-              <label>Total (directa + inversa)</label>
+              <label>Total bruto (directa + inversa)</label>
               <div id="loes-total-display" style="font-size:1.15rem;font-weight:700;font-family:monospace;color:var(--accent);padding:10px 0;min-height:28px;">—</div>
             </div>
           </div>
@@ -8732,8 +8732,9 @@ function renderCuestionariosFam(d) {
 
         } else if (testNombre === 'WMS-III LoEs') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WMS-III · Localización Espacial (LoEs) · Memoria de trabajo visual</td></tr>';
-          var loesNota = (d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')):null;
-          rows += filaTabla('LoEs · Localización Espacial', d.total!=null?d.total:(d.pe!=null?d.pe:r.puntaje_total), d.m||null, d.ds||null, d.z!=null?d.z:r.puntaje_z, r.fecha, loesNota);
+          var loesBruto = d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
+          var loesNota = (d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')+(d.pe!=null?' · Pe '+d.pe:'')):null;
+          rows += filaTabla('LoEs · Localización Espacial', loesBruto, d.m||null, d.ds||null, d.z!=null?d.z:r.puntaje_z, r.fecha, loesNota);
 
         } else if (testNombre === 'BADS-Juicio') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">BADS · Juicio Temporal (Farías Sarquís et al., 2021)</td></tr>';
@@ -13061,8 +13062,8 @@ function guardarWaisiv() {
 }
 
 // ══ WMS-III · Localización Espacial (LoEs) ═══════════════════════════════════
-// Baremos: Tablas A.1–A.6 — Media y DT del Pe por grupo etario (intercorrelaciones en Pe).
-// Z = (Pe − M) / DS
+// PB total → Pe: Apéndice D Tablas D.1–D.6 (columna LoEs, PB total 0–32).
+// Z: Tablas A.1–A.6 — Media y DT del Pe · Z = (Pe − M) / DS
 
 var LOES_GRUPOS = ['16–19','20–34','35–54','55–65','66–73','74+'];
 var LOES_BAR = [
@@ -13072,6 +13073,15 @@ var LOES_BAR = [
   {m:10.02, ds:3.00},
   {m:10.23, ds:3.10},
   {m:10.00, ds:3.08}
+];
+// [PE1..PE19] = [minPB, maxPB] por grupo etario (índice 0–5).
+var LOES_PB = [
+  [null,null,null,null,[0,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],[19,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,29],[30,32]],
+  [null,[0,8],[9,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20],[21,21],[22,22],[23,23],[24,25],[26,26],[27,32]],
+  [null,null,[0,7],[8,8],[9,9],[10,10],[11,11],[12,13],[14,14],[15,15],[16,16],[17,17],[18,19],[20,20],[21,21],[22,22],[23,23],[24,26],[27,32]],
+  [null,null,null,[0,6],[7,8],[9,9],[10,10],[11,11],[12,12],[13,14],[15,15],[16,16],[17,17],[18,18],[19,19],[20,20],[21,21],[22,24],[25,32]],
+  [null,null,null,[0,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,20],[21,22],[23,32]],
+  [null,null,[0,1],[2,2],[3,3],[4,4],[5,6],[7,8],[9,9],[10,10],[11,12],[13,13],[14,14],[15,16],[17,17],[18,18],[19,19],[20,20],[21,32]]
 ];
 
 function loesGetGrupo(edad) {
@@ -13084,10 +13094,26 @@ function loesGetGrupo(edad) {
   return 5;
 }
 
+function loesPBtoPE(pb, gi) {
+  if (pb === null || pb === undefined || isNaN(pb) || gi < 0 || gi >= LOES_PB.length) return null;
+  var grupo = LOES_PB[gi];
+  if (!grupo) return null;
+  for (var pe = 0; pe < grupo.length; pe++) {
+    var rango = grupo[pe];
+    if (!rango) continue;
+    if (pb >= rango[0] && pb <= rango[1]) return pe + 1;
+  }
+  return null;
+}
+
 function loesCalcZ(pe, gi) {
   if (pe === null || pe === undefined || isNaN(pe) || gi < 0 || gi >= LOES_BAR.length) return null;
   var bar = LOES_BAR[gi];
   return parseFloat(((pe - bar.m) / bar.ds).toFixed(2));
+}
+
+function loesTieneBaremoPB(gi) {
+  return gi >= 0 && gi < LOES_PB.length && LOES_PB[gi] !== null;
 }
 
 function iniciarLoEs() {
@@ -13114,17 +13140,26 @@ function loesActualizar() {
   var gi=giEl&&giEl.value!==''?parseInt(giEl.value):-1;
   var a=aEl&&aEl.value!==''&&!isNaN(parseFloat(aEl.value))?parseFloat(aEl.value):null;
   var b=bEl&&bEl.value!==''&&!isNaN(parseFloat(bEl.value))?parseFloat(bEl.value):null;
-  var total=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
+  var totalBruto=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
   var td=document.getElementById('loes-total-display');
-  if(td) td.textContent=total!==null?String(total):'—';
+  if(td) td.textContent=totalBruto!==null?String(totalBruto):'—';
   var rs=document.getElementById('loes-result');
   if(!rs)return;
-  if(gi<0||total===null){ rs.innerHTML=gi<0?'':'<span style="color:var(--muted);font-size:0.8rem;">Completá ambas condiciones o al menos una para calcular Z</span>'; return; }
+  if(gi<0){ rs.innerHTML=''; return; }
+  if(totalBruto===null){ rs.innerHTML='<span style="color:var(--muted);font-size:0.8rem;">Ingresá los puntajes brutos para calcular Pe y Z</span>'; return; }
+  if(!loesTieneBaremoPB(gi)){
+    rs.innerHTML='<span style="color:#c0602b;font-size:0.8rem;">PB total: <strong>'+totalBruto+'</strong> — Falta tabla PB→Pe del manual para este grupo etario. Pasame la tabla de conversión (como en Dígitos WAIS) para activar Pe y Z automático.</span>';
+    return;
+  }
+  var pe=loesPBtoPE(totalBruto,gi);
   var bar=LOES_BAR[gi];
-  var z=loesCalcZ(total,gi);
-  if(z===null){ rs.innerHTML=''; return; }
+  if(pe===null){
+    rs.innerHTML='<span style="color:#c0392b;">Puntaje bruto fuera de rango para '+LOES_GRUPOS[gi]+'</span>';
+    return;
+  }
+  var z=loesCalcZ(pe,gi);
   var zCol=z<=-2?'#c0392b':z<=-1?'#c0602b':z>=1?'#1D9E75':'#555';
-  rs.innerHTML='M=<strong>'+bar.m+'</strong> · DT=<strong>'+bar.ds+'</strong> · Z=<strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
+  rs.innerHTML='PB total: <strong>'+totalBruto+'</strong> → Pe: <strong>'+pe+'</strong> · M=<strong>'+bar.m+'</strong> · DT=<strong>'+bar.ds+'</strong> · Z=<strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
 }
 
 function guardarLoEs() {
@@ -13138,18 +13173,23 @@ function guardarLoEs() {
   var aEl=document.getElementById('loes-parte-a'), bEl=document.getElementById('loes-parte-b');
   var a=aEl&&aEl.value!==''&&!isNaN(parseFloat(aEl.value))?parseFloat(aEl.value):null;
   var b=bEl&&bEl.value!==''&&!isNaN(parseFloat(bEl.value))?parseFloat(bEl.value):null;
-  var total=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
-  if(total===null){toast('Ingresá al menos un puntaje.','error');return;}
+  var totalBruto=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
+  if(totalBruto===null){toast('Ingresá al menos un puntaje bruto.','error');return;}
+  var pe=null, z=null;
   var bar=LOES_BAR[gi];
-  var z=loesCalcZ(total,gi);
+  if(loesTieneBaremoPB(gi)){
+    pe=loesPBtoPE(totalBruto,gi);
+    if(pe===null){toast('Puntaje bruto fuera de rango.','error');return;}
+    z=loesCalcZ(pe,gi);
+  }
   var dat={
     grupo:LOES_GRUPOS[gi], gi:gi,
-    parte_a:a, parte_b:b, total:total, pe:total,
+    parte_a:a, parte_b:b, total_bruto:totalBruto, pe:pe,
     m:bar.m, ds:bar.ds, z:z
   };
   supaFetch('/rest/v1/psico_resultados','POST',{
     user_id:SESSION.user.id, paciente_id:pacId, test:'WMS-III LoEs', fecha:fecha,
-    puntaje_total:total, categoria:'Mem. trabajo visual',
+    puntaje_total:totalBruto, categoria:'Mem. trabajo visual',
     puntaje_z:z, datos:dat
   },SESSION.access_token).then(function(){
     cargarResultados(); toast('✓ Resultado guardado','success');
@@ -19453,8 +19493,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.zRI!=null)add('Fig. Rey — Rec. Inmediato',d.pbRI,null,null,d.zRI,null);
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){
-          var loesNotaW=(d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')):null;
-          add('WMS-III · LoEs · Localización Espacial',d.total!=null?d.total:(d.pe!=null?d.pe:r.puntaje_total),d.m,d.ds,d.z!=null?d.z:r.puntaje_z,loesNotaW);
+          var loesBrutoW=d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
+          var loesNotaW=(d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')+(d.pe!=null?' · Pe '+d.pe:'')):null;
+          add('WMS-III · LoEs · Localización Espacial',loesBrutoW,d.m,d.ds,d.z!=null?d.z:r.puntaje_z,loesNotaW);
         }
         else if(tn==='BADS-Juicio'){add('BADS — Juicio Temporal',d.conv,d.m,d.ds,d.z,null);}
         else if(tn==='BADS-Zoo'){if(d.z_bruto!=null)add('BADS — Mapa del Zoo',d.bruto,null,null,d.z_bruto,null);}
