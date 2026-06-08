@@ -1,4 +1,4 @@
-<<<<<<< Updated upstream
+﻿<<<<<<< Updated upstream
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8313,7 +8313,8 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
 
   // ── Estilos de tabla ──
   var thBase = 'font-size:8.5px;text-transform:uppercase;letter-spacing:0.6px;color:#eef6ea;background:#325c28;border-bottom:1px solid #214b1a;padding:5px 7px;';
-  var tdBase = 'font-size:10.5px;border-bottom:0.5px solid #b8ddb0;padding:5px 7px;';
+  var tdBase = 'font-size:10px;border-bottom:0.5px solid #b8ddb0;padding:4px 6px;';
+  var tdNum  = tdBase + 'text-align:center;font-family:monospace;font-weight:700;white-space:nowrap;font-size:9.5px;';
 
   function domHeader(txt) {
     return '<tr><td colspan="9" style="background:#325c28;padding:4px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;border-bottom:1px solid #214b1a;">'+txt+'</td></tr>';
@@ -8333,21 +8334,22 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     return 'Dificultad elevada';
   }
 
-  function filaTabla(label, pb, m, ds, z, fecha, nota) {
+  function filaTabla(label, pb, m, ds, z, fecha, nota, interpOverride) {
     var t   = zToT(z);
-    var pbStr = pb!==null&&pb!==undefined ? String(parseFloat(pb).toFixed ? parseFloat(pb)%1===0 ? parseInt(pb) : parseFloat(pb).toFixed(1) : pb) : '—';
-    var mStr  = m!==null&&m!==undefined   ? parseFloat(m).toFixed(2)  : '—';
-    var dsStr = ds!==null&&ds!==undefined ? parseFloat(ds).toFixed(1) : '—';
-    var zStr  = z!==null&&z!==undefined   ? parseFloat(z).toFixed(1) : '—';
+    var pbStr = _fmtTabNum(pb);
+    var mStr  = _fmtTabNum(m);
+    var dsStr = _fmtTabNum(ds);
+    var zStr  = _fmtTabNum(z);
     var tStr  = t!==null ? t : '—';
-    var lbl   = zLabel(z);
+    var lbl   = interpOverride || zLabel(z);
+    var tdLbl = tdBase + 'font-weight:500;' + (String(label).indexOf('TAVEC -') === 0 ? 'font-size:9px;white-space:nowrap;' : '');
     return '<tr>'+
-      '<td style="'+tdBase+'font-weight:500;">'+label+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-weight:700;">'+pbStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-weight:700;">'+zStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;">'+tStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-size:9px;">'+mStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-size:9px;">'+dsStr+'</td>'+
+      '<td style="'+tdLbl+'">'+label+'</td>'+
+      '<td style="'+tdNum+'">'+pbStr+'</td>'+
+      '<td style="'+tdNum+'">'+zStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+tStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+mStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+dsStr+'</td>'+
       '<td style="'+tdBase+'padding:3px 5px;">'+zGrilla(z)+'</td>'+
       '<td style="'+tdBase+'font-size:9px;color:#111;font-weight:700;">'+
         (z!=null&&z!=undefined ? lbl : (nota!=null&&nota!=undefined ? '<em style="color:#4a7040;font-weight:400;">'+nota+'</em>' : '—'))+
@@ -8631,13 +8633,14 @@ function renderCuestionariosFam(d) {
 
         } else if (testNombre === 'TAVEC') {
           var gi2t = d.gi ? d.gi - 1 : null;
-          var notaTAVEC = 'TAVEC · ' + (d.grupoLabel || '');
+          var notaTAVEC = d.grupoLabel || '';
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)</td></tr>';
           TAVEC_VARS_ORDER.forEach(function(td) {
             var pb = d[td[1]], z = d[td[2]];
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2t !== null && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2t] : null;
-            rows += filaTabla(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC);
+            var interp = tavecInterpWord(z, td[3]);
+            rows += filaTabla(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC, interp.label);
           });
 
         } else if (testNombre === 'BEM 144 Signoret') {
@@ -19161,12 +19164,13 @@ function _wTable(rows, colWidths) {
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
 // Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
 // Grilla ancha (450) para encabezados decimales legibles sin fitText
-var _Z_BASE_COLS = [1450, 430, 430, 430, 430].concat(ZCOLS.map(function(){return 450;})).concat([1200]);
+var _Z_BASE_COLS = [1580, 500, 500, 500, 500].concat(ZCOLS.map(function(){return 432;})).concat([1200]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
 
-function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom) {
+function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom, opts) {
+  opts = opts || {};
   var bg = isEven ? 'F2F2F2' : 'FFFFFF';
 
   if (isSubhdr) {
@@ -19183,10 +19187,17 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
   }
 
   // Fila de dato
-  var pbStr = pb!==null&&pb!==undefined ? String(pb) : '—';
-  var mStr  = m!==null&&m!==undefined   ? parseFloat(m).toFixed(1) : '—';
-  var dsStr = ds!==null&&ds!==undefined ? parseFloat(ds).toFixed(1) : '—';
-  var zStr  = z!==null&&z!==undefined   ? parseFloat(z).toFixed(1) : '—';
+  var pbStr = _fmtTabNum(pb);
+  var mStr  = _fmtTabNum(m);
+  var dsStr = _fmtTabNum(ds);
+  var zStr  = _fmtTabNum(z);
+
+  function _wNumCell(txt, w, bg, bold) {
+    return _wCell(
+      _wPar(_wRun(txt, {sz:18, bold:!!bold, color:'000000', font:'Arial'}), {align:'center', before:16, after:16}),
+      {w:w, fill:bg, noWrap:true, compact:true}
+    );
+  }
 
   // Calcular qué columna de la grilla marcar
   var markedCol = null;
@@ -19220,15 +19231,16 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 
   var cells = [];
   // Variable
-  cells.push(_wCell(_wPar(_wRun(label,{sz:20,bold:false,color:'000000',font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[0],fill:bg}));
+  var lblSz = opts.labelSz || 20;
+  cells.push(_wCell(_wPar(_wRun(label,{sz:lblSz,bold:false,color:'000000',font:'Arial'}),{before:opts.labelBefore||20,after:opts.labelAfter||20}),{w:COL_WIDTHS_HDR[0],fill:bg,noWrap:!!opts.labelNoWrap,compact:!!opts.labelNoWrap}));
   // PB
-  cells.push(_wCell(_wPar(_wRun(pbStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[1],fill:bg}));
+  cells.push(_wNumCell(pbStr, COL_WIDTHS_HDR[1], bg, false));
   // M
-  cells.push(_wCell(_wPar(_wRun(mStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[2],fill:bg}));
+  cells.push(_wNumCell(mStr, COL_WIDTHS_HDR[2], bg, false));
   // DS
-  cells.push(_wCell(_wPar(_wRun(dsStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[3],fill:bg}));
+  cells.push(_wNumCell(dsStr, COL_WIDTHS_HDR[3], bg, false));
   // Z
-  cells.push(_wCell(_wPar(_wRun(zStr,{sz:20,bold:true,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[4],fill:bg}));
+  cells.push(_wNumCell(zStr, COL_WIDTHS_HDR[4], bg, true));
   // Grilla Z: 13 celdas
   ZCOLS.forEach(function(v,i){
     var isMarked = (markedCol === i);
@@ -19454,7 +19466,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2tw] : null;
             var interp = tavecInterpWord(z, td[3]);
-            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }));
+            rows.push(_zGrillaRows(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }, { labelSz: 17, labelNoWrap: true, labelBefore: 14, labelAfter: 14 }));
             rowCount++;
           });
 
@@ -20188,6 +20200,18 @@ var TAVEC_VARS_ORDER = [
   ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
 ];
 
+var TAVEC_VAR_CODES = {
+  v1:'RI-A1', v2:'RI-A5', v3:'RI-AT', v4:'RI-B',
+  v8:'RL-CP', v9:'RCL-CP', v10:'RL-LP', v11:'RCL-LP',
+  v20:'P', v21:'I-RL', v22:'I-RCL', v23:'Recon-Ac', v24:'FP', v25:'Discrim.'
+};
+function tavecTablaLabel(vKey) {
+  var n = parseInt(String(vKey).replace(/^v/i, ''), 10);
+  if (isNaN(n)) return String(vKey);
+  var pad = n < 10 ? '0' + n : String(n);
+  return 'TAVEC -' + pad + '- ' + (TAVEC_VAR_CODES[vKey] || vKey);
+}
+
 function tavecPerfilEstilo(interp) {
   var map = {
     '2563EB': { bg: '#d8f0fa', txt: '#1565c0' },
@@ -20509,7 +20533,7 @@ function renderPerfilZ() {
           var pb = d[td[1]], z = d[td[2]];
           if (z === null && z === undefined && (pb === null || pb === undefined)) return;
           filas.push({
-            lbl: td[0],
+            lbl: tavecTablaLabel(td[1]),
             z: z,
             glosario: td[4],
             isError: td[3]
@@ -29154,16 +29178,17 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     return 'Dificultad elevada';
   }
 
-  function filaTabla(label, pb, m, ds, z, fecha, nota) {
+  function filaTabla(label, pb, m, ds, z, fecha, nota, interpOverride) {
     var t   = zToT(z);
     var pbStr = _fmtTabNum(pb);
     var mStr  = _fmtTabNum(m);
     var dsStr = _fmtTabNum(ds);
     var zStr  = _fmtTabNum(z);
     var tStr  = t!==null ? t : '—';
-    var lbl   = zLabel(z);
+    var lbl   = interpOverride || zLabel(z);
+    var tdLbl = tdBase + 'font-weight:500;' + (String(label).indexOf('TAVEC -') === 0 ? 'font-size:9px;white-space:nowrap;' : '');
     return '<tr>'+
-      '<td style="'+tdBase+'font-weight:500;">'+label+'</td>'+
+      '<td style="'+tdLbl+'">'+label+'</td>'+
       '<td style="'+tdNum+'">'+pbStr+'</td>'+
       '<td style="'+tdNum+'">'+zStr+'</td>'+
       '<td style="'+tdNum+'font-weight:400;">'+tStr+'</td>'+
@@ -29452,13 +29477,14 @@ function renderCuestionariosFam(d) {
 
         } else if (testNombre === 'TAVEC') {
           var gi2t = d.gi ? d.gi - 1 : null;
-          var notaTAVEC = 'TAVEC · ' + (d.grupoLabel || '');
+          var notaTAVEC = d.grupoLabel || '';
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)</td></tr>';
           TAVEC_VARS_ORDER.forEach(function(td) {
             var pb = d[td[1]], z = d[td[2]];
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2t !== null && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2t] : null;
-            rows += filaTabla(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC);
+            var interp = tavecInterpWord(z, td[3]);
+            rows += filaTabla(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC, interp.label);
           });
 
         } else if (testNombre === 'BEM 144 Signoret') {
@@ -39982,12 +40008,13 @@ function _wTable(rows, colWidths) {
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
 // Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
 // Columnas numéricas un poco más anchas para evitar salto de línea en negativos
-var _Z_BASE_COLS = [1360, 500, 500, 500, 500].concat(ZCOLS.map(function(){return 446;})).concat([1200]);
+var _Z_BASE_COLS = [1580, 500, 500, 500, 500].concat(ZCOLS.map(function(){return 432;})).concat([1200]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
 
-function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom) {
+function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom, opts) {
+  opts = opts || {};
   var bg = isEven ? 'F2F2F2' : 'FFFFFF';
 
   if (isSubhdr) {
@@ -40048,7 +40075,8 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 
   var cells = [];
   // Variable
-  cells.push(_wCell(_wPar(_wRun(label,{sz:20,bold:false,color:'000000',font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[0],fill:bg}));
+  var lblSz = opts.labelSz || 20;
+  cells.push(_wCell(_wPar(_wRun(label,{sz:lblSz,bold:false,color:'000000',font:'Arial'}),{before:opts.labelBefore||20,after:opts.labelAfter||20}),{w:COL_WIDTHS_HDR[0],fill:bg,noWrap:!!opts.labelNoWrap,compact:!!opts.labelNoWrap}));
   // PB
   cells.push(_wNumCell(pbStr, COL_WIDTHS_HDR[1], bg, false));
   // M
@@ -40282,7 +40310,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2tw] : null;
             var interp = tavecInterpWord(z, td[3]);
-            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }));
+            rows.push(_zGrillaRows(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }, { labelSz: 17, labelNoWrap: true, labelBefore: 14, labelAfter: 14 }));
             rowCount++;
           });
 
@@ -41016,6 +41044,18 @@ var TAVEC_VARS_ORDER = [
   ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
 ];
 
+var TAVEC_VAR_CODES = {
+  v1:'RI-A1', v2:'RI-A5', v3:'RI-AT', v4:'RI-B',
+  v8:'RL-CP', v9:'RCL-CP', v10:'RL-LP', v11:'RCL-LP',
+  v20:'P', v21:'I-RL', v22:'I-RCL', v23:'Recon-Ac', v24:'FP', v25:'Discrim.'
+};
+function tavecTablaLabel(vKey) {
+  var n = parseInt(String(vKey).replace(/^v/i, ''), 10);
+  if (isNaN(n)) return String(vKey);
+  var pad = n < 10 ? '0' + n : String(n);
+  return 'TAVEC -' + pad + '- ' + (TAVEC_VAR_CODES[vKey] || vKey);
+}
+
 function tavecPerfilEstilo(interp) {
   var map = {
     '2563EB': { bg: '#d8f0fa', txt: '#1565c0' },
@@ -41337,7 +41377,7 @@ function renderPerfilZ() {
           var pb = d[td[1]], z = d[td[2]];
           if (z === null && z === undefined && (pb === null || pb === undefined)) return;
           filas.push({
-            lbl: td[0],
+            lbl: tavecTablaLabel(td[1]),
             z: z,
             glosario: td[4],
             isError: td[3]
@@ -49950,7 +49990,8 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
 
   // ── Estilos de tabla ──
   var thBase = 'font-size:8.5px;text-transform:uppercase;letter-spacing:0.6px;color:#eef6ea;background:#325c28;border-bottom:1px solid #214b1a;padding:5px 7px;';
-  var tdBase = 'font-size:10.5px;border-bottom:0.5px solid #b8ddb0;padding:5px 7px;';
+  var tdBase = 'font-size:10px;border-bottom:0.5px solid #b8ddb0;padding:4px 6px;';
+  var tdNum  = tdBase + 'text-align:center;font-family:monospace;font-weight:700;white-space:nowrap;font-size:9.5px;';
 
   function domHeader(txt) {
     return '<tr><td colspan="9" style="background:#325c28;padding:4px 10px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;border-bottom:1px solid #214b1a;">'+txt+'</td></tr>';
@@ -49970,21 +50011,22 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     return 'Dificultad elevada';
   }
 
-  function filaTabla(label, pb, m, ds, z, fecha, nota) {
+  function filaTabla(label, pb, m, ds, z, fecha, nota, interpOverride) {
     var t   = zToT(z);
-    var pbStr = pb!==null&&pb!==undefined ? String(parseFloat(pb).toFixed ? parseFloat(pb)%1===0 ? parseInt(pb) : parseFloat(pb).toFixed(1) : pb) : '—';
-    var mStr  = m!==null&&m!==undefined   ? parseFloat(m).toFixed(2)  : '—';
-    var dsStr = ds!==null&&ds!==undefined ? parseFloat(ds).toFixed(1) : '—';
-    var zStr  = z!==null&&z!==undefined   ? parseFloat(z).toFixed(1) : '—';
+    var pbStr = _fmtTabNum(pb);
+    var mStr  = _fmtTabNum(m);
+    var dsStr = _fmtTabNum(ds);
+    var zStr  = _fmtTabNum(z);
     var tStr  = t!==null ? t : '—';
-    var lbl   = zLabel(z);
+    var lbl   = interpOverride || zLabel(z);
+    var tdLbl = tdBase + 'font-weight:500;' + (String(label).indexOf('TAVEC -') === 0 ? 'font-size:9px;white-space:nowrap;' : '');
     return '<tr>'+
-      '<td style="'+tdBase+'font-weight:500;">'+label+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-weight:700;">'+pbStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-weight:700;">'+zStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;">'+tStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-size:9px;">'+mStr+'</td>'+
-      '<td style="'+tdBase+'text-align:center;font-family:monospace;font-size:9px;">'+dsStr+'</td>'+
+      '<td style="'+tdLbl+'">'+label+'</td>'+
+      '<td style="'+tdNum+'">'+pbStr+'</td>'+
+      '<td style="'+tdNum+'">'+zStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+tStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+mStr+'</td>'+
+      '<td style="'+tdNum+'font-weight:400;">'+dsStr+'</td>'+
       '<td style="'+tdBase+'padding:3px 5px;">'+zGrilla(z)+'</td>'+
       '<td style="'+tdBase+'font-size:9px;color:#111;font-weight:700;">'+
         (z!=null&&z!=undefined ? lbl : (nota!=null&&nota!=undefined ? '<em style="color:#4a7040;font-weight:400;">'+nota+'</em>' : '—'))+
@@ -50268,13 +50310,14 @@ function renderCuestionariosFam(d) {
 
         } else if (testNombre === 'TAVEC') {
           var gi2t = d.gi ? d.gi - 1 : null;
-          var notaTAVEC = 'TAVEC · ' + (d.grupoLabel || '');
+          var notaTAVEC = d.grupoLabel || '';
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">TAVEC · Test de Aprendizaje Verbal España-Complutense (Benedet & Alejandre, 1998)</td></tr>';
           TAVEC_VARS_ORDER.forEach(function(td) {
             var pb = d[td[1]], z = d[td[2]];
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2t !== null && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2t] : null;
-            rows += filaTabla(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC);
+            var interp = tavecInterpWord(z, td[3]);
+            rows += filaTabla(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, r.fecha, notaTAVEC, interp.label);
           });
 
         } else if (testNombre === 'BEM 144 Signoret') {
@@ -60798,12 +60841,13 @@ function _wTable(rows, colWidths) {
 var ZCOLS = [-3,-2.5,-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3];
 // Variable | PB | M | DS | Z | 13×grilla | Interp — escalado a WORD_CONTENT_W
 // Grilla ancha (450) para encabezados decimales legibles sin fitText
-var _Z_BASE_COLS = [1450, 430, 430, 430, 430].concat(ZCOLS.map(function(){return 450;})).concat([1200]);
+var _Z_BASE_COLS = [1580, 500, 500, 500, 500].concat(ZCOLS.map(function(){return 432;})).concat([1200]);
 var COL_WIDTHS_HDR = _wordScaleCols(_Z_BASE_COLS, WORD_CONTENT_W);
 var _ZGRILLA_W2 = COL_WIDTHS_HDR[5];
 var _TOTAL_HDR = WORD_CONTENT_W;
 
-function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom) {
+function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom, opts) {
+  opts = opts || {};
   var bg = isEven ? 'F2F2F2' : 'FFFFFF';
 
   if (isSubhdr) {
@@ -60820,10 +60864,17 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
   }
 
   // Fila de dato
-  var pbStr = pb!==null&&pb!==undefined ? String(pb) : '—';
-  var mStr  = m!==null&&m!==undefined   ? parseFloat(m).toFixed(1) : '—';
-  var dsStr = ds!==null&&ds!==undefined ? parseFloat(ds).toFixed(1) : '—';
-  var zStr  = z!==null&&z!==undefined   ? parseFloat(z).toFixed(1) : '—';
+  var pbStr = _fmtTabNum(pb);
+  var mStr  = _fmtTabNum(m);
+  var dsStr = _fmtTabNum(ds);
+  var zStr  = _fmtTabNum(z);
+
+  function _wNumCell(txt, w, bg, bold) {
+    return _wCell(
+      _wPar(_wRun(txt, {sz:18, bold:!!bold, color:'000000', font:'Arial'}), {align:'center', before:16, after:16}),
+      {w:w, fill:bg, noWrap:true, compact:true}
+    );
+  }
 
   // Calcular qué columna de la grilla marcar
   var markedCol = null;
@@ -60857,15 +60908,16 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom)
 
   var cells = [];
   // Variable
-  cells.push(_wCell(_wPar(_wRun(label,{sz:20,bold:false,color:'000000',font:'Arial'}),{before:20,after:20}),{w:COL_WIDTHS_HDR[0],fill:bg}));
+  var lblSz = opts.labelSz || 20;
+  cells.push(_wCell(_wPar(_wRun(label,{sz:lblSz,bold:false,color:'000000',font:'Arial'}),{before:opts.labelBefore||20,after:opts.labelAfter||20}),{w:COL_WIDTHS_HDR[0],fill:bg,noWrap:!!opts.labelNoWrap,compact:!!opts.labelNoWrap}));
   // PB
-  cells.push(_wCell(_wPar(_wRun(pbStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[1],fill:bg}));
+  cells.push(_wNumCell(pbStr, COL_WIDTHS_HDR[1], bg, false));
   // M
-  cells.push(_wCell(_wPar(_wRun(mStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[2],fill:bg}));
+  cells.push(_wNumCell(mStr, COL_WIDTHS_HDR[2], bg, false));
   // DS
-  cells.push(_wCell(_wPar(_wRun(dsStr,{sz:20,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[3],fill:bg}));
+  cells.push(_wNumCell(dsStr, COL_WIDTHS_HDR[3], bg, false));
   // Z
-  cells.push(_wCell(_wPar(_wRun(zStr,{sz:20,bold:true,color:'000000',font:'Arial'}),{align:'center',before:20,after:20}),{w:COL_WIDTHS_HDR[4],fill:bg}));
+  cells.push(_wNumCell(zStr, COL_WIDTHS_HDR[4], bg, true));
   // Grilla Z: 13 celdas
   ZCOLS.forEach(function(v,i){
     var isMarked = (markedCol === i);
@@ -61091,7 +61143,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
             if ((pb === null || pb === undefined) && (z === null || z === undefined)) return;
             var bar = (gi2tw !== null && gi2tw !== undefined && TAVEC_BAR[td[1]]) ? TAVEC_BAR[td[1]][gi2tw] : null;
             var interp = tavecInterpWord(z, td[3]);
-            rows.push(_zGrillaRows(td[0], pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }));
+            rows.push(_zGrillaRows(tavecTablaLabel(td[1]), pb, bar ? bar.m : null, bar ? bar.d : null, z, null, rowCount % 2 === 0, false, { label: interp.label }, { labelSz: 17, labelNoWrap: true, labelBefore: 14, labelAfter: 14 }));
             rowCount++;
           });
 
@@ -61825,6 +61877,18 @@ var TAVEC_VARS_ORDER = [
   ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
 ];
 
+var TAVEC_VAR_CODES = {
+  v1:'RI-A1', v2:'RI-A5', v3:'RI-AT', v4:'RI-B',
+  v8:'RL-CP', v9:'RCL-CP', v10:'RL-LP', v11:'RCL-LP',
+  v20:'P', v21:'I-RL', v22:'I-RCL', v23:'Recon-Ac', v24:'FP', v25:'Discrim.'
+};
+function tavecTablaLabel(vKey) {
+  var n = parseInt(String(vKey).replace(/^v/i, ''), 10);
+  if (isNaN(n)) return String(vKey);
+  var pad = n < 10 ? '0' + n : String(n);
+  return 'TAVEC -' + pad + '- ' + (TAVEC_VAR_CODES[vKey] || vKey);
+}
+
 function tavecPerfilEstilo(interp) {
   var map = {
     '2563EB': { bg: '#d8f0fa', txt: '#1565c0' },
@@ -62146,7 +62210,7 @@ function renderPerfilZ() {
           var pb = d[td[1]], z = d[td[2]];
           if (z === null && z === undefined && (pb === null || pb === undefined)) return;
           filas.push({
-            lbl: td[0],
+            lbl: tavecTablaLabel(td[1]),
             z: z,
             glosario: td[4],
             isError: td[3]
