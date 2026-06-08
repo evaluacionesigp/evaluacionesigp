@@ -6405,7 +6405,7 @@ function llenarSelectPacientes() {
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
-   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
+   'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','loes-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.innerHTML = opciones;
@@ -13091,6 +13091,7 @@ function loesCalcZ(pe, gi) {
 }
 
 function iniciarLoEs() {
+  if (typeof llenarSelectPacientes === 'function') llenarSelectPacientes();
   document.getElementById('loes-fecha').value = new Date().toISOString().split('T')[0];
   var giEl = document.getElementById('loes-gi');
   if (PAC_ACTIVO && PAC_ACTIVO.fecha_nacimiento && giEl && !giEl.value) {
