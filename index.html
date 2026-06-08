@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.1</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.2</div>
     </div>
   </aside>
 
@@ -4511,6 +4511,56 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
+    <!-- ── WMS-III · LOCALIZACIÓN ESPACIAL (LoEs) ── -->
+    <div class="vista" id="vista-loes">
+      <div class="back-btn" onclick="volverSector()">← Volver</div>
+      <div class="vista-header"><div class="vista-titulo">WMS-III · Localización Espacial (LoEs)</div></div>
+      <div id="loes-form">
+        <div class="card">
+          <div class="card-title">Datos de la evaluación</div>
+          <div class="form-grid-3">
+            <div class="field"><label>Paciente *</label><select id="loes-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+            <div class="field">
+              <label>Grupo etario *</label>
+              <select id="loes-gi" onchange="loesActualizar()">
+                <option value="">— Seleccionar grupo —</option>
+                <option value="0">16–19 años</option>
+                <option value="1">20–34 años</option>
+                <option value="2">35–54 años</option>
+                <option value="3">55–65 años</option>
+                <option value="4">66–73 años</option>
+                <option value="5">74 años o más</option>
+              </select>
+            </div>
+            <div class="field"><label>Fecha</label><input type="date" id="loes-fecha"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Puntajes · Memoria de trabajo visual</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá el <strong>Pe (puntaje escalado)</strong> de cada condición según el cuaderillo WMS-III. El <strong>total</strong> es la suma de ambas (como Retención de Dígitos en WAIS). Z = (Total − M) / DT según el grupo etario (Tablas A.1–A.6).</p>
+          <div class="form-grid-3">
+            <div class="field">
+              <label>Condición directa (Pe)</label>
+              <input type="number" id="loes-parte-a" min="1" max="19" step="1" placeholder="Pe 1–19" oninput="loesActualizar()">
+            </div>
+            <div class="field">
+              <label>Condición inversa (Pe)</label>
+              <input type="number" id="loes-parte-b" min="1" max="19" step="1" placeholder="Pe 1–19" oninput="loesActualizar()">
+            </div>
+            <div class="field">
+              <label>Total (directa + inversa)</label>
+              <div id="loes-total-display" style="font-size:1.15rem;font-weight:700;font-family:monospace;color:var(--accent);padding:10px 0;min-height:28px;">—</div>
+            </div>
+          </div>
+          <div id="loes-result" style="font-size:0.85rem;color:var(--accent);margin-top:8px;min-height:22px;font-weight:600;"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn-secondary" onclick="limpiarLoEs()">🗑 Limpiar</button>
+          <button class="btn-primary" onclick="guardarLoEs()">💾 Guardar resultado</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── WAIS-IV PERFIL (carga de índices desde software) ── -->
     <div class="vista" id="vista-waisperfil">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
@@ -6313,6 +6363,8 @@ function aplicarPacienteActivoATest(testId) {
     pacSetVal('token-edad', edad);
     pacSetVal('fab-edad', edad);
     pacSetVal('d2-edad', edad);
+    var loesGi = loesGetGrupo(edad);
+    if (loesGi >= 0) pacSetVal('loes-gi', loesGi);
   }
 
   pacSetVal('rey-sexo', sexoARey(p.sexo));
@@ -7268,6 +7320,21 @@ var GLOSARIO_TESTS = {
       alto: ['¿El rendimiento elevado es consistente con el resto del perfil ejecutivo?']
     }
   },
+  'WMS-III LoEs': {
+    mide: 'Localización Espacial (WMS-III): memoria de trabajo visuoespacial en condición directa e inversa.',
+    interpretacion: {
+      bajo: 'Compromiso de la memoria de trabajo visuoespacial.',
+      limite: 'Posibles dificultades leves en retención y manipulación de secuencias espaciales.',
+      normal: 'Memoria de trabajo visuoespacial preservada.',
+      alto: 'Rendimiento por encima del promedio en memoria de trabajo visuoespacial.'
+    },
+    preguntas: {
+      bajo: ['¿Hay diferencia entre la condición directa e inversa?', '¿Es consistente con el perfil ejecutivo (Corsi, Figura Rey)?', '¿El déficit es de retención o de secuenciación?'],
+      limite: ['¿La dificultad es mayor en la condición inversa?', '¿El rendimiento mejora con ensayos de práctica?'],
+      normal: ['¿La preservación en LoEs es consistente con el IMT del WAIS-IV?'],
+      alto: ['¿El rendimiento elevado es consistente con otras pruebas visuoespaciales?']
+    }
+  },
   'Test del Hotel': {
     mide: 'Test ecológico de funciones ejecutivas que evalúa multitarea, manejo del tiempo y flexibilidad cognitiva.',
     interpretacion: {
@@ -7490,6 +7557,7 @@ var GLOSARIO_ALIAS = {
   'Zoo': 'BADS-Zoo',
   'Llaves': 'BADS-Llaves',
   'Juicio T.': 'BADS-Juicio',
+  'LoEs': 'WMS-III LoEs',
   'Fig.Rey Copia': 'Figura Rey',
   'Fig.Rey RI': 'Figura Rey',
   'SDMT (Esc.)': 'SDMT-escrita',
@@ -7705,7 +7773,7 @@ var HISTORIAL_DOMINIOS = [
   { label: '1. Cognitivo global', tests: ['MoCA', 'ACE-R', 'Test del Reloj (Cacho)'] },
   { label: '2. Memoria', tests: ['TAVEC', 'Rey Verbal', 'BEM 144 Signoret', 'Figura Rey'] },
   { label: '3. Atención y velocidad', tests: ['TMT A-B', 'SDMT-escrita', 'SDMT-oral', 'BTA', 'D2'] },
-  { label: '4. Funciones ejecutivas', tests: ['FAB', 'IFS', 'WCST-64', 'Stroop', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'Test del Hotel'] },
+  { label: '4. Funciones ejecutivas', tests: ['FAB', 'IFS', 'WCST-64', 'Stroop', 'WMS-III LoEs', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'Test del Hotel'] },
   { label: '5. Lenguaje', tests: ['BNT-60', 'BNT-12', 'Fluencia Verbal', 'Token Test'] },
   { label: '6. Visoconstructivo', tests: ['Figura Rey', 'Test del Reloj (Cacho)'] },
   { label: '7. WAIS-IV', tests: ['WAIS-IV', 'WAIS-IV Perfil'] },
@@ -8148,7 +8216,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   }
 
   // ── Clasificación de tests ──
-  var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
+  var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
   var CL = ['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
   var TD = ['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ'];
   var DO = ['PCS','PBQ','CSQ','BPI'];
@@ -8345,6 +8413,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
         { t:'BADS-Juicio', fn: function(r){ var d=r.datos||{}; addPunto('Juicio T.',d.z,'FUNC. EJEC.','BADS-Juicio'); } },
         { t:'Test del Hotel', fn: function(r){ var d=r.datos||{}; addPunto('Hotel Tareas',d.zTareas,'FUNC. EJEC.','Test del Hotel'); addPunto('Hotel Tiempo',d.zTiempo,'FUNC. EJEC.','Test del Hotel'); addPunto('Hotel Botones',d.zBotones,'FUNC. EJEC.','Test del Hotel'); } },
         { t:'WCST-64',     fn: function(r){ var d=r.datos||{}; addPunto('WCST Cat.',d.cat_z,'FUNC. EJEC.','WCST-64'); addPunto('WCST Perse.',d.perse_z,'FUNC. EJEC.','WCST-64'); } },
+        { t:'WMS-III LoEs', fn: function(r){ var d=r.datos||{}; addPunto('LoEs', d.z != null ? d.z : r.puntaje_z, 'FUNC. EJEC.', 'WMS-III LoEs'); } },
       ]},
       { dom: 'LENGUAJE', tests: [
         { t:'BNT-60',         fn: function(r){ addPunto('BNT-60', r.puntaje_z, 'LENGUAJE', 'BNT-60'); } },
@@ -8526,7 +8595,7 @@ function renderCuestionariosFam(d) {
       'COGNITIVO GLOBAL':    ['MoCA','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
       'MEMORIA':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
-      'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64'],
+      'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
       'LENGUAJE':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO / MEMORIA VISUAL': ['Figura Rey'],
     };
@@ -8660,6 +8729,11 @@ function renderCuestionariosFam(d) {
         } else if (testNombre === 'BADS-Llaves') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)</td></tr>';
           rows += filaTabla('Búsqueda de Llaves', d.pb!=null?d.pb:null, d.m||null, d.ds||null, d.z, r.fecha, 'Pje conv. '+(d.conv!=null?d.conv:'—'));
+
+        } else if (testNombre === 'WMS-III LoEs') {
+          rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WMS-III · Localización Espacial (LoEs) · Memoria de trabajo visual</td></tr>';
+          var loesNota = (d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')):null;
+          rows += filaTabla('LoEs · Localización Espacial', d.total!=null?d.total:(d.pe!=null?d.pe:r.puntaje_total), d.m||null, d.ds||null, d.z!=null?d.z:r.puntaje_z, r.fecha, loesNota);
 
         } else if (testNombre === 'BADS-Juicio') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">BADS · Juicio Temporal (Farías Sarquís et al., 2021)</td></tr>';
@@ -9173,7 +9247,7 @@ function renderCuestionariosFam(d) {
         html += '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;"><thead><tr>'+
           '<th style="'+thDark+'min-width:200px;">Variable</th>'+
           '<th style="'+thDarkC+'">LCU</th>'+
-          '<th style="'+thDark+'">Riesgo</th></tr></thead><tbody>';
+          '<th style="'+thDark+'">Resultado</th></tr></thead><tbody>';
         html += '<tr><td style="'+tdR+'">Total acumulado (LCU)</td>'+
           '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
           '<td style="'+tdRI+'">'+informeHolmesEstresores(r.puntaje_total, r.categoria)+'</td></tr>';
@@ -9454,6 +9528,7 @@ var TEST_NOMBRE_A_VISTA = {
   'WCST-64': 'wcst', 'FAB': 'fab', 'IFS': 'ifs', 'WAIS-IV': 'waisiv',
   'WAIS-IV Perfil': 'waisperfil', 'EAVA': 'eava', 'ASRS-V1.1': 'asrs',
   'BADS-Llaves': 'llaves', 'BADS-Juicio': 'juicio', 'BADS-Zoo': 'zoo',
+  'WMS-III LoEs': 'loes',
   'Test del Hotel': 'hotel', 'D2': 'd2', 'BTA': 'bta', 'DEX': 'dex',
   'WURS-25': 'wurs', 'MBI-HSS': 'mbi', 'Test del Reloj (Cacho)': 'reloj',
   'ACE-R': 'acer', 'SCL-90-R': 'scl90', 'Token Test': 'token', 'Stroop': 'stroop',
@@ -9708,6 +9783,12 @@ function aplicarEdicionResultado(vistaId, r) {
       }
       break;
     }
+    case 'loes':
+      if (d.gi != null) pacSetVal('loes-gi', d.gi);
+      if (d.parte_a != null) pacSetVal('loes-parte-a', d.parte_a);
+      if (d.parte_b != null) pacSetVal('loes-parte-b', d.parte_b);
+      loesActualizar();
+      break;
     default:
       if (MANUAL_CAMPOS[vistaId] && r.puntaje_total != null) {
         edicionManualSimple(vistaId, r.puntaje_total);
@@ -9802,6 +9883,7 @@ var NP_TESTS = [
   {id:'ifs',      n:'IFS',               d:'INECO Frontal Screening',                    t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'tmt',      n:'TMT A y B',         d:'Trail Making Test · también en Atención',    t:'Ejecutivas / Atención', dom:'ejecutivas'},
   {id:'wcst',     n:'WCST-64',           d:'Wisconsin Card Sorting Test · 64 cartas',    t:'Ejecutivas',         dom:'ejecutivas'},
+  {id:'loes',     n:'WMS-III LoEs',      d:'Localización Espacial · mem. trabajo visual', t:'Ejecutivas',      dom:'ejecutivas'},
   {id:'hotel',    n:'Test del Hotel',    d:'Multitasking y memoria prospectiva',         t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'llaves',   n:'BADS — Llaves',     d:'Búsqueda de Llaves · BADS',                 t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'juicio',   n:'BADS — Juicio',     d:'Juicio Temporal · BADS',                    t:'Ejecutivas',         dom:'ejecutivas'},
@@ -10126,6 +10208,7 @@ function irTest(t) {
   if (t === 'tecle')   iniciarTecle();
   if (t === 'dislex5') iniciarDislex5();
   if (t === 'waisiv') iniciarWaisiv();
+  if (t === 'loes') iniciarLoEs();
   if (t === 'waisperfil') iniciarWaisperfil();
   if (t === 'asrs') iniciarAsrs();
   if (t === 'wurs') iniciarWurs();
@@ -12975,6 +13058,104 @@ function guardarWaisiv() {
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
   }).catch(function(){toast('Error al guardar','error');});
+}
+
+// ══ WMS-III · Localización Espacial (LoEs) ═══════════════════════════════════
+// Baremos: Tablas A.1–A.6 — Media y DT del Pe por grupo etario (intercorrelaciones en Pe).
+// Z = (Pe − M) / DS
+
+var LOES_GRUPOS = ['16–19','20–34','35–54','55–65','66–73','74+'];
+var LOES_BAR = [
+  {m:9.74, ds:3.11},
+  {m:10.00, ds:2.75},
+  {m:10.01, ds:3.05},
+  {m:10.02, ds:3.00},
+  {m:10.23, ds:3.10},
+  {m:10.00, ds:3.08}
+];
+
+function loesGetGrupo(edad) {
+  if (edad < 16) return -1;
+  if (edad <= 19) return 0;
+  if (edad <= 34) return 1;
+  if (edad <= 54) return 2;
+  if (edad <= 65) return 3;
+  if (edad <= 73) return 4;
+  return 5;
+}
+
+function loesCalcZ(pe, gi) {
+  if (pe === null || pe === undefined || isNaN(pe) || gi < 0 || gi >= LOES_BAR.length) return null;
+  var bar = LOES_BAR[gi];
+  return parseFloat(((pe - bar.m) / bar.ds).toFixed(2));
+}
+
+function iniciarLoEs() {
+  document.getElementById('loes-fecha').value = new Date().toISOString().split('T')[0];
+  var giEl = document.getElementById('loes-gi');
+  if (PAC_ACTIVO && PAC_ACTIVO.fecha_nacimiento && giEl && !giEl.value) {
+    var lg = loesGetGrupo(calcularEdad(PAC_ACTIVO.fecha_nacimiento));
+    if (lg >= 0) giEl.value = String(lg);
+  }
+  loesActualizar();
+}
+
+function limpiarLoEs() {
+  ['loes-parte-a','loes-parte-b'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var gi=document.getElementById('loes-gi'); if(gi) gi.value='';
+  var td=document.getElementById('loes-total-display'); if(td) td.textContent='—';
+  var rs=document.getElementById('loes-result'); if(rs) rs.innerHTML='';
+}
+
+function loesActualizar() {
+  var aEl=document.getElementById('loes-parte-a'), bEl=document.getElementById('loes-parte-b');
+  var giEl=document.getElementById('loes-gi');
+  var gi=giEl&&giEl.value!==''?parseInt(giEl.value):-1;
+  var a=aEl&&aEl.value!==''&&!isNaN(parseFloat(aEl.value))?parseFloat(aEl.value):null;
+  var b=bEl&&bEl.value!==''&&!isNaN(parseFloat(bEl.value))?parseFloat(bEl.value):null;
+  var total=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
+  var td=document.getElementById('loes-total-display');
+  if(td) td.textContent=total!==null?String(total):'—';
+  var rs=document.getElementById('loes-result');
+  if(!rs)return;
+  if(gi<0||total===null){ rs.innerHTML=gi<0?'':'<span style="color:var(--muted);font-size:0.8rem;">Completá ambas condiciones o al menos una para calcular Z</span>'; return; }
+  var bar=LOES_BAR[gi];
+  var z=loesCalcZ(total,gi);
+  if(z===null){ rs.innerHTML=''; return; }
+  var zCol=z<=-2?'#c0392b':z<=-1?'#c0602b':z>=1?'#1D9E75':'#555';
+  rs.innerHTML='M=<strong>'+bar.m+'</strong> · DT=<strong>'+bar.ds+'</strong> · Z=<strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
+}
+
+function guardarLoEs() {
+  if(!SESSION)return;
+  var pacId=document.getElementById('loes-paciente').value;
+  var fecha=document.getElementById('loes-fecha').value;
+  var giEl=document.getElementById('loes-gi');
+  var gi=giEl&&giEl.value!==''?parseInt(giEl.value):-1;
+  if(!pacId){toast('Seleccioná un paciente.','error');return;}
+  if(gi<0){toast('Seleccioná un grupo etario.','error');return;}
+  var aEl=document.getElementById('loes-parte-a'), bEl=document.getElementById('loes-parte-b');
+  var a=aEl&&aEl.value!==''&&!isNaN(parseFloat(aEl.value))?parseFloat(aEl.value):null;
+  var b=bEl&&bEl.value!==''&&!isNaN(parseFloat(bEl.value))?parseFloat(bEl.value):null;
+  var total=(a!==null&&b!==null)?a+b:(a!==null?a:(b!==null?b:null));
+  if(total===null){toast('Ingresá al menos un puntaje.','error');return;}
+  var bar=LOES_BAR[gi];
+  var z=loesCalcZ(total,gi);
+  var dat={
+    grupo:LOES_GRUPOS[gi], gi:gi,
+    parte_a:a, parte_b:b, total:total, pe:total,
+    m:bar.m, ds:bar.ds, z:z
+  };
+  supaFetch('/rest/v1/psico_resultados','POST',{
+    user_id:SESSION.user.id, paciente_id:pacId, test:'WMS-III LoEs', fecha:fecha,
+    puntaje_total:total, categoria:'Mem. trabajo visual',
+    puntaje_z:z, datos:dat
+  },SESSION.access_token).then(function(){
+    cargarResultados(); toast('✓ Resultado guardado','success');
+    var btnAll=document.querySelectorAll('.vista.active .btn-primary');
+    var btn=btnAll.length?btnAll[btnAll.length-1]:null;
+    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
+  }).catch(function(){ toast('Error al guardar','error'); });
 }
 
 // ══ WAIS-IV PERFIL (carga manual de índices) ════════════════════════════════
@@ -16725,6 +16906,7 @@ function buildPruebasRealizadasHtml(datos) {
     'BADS-Llaves': 'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
     'BADS-Juicio': 'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
     'BADS-Zoo': 'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
+    'WMS-III LoEs': 'WMS-III · Localización Espacial (LoEs)',
     'SDMT-escrita': 'Symbol Digit Modalities Test — Escrita (SDMT)',
     'SDMT-oral': 'Symbol Digit Modalities Test — Oral (SDMT)',
     'IFS': 'INECO Frontal Screening (IFS)',
@@ -16769,7 +16951,7 @@ function buildPruebasRealizadasHtml(datos) {
     { label: 'Atención y velocidad de procesamiento', tests: ['WAIS-IV', 'TMT A-B', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'] },
     { label: 'Lenguaje', tests: ['Fluencia Verbal', 'BNT-60', 'BNT-12', 'Token Test'] },
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
-    { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
+    { label: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'WMS-III LoEs', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo'] },
     { label: 'Visoconstructivo', tests: ['Figura Rey'] },
     { label: 'Cuestionarios Neurodesarrollo · TDAH', tests: ['ASRS-V1.1', 'WURS-25', 'DEX', 'EAVA'] },
     { label: 'Cuestionarios Neurodesarrollo · TEA', tests: ['AQ', 'AQ-10', 'EQ', 'EA', 'SCQ'] },
@@ -19109,7 +19291,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   inf = inf || {};
   var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
-  var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
+  var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ','Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
@@ -19151,6 +19333,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BADS-Llaves':'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
     'BADS-Juicio':'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
     'BADS-Zoo':'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
+    'WMS-III LoEs':'Wechsler Memory Scale — III · Localización Espacial (LoEs)',
     'SDMT-escrita':'Symbol Digit Modalities Test — Escrita (SDMT)',
     'SDMT-oral':'Symbol Digit Modalities Test — Oral (SDMT)',
     'IFS':'INECO Frontal Screening (IFS)',
@@ -19186,7 +19369,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {label:'Atención y velocidad de procesamiento',tests:['WAIS-IV','TMT A-B','D2','SDMT-escrita','SDMT-oral','BTA']},
     {label:'Lenguaje',                              tests:['Fluencia Verbal','BNT-60','BNT-12','Token Test']},
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
-    {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
+    {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','WMS-III LoEs','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
     {label:'Habilidades visoconstructivas',         tests:['Figura Rey','Test del Reloj (Cacho)']},
     {label:'Cuest. Neurodesarrollo · TDAH',         tests:['ASRS-V1.1','WURS-25','DEX','EAVA']},
     {label:'Cuest. Neurodesarrollo · TEA',          tests:['AQ','AQ-10','EQ','EA','SCQ']},
@@ -19204,7 +19387,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)'],
       'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
-      'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64'],
+      'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
       'LENGUAJE':           ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO':   ['Figura Rey'],
     };
@@ -19268,6 +19451,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.zCopia!=null)add('Fig. Rey — Copia',d.pbCopia,null,null,d.zCopia,null);
           if(d.zRI!=null)add('Fig. Rey — Rec. Inmediato',d.pbRI,null,null,d.zRI,null);
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
+        else if(tn==='WMS-III LoEs'){
+          var loesNotaW=(d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')):null;
+          add('WMS-III · LoEs · Localización Espacial',d.total!=null?d.total:(d.pe!=null?d.pe:r.puntaje_total),d.m,d.ds,d.z!=null?d.z:r.puntaje_z,loesNotaW);
+        }
         else if(tn==='BADS-Juicio'){add('BADS — Juicio Temporal',d.conv,d.m,d.ds,d.z,null);}
         else if(tn==='BADS-Zoo'){if(d.z_bruto!=null)add('BADS — Mapa del Zoo',d.bruto,null,null,d.z_bruto,null);}
         else if(tn==='WCST-64'){
@@ -20199,13 +20386,13 @@ function renderPerfilZ() {
   var NP_LIST = ['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12',
     'TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret',
     'Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral',
-    'BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo'];
+    'BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
 
   var DOMINIOS = {
     'Cognitivo global':    ['MoCA','ACE-R','Test del Reloj (Cacho)'],
     'Atención':            ['TMT A-B','WAIS-IV','D2','SDMT-escrita','SDMT-oral','BTA'],
     'Memoria':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
-    'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio'],
+    'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio'],
     'Lenguaje':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
     'Visoconstructivo':    ['Figura Rey'],
   };
@@ -20262,6 +20449,8 @@ function renderPerfilZ() {
         if (d.rd_z  != null) filas.push({lbl:'WAIS · Dígitos', z: d.rd_z});
         if (d.cla_z != null) filas.push({lbl:'WAIS · Claves', z: d.cla_z});
         if (d.sln_z != null) filas.push({lbl:'WAIS · Nro-Letra', z: d.sln_z});
+      } else if (tn === 'WMS-III LoEs') {
+        if (d.z != null || r.puntaje_z != null) filas.push({lbl:'WMS-III · LoEs', z: d.z != null ? d.z : r.puntaje_z, glosario: 'WMS-III LoEs'});
       } else if (tn === 'WAIS-IV Perfil') {
         var wIdx = d.indices || {};
         WAIS_PERFIL_INDICES.forEach(function(idx) {
