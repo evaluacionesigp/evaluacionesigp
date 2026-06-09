@@ -813,7 +813,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
       <div class="card" style="margin-bottom:16px;" id="inf-firmas-card">
         <div class="card-title">Firmas del informe</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Subí la firma de cada profesional (PNG/JPG). Tildá quiénes firman este informe. Las imágenes se guardan en este navegador.</p>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Tildá los profesionales que firman este informe. Sus firmas ya están cargadas.</p>
         <div id="inf-firmas-slots" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
@@ -17491,29 +17491,39 @@ function buildWordHeaderXml(hasGp, hasCt) {
     '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
 }
 
-// ── Firmas de profesionales (4 slots fijos) ─────────────
+// ── Firmas de profesionales (4 slots fijos, precargadas) ─────────────
 var FIRMA_PROFESIONALES = [
-  { id: 'JULI',   nombre: 'JULI',   titulo: 'Neuropsicóloga' },
-  { id: 'DANIEL', nombre: 'DANIEL', titulo: 'Neuropsicólogo' },
-  { id: 'ERWIN',  nombre: 'ERWIN',  titulo: 'Neuropsicólogo' },
-  { id: 'FATIMA', nombre: 'FÁTIMA', titulo: 'Neuropsicóloga' }
+  { id: 'JULI',   nombre: 'JULI',   src: 'firmas/juli.png' },
+  { id: 'DANIEL', nombre: 'DANIEL', src: 'firmas/daniel.png' },
+  { id: 'ERWIN',  nombre: 'ERWIN',  src: 'firmas/erwin.png' },
+  { id: 'FATIMA', nombre: 'FÁTIMA', src: 'firmas/fatima.png' }
 ];
 var FIRMA_SEL_LS_KEY = 'igp_firmas_seleccionadas';
-var WORD_FIRMA_EMU_W = 1428750;
-var WORD_FIRMA_EMU_H = 800000;
-
-function firmaLsKey(id) { return 'firma_' + id; }
+var WORD_FIRMA_EMU_W = 1600000;
+var WORD_FIRMA_EMU_H = 900000;
+var _firmaDataUrlCache = {};
 
 function getFirmaProfesional(id) {
-  try { return localStorage.getItem(firmaLsKey(id)) || null; } catch (e) { return null; }
+  var p = FIRMA_PROFESIONALES.find(function(x) { return x.id === id; });
+  return p ? p.src : null;
 }
 
-function setFirmaProfesional(id, dataUrl) {
-  try { localStorage.setItem(firmaLsKey(id), dataUrl); } catch (e) {}
-}
-
-function removeFirmaProfesional(id) {
-  try { localStorage.removeItem(firmaLsKey(id)); } catch (e) {}
+function loadFirmaDataUrl(prof) {
+  if (_firmaDataUrlCache[prof.id]) return Promise.resolve(_firmaDataUrlCache[prof.id]);
+  return fetch(prof.src).then(function(r) {
+    if (!r.ok) throw new Error('firma');
+    return r.blob();
+  }).then(function(blob) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        _firmaDataUrlCache[prof.id] = reader.result;
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  });
 }
 
 function getFirmasSeleccionadasLS() {
@@ -17538,7 +17548,7 @@ function getFirmasParaInforme(inf) {
     });
   }
   return FIRMA_PROFESIONALES.filter(function(p) { return sel[p.id]; }).map(function(p) {
-    return { id: p.id, nombre: p.nombre, titulo: p.titulo, img: getFirmaProfesional(p.id) };
+    return { id: p.id, nombre: p.nombre, src: p.src, img: p.src };
   });
 }
 
@@ -17550,40 +17560,12 @@ function initFirmasUI(selOverride) {
   if (ls) Object.assign(sel, ls);
   if (selOverride) Object.assign(sel, selOverride);
   wrap.innerHTML = FIRMA_PROFESIONALES.map(function(p) {
-    var img = getFirmaProfesional(p.id);
-    var prev = img
-      ? '<img id="inf-firma-prev-' + p.id + '" src="' + img + '" style="max-width:150px;max-height:60px;border:1px solid var(--border);border-radius:6px;padding:3px;background:#fff;">' +
-        '<button type="button" onclick="borrarFirmaProfesional(\'' + p.id + '\')" style="margin-left:6px;font-size:0.75rem;color:#c0392b;background:none;border:none;cursor:pointer;">✕</button>'
-      : '<span id="inf-firma-prev-' + p.id + '" style="font-size:0.78rem;color:var(--muted);">Sin firma cargada</span>';
-    return '<div style="display:grid;grid-template-columns:28px 90px 1fr auto;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
+    return '<div style="display:grid;grid-template-columns:28px 90px 1fr;align-items:center;gap:12px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
       '<input type="checkbox" id="inf-firma-chk-' + p.id + '" ' + (sel[p.id] ? 'checked' : '') + ' onchange="firmaProfesionalToggle(\'' + p.id + '\')" style="accent-color:var(--accent);width:16px;height:16px;">' +
       '<span style="font-size:0.85rem;font-weight:700;">' + p.nombre + '</span>' +
-      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-        '<input type="file" id="inf-firma-file-' + p.id + '" accept="image/png,image/jpeg,image/jpg" onchange="firmaProfesionalUpload(\'' + p.id + '\', event)" style="display:none;">' +
-        '<button type="button" class="btn-secondary" style="font-size:0.78rem;padding:5px 10px;" onclick="document.getElementById(\'inf-firma-file-' + p.id + '\').click()">📎 Subir firma</button>' +
-        prev +
-      '</div>' +
+      '<img src="' + p.src + '" alt="Firma ' + p.nombre + '" style="max-width:150px;max-height:60px;object-fit:contain;background:#fff;border-radius:4px;">' +
     '</div>';
   }).join('');
-}
-
-function firmaProfesionalUpload(id, event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    setFirmaProfesional(id, e.target.result);
-    initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
-    toast('✓ Firma de ' + id + ' guardada', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-
-function borrarFirmaProfesional(id) {
-  removeFirmaProfesional(id);
-  var input = document.getElementById('inf-firma-file-' + id);
-  if (input) input.value = '';
-  initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
 }
 
 function firmaProfesionalToggle(id) {
@@ -17591,17 +17573,17 @@ function firmaProfesionalToggle(id) {
   saveFirmasSeleccionadasLS(cfg.firmas_seleccionadas);
 }
 
+function preloadFirmasIntegradas() {
+  FIRMA_PROFESIONALES.forEach(function(p) { loadFirmaDataUrl(p).catch(function() {}); });
+}
+
 function buildFirmasPdfHtml(firmas) {
   if (!firmas || !firmas.length) return '';
   function slot(f) {
-    var img = f.img
-      ? '<img src="' + f.img + '" style="max-height:70px;max-width:150px;display:block;margin:0 auto 6px;object-fit:contain;">'
-      : '<div style="height:50px;"></div>';
-    return '<div style="flex:0 0 220px;text-align:center;font-family:Arial,sans-serif;font-size:11pt;">' +
-      img +
-      '<div style="border-top:1px solid #333;width:180px;margin:4px auto 0;"></div>' +
-      '<div style="font-weight:bold;margin-top:6px;">' + f.nombre + '</div>' +
-      '<div style="font-size:10pt;color:#333;">' + f.titulo + '</div></div>';
+    var src = f.img || f.src;
+    return '<div style="flex:0 0 200px;text-align:center;">' +
+      '<img src="' + src + '" style="max-height:90px;max-width:180px;display:block;margin:0 auto;object-fit:contain;">' +
+    '</div>';
   }
   if (firmas.length === 1) {
     return '<div style="margin-top:50px;display:flex;justify-content:center;">' + slot(firmas[0]) + '</div>';
@@ -17618,12 +17600,8 @@ function buildFirmasPdfHtml(firmas) {
 }
 
 function _wFirmaProfCell(f, cellW, span) {
-  var imgP = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="60"/></w:pPr>' +
+  var inner = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="40"/></w:pPr>' +
     '<w:r><w:rPr/>' + wordLogoDrawing(f.relId, WORD_FIRMA_EMU_W, WORD_FIRMA_EMU_H, f.docPrId, 'Firma' + f.prof.id, f.prof.nombre) + '</w:r></w:p>';
-  var inner = imgP +
-    _wPar(_wRun('___________________________', {sz:18, color:'888888', font:'Arial'}), {align:'center', before:0, after:20}) +
-    _wPar(_wRun(f.prof.nombre, {sz:18, bold:true, font:'Arial', color:'333333'}), {align:'center', before:0, after:10}) +
-    _wPar(_wRun(f.prof.titulo, {sz:16, font:'Arial', color:'555555'}), {align:'center', before:0, after:60});
   var opts = {w: cellW, fill: 'FFFFFF'};
   if (span) opts.span = span;
   return _wCell(inner, opts);
@@ -19469,9 +19447,11 @@ function generarWordHistorial() {
       hasGp ? _prepareLogoPngBytes(wordLogos.gp) : Promise.resolve(null),
       hasCt ? _prepareLogoPngBytes(wordLogos.ct) : Promise.resolve(null)
     ].concat(selFirmas.map(function(f) {
-      return (f.img ? _prepareLogoPngBytes(f.img).then(function(bytes) {
-        return bytes ? { prof: f, pngBytes: bytes } : null;
-      }) : Promise.resolve(null));
+      return loadFirmaDataUrl(f).then(function(dataUrl) {
+        return _prepareLogoPngBytes(dataUrl).then(function(bytes) {
+          return bytes ? { prof: f, pngBytes: bytes } : null;
+        });
+      }).catch(function() { return null; });
     }))).then(function(all){
       var imgs = [all[0], all[1]];
       var firmas = all.slice(2).filter(Boolean);
@@ -20148,12 +20128,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return { prof: f.prof, pngBytes: f.pngBytes };
   }));
   body += firmasWord.xml;
-  if (!firmasWord.xml) {
-    body+=_wPar('',{before:400,after:0});
-    body+=_wPar(_wRun('___________________________',{sz:20,color:'888888',font:'Arial'}),{before:0,after:40});
-    body+=_wPar(_wRun(inf.evaluado_por||'',{sz:18,font:'Arial',color:'333333'}),{before:0,after:40});
-  }
-  body+=_wPar(_wRun(new Date().toLocaleDateString('es-AR'),{sz:17,color:'888888',font:'Arial'}),{before:0,after:80});
 
   // ── Armar XML docx ──
   var enc=new TextEncoder();
@@ -20969,6 +20943,7 @@ window.addEventListener('DOMContentLoaded', function() {
   actualizarSaludo();
   cargarLogosUI();
   initFirmasUI();
+  preloadFirmasIntegradas();
   // Siempre arrancar en el login — nunca restaurar sesión automáticamente
   try { localStorage.removeItem('psico_session'); } catch(e) {}
   var login = document.getElementById('screen-login');
@@ -21797,7 +21772,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
       <div class="card" style="margin-bottom:16px;" id="inf-firmas-card">
         <div class="card-title">Firmas del informe</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Subí la firma de cada profesional (PNG/JPG). Tildá quiénes firman este informe. Las imágenes se guardan en este navegador.</p>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Tildá los profesionales que firman este informe. Sus firmas ya están cargadas.</p>
         <div id="inf-firmas-slots" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
@@ -38485,29 +38460,39 @@ function buildWordHeaderXml(hasGp, hasCt) {
     '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
 }
 
-// ── Firmas de profesionales (4 slots fijos) ─────────────
+// ── Firmas de profesionales (4 slots fijos, precargadas) ─────────────
 var FIRMA_PROFESIONALES = [
-  { id: 'JULI',   nombre: 'JULI',   titulo: 'Neuropsicóloga' },
-  { id: 'DANIEL', nombre: 'DANIEL', titulo: 'Neuropsicólogo' },
-  { id: 'ERWIN',  nombre: 'ERWIN',  titulo: 'Neuropsicólogo' },
-  { id: 'FATIMA', nombre: 'FÁTIMA', titulo: 'Neuropsicóloga' }
+  { id: 'JULI',   nombre: 'JULI',   src: 'firmas/juli.png' },
+  { id: 'DANIEL', nombre: 'DANIEL', src: 'firmas/daniel.png' },
+  { id: 'ERWIN',  nombre: 'ERWIN',  src: 'firmas/erwin.png' },
+  { id: 'FATIMA', nombre: 'FÁTIMA', src: 'firmas/fatima.png' }
 ];
 var FIRMA_SEL_LS_KEY = 'igp_firmas_seleccionadas';
-var WORD_FIRMA_EMU_W = 1428750;
-var WORD_FIRMA_EMU_H = 800000;
-
-function firmaLsKey(id) { return 'firma_' + id; }
+var WORD_FIRMA_EMU_W = 1600000;
+var WORD_FIRMA_EMU_H = 900000;
+var _firmaDataUrlCache = {};
 
 function getFirmaProfesional(id) {
-  try { return localStorage.getItem(firmaLsKey(id)) || null; } catch (e) { return null; }
+  var p = FIRMA_PROFESIONALES.find(function(x) { return x.id === id; });
+  return p ? p.src : null;
 }
 
-function setFirmaProfesional(id, dataUrl) {
-  try { localStorage.setItem(firmaLsKey(id), dataUrl); } catch (e) {}
-}
-
-function removeFirmaProfesional(id) {
-  try { localStorage.removeItem(firmaLsKey(id)); } catch (e) {}
+function loadFirmaDataUrl(prof) {
+  if (_firmaDataUrlCache[prof.id]) return Promise.resolve(_firmaDataUrlCache[prof.id]);
+  return fetch(prof.src).then(function(r) {
+    if (!r.ok) throw new Error('firma');
+    return r.blob();
+  }).then(function(blob) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        _firmaDataUrlCache[prof.id] = reader.result;
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  });
 }
 
 function getFirmasSeleccionadasLS() {
@@ -38532,7 +38517,7 @@ function getFirmasParaInforme(inf) {
     });
   }
   return FIRMA_PROFESIONALES.filter(function(p) { return sel[p.id]; }).map(function(p) {
-    return { id: p.id, nombre: p.nombre, titulo: p.titulo, img: getFirmaProfesional(p.id) };
+    return { id: p.id, nombre: p.nombre, src: p.src, img: p.src };
   });
 }
 
@@ -38544,40 +38529,12 @@ function initFirmasUI(selOverride) {
   if (ls) Object.assign(sel, ls);
   if (selOverride) Object.assign(sel, selOverride);
   wrap.innerHTML = FIRMA_PROFESIONALES.map(function(p) {
-    var img = getFirmaProfesional(p.id);
-    var prev = img
-      ? '<img id="inf-firma-prev-' + p.id + '" src="' + img + '" style="max-width:150px;max-height:60px;border:1px solid var(--border);border-radius:6px;padding:3px;background:#fff;">' +
-        '<button type="button" onclick="borrarFirmaProfesional(\'' + p.id + '\')" style="margin-left:6px;font-size:0.75rem;color:#c0392b;background:none;border:none;cursor:pointer;">✕</button>'
-      : '<span id="inf-firma-prev-' + p.id + '" style="font-size:0.78rem;color:var(--muted);">Sin firma cargada</span>';
-    return '<div style="display:grid;grid-template-columns:28px 90px 1fr auto;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
+    return '<div style="display:grid;grid-template-columns:28px 90px 1fr;align-items:center;gap:12px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
       '<input type="checkbox" id="inf-firma-chk-' + p.id + '" ' + (sel[p.id] ? 'checked' : '') + ' onchange="firmaProfesionalToggle(\'' + p.id + '\')" style="accent-color:var(--accent);width:16px;height:16px;">' +
       '<span style="font-size:0.85rem;font-weight:700;">' + p.nombre + '</span>' +
-      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-        '<input type="file" id="inf-firma-file-' + p.id + '" accept="image/png,image/jpeg,image/jpg" onchange="firmaProfesionalUpload(\'' + p.id + '\', event)" style="display:none;">' +
-        '<button type="button" class="btn-secondary" style="font-size:0.78rem;padding:5px 10px;" onclick="document.getElementById(\'inf-firma-file-' + p.id + '\').click()">📎 Subir firma</button>' +
-        prev +
-      '</div>' +
+      '<img src="' + p.src + '" alt="Firma ' + p.nombre + '" style="max-width:150px;max-height:60px;object-fit:contain;background:#fff;border-radius:4px;">' +
     '</div>';
   }).join('');
-}
-
-function firmaProfesionalUpload(id, event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    setFirmaProfesional(id, e.target.result);
-    initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
-    toast('✓ Firma de ' + id + ' guardada', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-
-function borrarFirmaProfesional(id) {
-  removeFirmaProfesional(id);
-  var input = document.getElementById('inf-firma-file-' + id);
-  if (input) input.value = '';
-  initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
 }
 
 function firmaProfesionalToggle(id) {
@@ -38585,17 +38542,17 @@ function firmaProfesionalToggle(id) {
   saveFirmasSeleccionadasLS(cfg.firmas_seleccionadas);
 }
 
+function preloadFirmasIntegradas() {
+  FIRMA_PROFESIONALES.forEach(function(p) { loadFirmaDataUrl(p).catch(function() {}); });
+}
+
 function buildFirmasPdfHtml(firmas) {
   if (!firmas || !firmas.length) return '';
   function slot(f) {
-    var img = f.img
-      ? '<img src="' + f.img + '" style="max-height:70px;max-width:150px;display:block;margin:0 auto 6px;object-fit:contain;">'
-      : '<div style="height:50px;"></div>';
-    return '<div style="flex:0 0 220px;text-align:center;font-family:Arial,sans-serif;font-size:11pt;">' +
-      img +
-      '<div style="border-top:1px solid #333;width:180px;margin:4px auto 0;"></div>' +
-      '<div style="font-weight:bold;margin-top:6px;">' + f.nombre + '</div>' +
-      '<div style="font-size:10pt;color:#333;">' + f.titulo + '</div></div>';
+    var src = f.img || f.src;
+    return '<div style="flex:0 0 200px;text-align:center;">' +
+      '<img src="' + src + '" style="max-height:90px;max-width:180px;display:block;margin:0 auto;object-fit:contain;">' +
+    '</div>';
   }
   if (firmas.length === 1) {
     return '<div style="margin-top:50px;display:flex;justify-content:center;">' + slot(firmas[0]) + '</div>';
@@ -38612,12 +38569,8 @@ function buildFirmasPdfHtml(firmas) {
 }
 
 function _wFirmaProfCell(f, cellW, span) {
-  var imgP = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="60"/></w:pPr>' +
+  var inner = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="40"/></w:pPr>' +
     '<w:r><w:rPr/>' + wordLogoDrawing(f.relId, WORD_FIRMA_EMU_W, WORD_FIRMA_EMU_H, f.docPrId, 'Firma' + f.prof.id, f.prof.nombre) + '</w:r></w:p>';
-  var inner = imgP +
-    _wPar(_wRun('___________________________', {sz:18, color:'888888', font:'Arial'}), {align:'center', before:0, after:20}) +
-    _wPar(_wRun(f.prof.nombre, {sz:18, bold:true, font:'Arial', color:'333333'}), {align:'center', before:0, after:10}) +
-    _wPar(_wRun(f.prof.titulo, {sz:16, font:'Arial', color:'555555'}), {align:'center', before:0, after:60});
   var opts = {w: cellW, fill: 'FFFFFF'};
   if (span) opts.span = span;
   return _wCell(inner, opts);
@@ -40463,9 +40416,11 @@ function generarWordHistorial() {
       hasGp ? _prepareLogoPngBytes(wordLogos.gp) : Promise.resolve(null),
       hasCt ? _prepareLogoPngBytes(wordLogos.ct) : Promise.resolve(null)
     ].concat(selFirmas.map(function(f) {
-      return (f.img ? _prepareLogoPngBytes(f.img).then(function(bytes) {
-        return bytes ? { prof: f, pngBytes: bytes } : null;
-      }) : Promise.resolve(null));
+      return loadFirmaDataUrl(f).then(function(dataUrl) {
+        return _prepareLogoPngBytes(dataUrl).then(function(bytes) {
+          return bytes ? { prof: f, pngBytes: bytes } : null;
+        });
+      }).catch(function() { return null; });
     }))).then(function(all){
       var imgs = [all[0], all[1]];
       var firmas = all.slice(2).filter(Boolean);
@@ -41142,12 +41097,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return { prof: f.prof, pngBytes: f.pngBytes };
   }));
   body += firmasWord.xml;
-  if (!firmasWord.xml) {
-    body+=_wPar('',{before:400,after:0});
-    body+=_wPar(_wRun('___________________________',{sz:20,color:'888888',font:'Arial'}),{before:0,after:40});
-    body+=_wPar(_wRun(inf.evaluado_por||'',{sz:18,font:'Arial',color:'333333'}),{before:0,after:40});
-  }
-  body+=_wPar(_wRun(new Date().toLocaleDateString('es-AR'),{sz:17,color:'888888',font:'Arial'}),{before:0,after:80});
 
   // ── Armar XML docx ──
   var enc=new TextEncoder();
@@ -41963,6 +41912,7 @@ window.addEventListener('DOMContentLoaded', function() {
   actualizarSaludo();
   cargarLogosUI();
   initFirmasUI();
+  preloadFirmasIntegradas();
   // Siempre arrancar en el login — nunca restaurar sesión automáticamente
   try { localStorage.removeItem('psico_session'); } catch(e) {}
   var login = document.getElementById('screen-login');
@@ -42790,7 +42740,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
       <div class="card" style="margin-bottom:16px;" id="inf-firmas-card">
         <div class="card-title">Firmas del informe</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Subí la firma de cada profesional (PNG/JPG). Tildá quiénes firman este informe. Las imágenes se guardan en este navegador.</p>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Tildá los profesionales que firman este informe. Sus firmas ya están cargadas.</p>
         <div id="inf-firmas-slots" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
 
@@ -59468,29 +59418,39 @@ function buildWordHeaderXml(hasGp, hasCt) {
     '</w:tc></w:tr></w:tbl>' + sep + '</w:hdr>';
 }
 
-// ── Firmas de profesionales (4 slots fijos) ─────────────
+// ── Firmas de profesionales (4 slots fijos, precargadas) ─────────────
 var FIRMA_PROFESIONALES = [
-  { id: 'JULI',   nombre: 'JULI',   titulo: 'Neuropsicóloga' },
-  { id: 'DANIEL', nombre: 'DANIEL', titulo: 'Neuropsicólogo' },
-  { id: 'ERWIN',  nombre: 'ERWIN',  titulo: 'Neuropsicólogo' },
-  { id: 'FATIMA', nombre: 'FÁTIMA', titulo: 'Neuropsicóloga' }
+  { id: 'JULI',   nombre: 'JULI',   src: 'firmas/juli.png' },
+  { id: 'DANIEL', nombre: 'DANIEL', src: 'firmas/daniel.png' },
+  { id: 'ERWIN',  nombre: 'ERWIN',  src: 'firmas/erwin.png' },
+  { id: 'FATIMA', nombre: 'FÁTIMA', src: 'firmas/fatima.png' }
 ];
 var FIRMA_SEL_LS_KEY = 'igp_firmas_seleccionadas';
-var WORD_FIRMA_EMU_W = 1428750;
-var WORD_FIRMA_EMU_H = 800000;
-
-function firmaLsKey(id) { return 'firma_' + id; }
+var WORD_FIRMA_EMU_W = 1600000;
+var WORD_FIRMA_EMU_H = 900000;
+var _firmaDataUrlCache = {};
 
 function getFirmaProfesional(id) {
-  try { return localStorage.getItem(firmaLsKey(id)) || null; } catch (e) { return null; }
+  var p = FIRMA_PROFESIONALES.find(function(x) { return x.id === id; });
+  return p ? p.src : null;
 }
 
-function setFirmaProfesional(id, dataUrl) {
-  try { localStorage.setItem(firmaLsKey(id), dataUrl); } catch (e) {}
-}
-
-function removeFirmaProfesional(id) {
-  try { localStorage.removeItem(firmaLsKey(id)); } catch (e) {}
+function loadFirmaDataUrl(prof) {
+  if (_firmaDataUrlCache[prof.id]) return Promise.resolve(_firmaDataUrlCache[prof.id]);
+  return fetch(prof.src).then(function(r) {
+    if (!r.ok) throw new Error('firma');
+    return r.blob();
+  }).then(function(blob) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        _firmaDataUrlCache[prof.id] = reader.result;
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  });
 }
 
 function getFirmasSeleccionadasLS() {
@@ -59515,7 +59475,7 @@ function getFirmasParaInforme(inf) {
     });
   }
   return FIRMA_PROFESIONALES.filter(function(p) { return sel[p.id]; }).map(function(p) {
-    return { id: p.id, nombre: p.nombre, titulo: p.titulo, img: getFirmaProfesional(p.id) };
+    return { id: p.id, nombre: p.nombre, src: p.src, img: p.src };
   });
 }
 
@@ -59527,40 +59487,12 @@ function initFirmasUI(selOverride) {
   if (ls) Object.assign(sel, ls);
   if (selOverride) Object.assign(sel, selOverride);
   wrap.innerHTML = FIRMA_PROFESIONALES.map(function(p) {
-    var img = getFirmaProfesional(p.id);
-    var prev = img
-      ? '<img id="inf-firma-prev-' + p.id + '" src="' + img + '" style="max-width:150px;max-height:60px;border:1px solid var(--border);border-radius:6px;padding:3px;background:#fff;">' +
-        '<button type="button" onclick="borrarFirmaProfesional(\'' + p.id + '\')" style="margin-left:6px;font-size:0.75rem;color:#c0392b;background:none;border:none;cursor:pointer;">✕</button>'
-      : '<span id="inf-firma-prev-' + p.id + '" style="font-size:0.78rem;color:var(--muted);">Sin firma cargada</span>';
-    return '<div style="display:grid;grid-template-columns:28px 90px 1fr auto;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
+    return '<div style="display:grid;grid-template-columns:28px 90px 1fr;align-items:center;gap:12px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">' +
       '<input type="checkbox" id="inf-firma-chk-' + p.id + '" ' + (sel[p.id] ? 'checked' : '') + ' onchange="firmaProfesionalToggle(\'' + p.id + '\')" style="accent-color:var(--accent);width:16px;height:16px;">' +
       '<span style="font-size:0.85rem;font-weight:700;">' + p.nombre + '</span>' +
-      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-        '<input type="file" id="inf-firma-file-' + p.id + '" accept="image/png,image/jpeg,image/jpg" onchange="firmaProfesionalUpload(\'' + p.id + '\', event)" style="display:none;">' +
-        '<button type="button" class="btn-secondary" style="font-size:0.78rem;padding:5px 10px;" onclick="document.getElementById(\'inf-firma-file-' + p.id + '\').click()">📎 Subir firma</button>' +
-        prev +
-      '</div>' +
+      '<img src="' + p.src + '" alt="Firma ' + p.nombre + '" style="max-width:150px;max-height:60px;object-fit:contain;background:#fff;border-radius:4px;">' +
     '</div>';
   }).join('');
-}
-
-function firmaProfesionalUpload(id, event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    setFirmaProfesional(id, e.target.result);
-    initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
-    toast('✓ Firma de ' + id + ' guardada', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-
-function borrarFirmaProfesional(id) {
-  removeFirmaProfesional(id);
-  var input = document.getElementById('inf-firma-file-' + id);
-  if (input) input.value = '';
-  initFirmasUI(infGetConfigFromForm().firmas_seleccionadas);
 }
 
 function firmaProfesionalToggle(id) {
@@ -59568,17 +59500,17 @@ function firmaProfesionalToggle(id) {
   saveFirmasSeleccionadasLS(cfg.firmas_seleccionadas);
 }
 
+function preloadFirmasIntegradas() {
+  FIRMA_PROFESIONALES.forEach(function(p) { loadFirmaDataUrl(p).catch(function() {}); });
+}
+
 function buildFirmasPdfHtml(firmas) {
   if (!firmas || !firmas.length) return '';
   function slot(f) {
-    var img = f.img
-      ? '<img src="' + f.img + '" style="max-height:70px;max-width:150px;display:block;margin:0 auto 6px;object-fit:contain;">'
-      : '<div style="height:50px;"></div>';
-    return '<div style="flex:0 0 220px;text-align:center;font-family:Arial,sans-serif;font-size:11pt;">' +
-      img +
-      '<div style="border-top:1px solid #333;width:180px;margin:4px auto 0;"></div>' +
-      '<div style="font-weight:bold;margin-top:6px;">' + f.nombre + '</div>' +
-      '<div style="font-size:10pt;color:#333;">' + f.titulo + '</div></div>';
+    var src = f.img || f.src;
+    return '<div style="flex:0 0 200px;text-align:center;">' +
+      '<img src="' + src + '" style="max-height:90px;max-width:180px;display:block;margin:0 auto;object-fit:contain;">' +
+    '</div>';
   }
   if (firmas.length === 1) {
     return '<div style="margin-top:50px;display:flex;justify-content:center;">' + slot(firmas[0]) + '</div>';
@@ -59595,12 +59527,8 @@ function buildFirmasPdfHtml(firmas) {
 }
 
 function _wFirmaProfCell(f, cellW, span) {
-  var imgP = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="60"/></w:pPr>' +
+  var inner = '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="40"/></w:pPr>' +
     '<w:r><w:rPr/>' + wordLogoDrawing(f.relId, WORD_FIRMA_EMU_W, WORD_FIRMA_EMU_H, f.docPrId, 'Firma' + f.prof.id, f.prof.nombre) + '</w:r></w:p>';
-  var inner = imgP +
-    _wPar(_wRun('___________________________', {sz:18, color:'888888', font:'Arial'}), {align:'center', before:0, after:20}) +
-    _wPar(_wRun(f.prof.nombre, {sz:18, bold:true, font:'Arial', color:'333333'}), {align:'center', before:0, after:10}) +
-    _wPar(_wRun(f.prof.titulo, {sz:16, font:'Arial', color:'555555'}), {align:'center', before:0, after:60});
   var opts = {w: cellW, fill: 'FFFFFF'};
   if (span) opts.span = span;
   return _wCell(inner, opts);
@@ -61446,9 +61374,11 @@ function generarWordHistorial() {
       hasGp ? _prepareLogoPngBytes(wordLogos.gp) : Promise.resolve(null),
       hasCt ? _prepareLogoPngBytes(wordLogos.ct) : Promise.resolve(null)
     ].concat(selFirmas.map(function(f) {
-      return (f.img ? _prepareLogoPngBytes(f.img).then(function(bytes) {
-        return bytes ? { prof: f, pngBytes: bytes } : null;
-      }) : Promise.resolve(null));
+      return loadFirmaDataUrl(f).then(function(dataUrl) {
+        return _prepareLogoPngBytes(dataUrl).then(function(bytes) {
+          return bytes ? { prof: f, pngBytes: bytes } : null;
+        });
+      }).catch(function() { return null; });
     }))).then(function(all){
       var imgs = [all[0], all[1]];
       var firmas = all.slice(2).filter(Boolean);
@@ -62125,12 +62055,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return { prof: f.prof, pngBytes: f.pngBytes };
   }));
   body += firmasWord.xml;
-  if (!firmasWord.xml) {
-    body+=_wPar('',{before:400,after:0});
-    body+=_wPar(_wRun('___________________________',{sz:20,color:'888888',font:'Arial'}),{before:0,after:40});
-    body+=_wPar(_wRun(inf.evaluado_por||'',{sz:18,font:'Arial',color:'333333'}),{before:0,after:40});
-  }
-  body+=_wPar(_wRun(new Date().toLocaleDateString('es-AR'),{sz:17,color:'888888',font:'Arial'}),{before:0,after:80});
 
   // ── Armar XML docx ──
   var enc=new TextEncoder();
@@ -62946,6 +62870,7 @@ window.addEventListener('DOMContentLoaded', function() {
   actualizarSaludo();
   cargarLogosUI();
   initFirmasUI();
+  preloadFirmasIntegradas();
   // Siempre arrancar en el login — nunca restaurar sesión automáticamente
   try { localStorage.removeItem('psico_session'); } catch(e) {}
   var login = document.getElementById('screen-login');
