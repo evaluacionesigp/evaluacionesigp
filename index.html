@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.5</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.6</div>
     </div>
   </aside>
 
@@ -19350,7 +19350,8 @@ function generarTablaSubescalas(test, datos) {
   if (!cfg) return null;
   datos = _parseScreeningDatos(datos);
   var dom = (datos.dominios && typeof datos.dominios === 'object') ? datos.dominios : datos;
-  var COL_SUB = _wordScaleCols([5200, 1800], WORD_CONTENT_W);
+  var SUB_W = Math.round(WORD_CONTENT_W * 0.58);
+  var COL_SUB = _wordScaleCols([4200, 1400], SUB_W);
   var rows = [];
 
   function subCell(txt, w, bg, center, bold) {
@@ -19396,12 +19397,23 @@ function generarTablaSubescalas(test, datos) {
   return _wSubescalaTable(rows, COL_SUB);
 }
 
-function _zSubescalaEmbedRow(subescalaXml) {
-  if (!subescalaXml) return '';
-  var totalW = COL_WIDTHS_HDR.reduce(function(a,b){return a+b;},0);
-  return _wRow([
-    _wCell(subescalaXml, { w: totalW, fill: 'FFFFFF', span: COL_WIDTHS_HDR.length })
-  ]);
+var SCREENING_SUBESCALA_ORDER = ['MoCA', 'ACE-R'];
+
+function buildScreeningSubescalasWord(testsNP) {
+  var byTest = {};
+  (testsNP || []).forEach(function(r) { byTest[r.test] = r; });
+  var xml = '';
+  SCREENING_SUBESCALA_ORDER.forEach(function(tn) {
+    if (!byTest[tn] || !SCREENING_SUBESCALAS_CFG[tn]) return;
+    var r = byTest[tn];
+    var d = _parseScreeningDatos(r.datos);
+    if (r.puntaje_total != null && (d.total == null || d.total === '')) d.total = r.puntaje_total;
+    var tbl = generarTablaSubescalas(tn, d);
+    if (!tbl) return;
+    xml += tbl;
+    xml += _wPar('', { before: 0, after: 80 });
+  });
+  return xml;
 }
 
 function _wordPageField(instr, sz) {
@@ -19727,18 +19739,13 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       rowCount++;
     }
     function domHdr(txt){rows.push(_zGrillaRows(txt,null,null,null,null,null,false,true));}
-    function insertSubescala(tn, r) {
-      if (!SCREENING_SUBESCALAS_CFG[tn]) return;
-      var d = _parseScreeningDatos(r.datos);
-      if (r.puntaje_total != null && (d.total == null || d.total === '')) d.total = r.puntaje_total;
-      var tbl = generarTablaSubescalas(tn, d);
-      if (tbl) rows.push(_zSubescalaEmbedRow(tbl));
-    }
     Object.keys(DOMS).forEach(function(dom){
       var tests=DOMS[dom].filter(function(t){return byTest[t];});
-      if(!tests.length)return;
+      var testsZ=tests.filter(function(t){return !SCREENING_SUBESCALAS_CFG[t];});
+      if(!testsZ.length)return;
       domHdr(dom);
       tests.forEach(function(tn){
+        if(SCREENING_SUBESCALAS_CFG[tn])return;
         var r=byTest[tn];var d=r.datos||{};
         if(tn==='Rey Verbal'&&d.variables&&d.variables.length){
           d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});
@@ -19809,8 +19816,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         else if(tn==='Token Test'){add('Token Test',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='IFS'){add('IFS — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='FAB'){add('FAB — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
-        else if(tn==='MoCA'){insertSubescala(tn,r);add('MoCA',r.puntaje_total,null,null,r.puntaje_z,null);}
-        else if(tn==='ACE-R'){insertSubescala(tn,r);add('ACE-R — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='Test del Reloj (Cacho)'){add('Test del Reloj (Cacho)',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='BTA'){add('BTA',d.puntaje,d.m,d.ds,d.z,d.pc?'Pc '+d.pc:null);}
         else if(tn==='SDMT-escrita'||tn==='SDMT-oral'){add(tn==='SDMT-escrita'?'SDMT (Escrita)':'SDMT (Oral)',d.pb,d.m,d.ds,d.z,null);}
@@ -20133,21 +20138,23 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   if(infCfgPack.cfg.incluir_apendice_b){
   body+=secTit('8. Apéndice B: Resultados Estadísticos');
 
-  // Evaluación Neuropsicológica — grilla Z
+  // Evaluación Neuropsicológica — subescalas screenings + grilla Z
   var waisPerfilTbl = buildWaisPerfilWordTable(datos);
+  var screeningXml = buildScreeningSubescalasWord(testsNP);
   var npRows = buildNPRows(testsNP);
-  if (npRows.length) {
+  if (screeningXml || npRows.length) {
     body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
-    body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
+    if (screeningXml) body += screeningXml;
+    if (npRows.length) body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
     body += _wPar('', { before: 0, after: 80 });
   }
 
   // WAIS-IV Perfil (tabla índices) — al final de neuro, antes de Cuest. Neurodesarrollo
   if (waisPerfilTbl) {
-    if (!npRows.length) {
+    if (!npRows.length && !screeningXml) {
       body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
     }
-    body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: npRows.length ? 80 : 0, after: 40 });
+    body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: (npRows.length || screeningXml) ? 80 : 0, after: 40 });
     body += _wTable(waisPerfilTbl.rows, waisPerfilTbl.cols);
     body += _wPar('', { before: 0, after: 80 });
   }
