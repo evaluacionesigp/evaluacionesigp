@@ -245,6 +245,11 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .btn-xs-danger  { background: #a82828; color: white; }
 .btn-xs:hover { opacity: 0.8; }
 .modo-toggle { display:flex; gap:0; margin-bottom:16px; border-radius:8px; overflow:hidden; border:1.5px solid var(--border); }
+.fcr-items-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:8px 12px; margin-bottom:10px; }
+.fcr-item-row { display:flex; align-items:center; gap:8px; font-size:0.78rem; padding:4px 0; border-bottom:1px solid var(--border); }
+.fcr-item-row label { flex:1; line-height:1.25; color:var(--text); }
+.fcr-item-row select { width:62px; flex-shrink:0; padding:4px 6px; font-size:0.78rem; border-radius:6px; border:1px solid var(--border); background:var(--surface); }
+.fcr-sum-bar { font-size:0.84rem; padding:8px 12px; background:var(--bg); border-radius:8px; color:var(--muted); }
 .modo-btn { flex:1; padding:9px 12px; text-align:center; cursor:pointer; font-size:0.84rem; font-weight:500; color:var(--muted); background:var(--surface2); border:none; font-family:'Outfit',sans-serif; transition:all 0.15s; }
 .modo-btn.active { background:var(--accent); color:#fff; font-weight:600; }
 .manual-fields { display:none; }
@@ -501,7 +506,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.8</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.1</div>
     </div>
   </aside>
 
@@ -2392,55 +2397,83 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
 <div class="vista" id="vista-fcr">
   <div class="back-btn" onclick="volverSector()">← Volver</div>
-  <div class="vista-header"><div class="vista-titulo">Figura Compleja de Rey · ROCF</div></div>
+  <div class="vista-header"><div class="vista-titulo">Figura Compleja de Rey · Figura A</div></div>
   <div id="fcr-form">
     <div class="card">
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="fcr-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Grupo de edad *</label>
-          <select id="fcr-edad">
-            <option value="">— Seleccionar —</option>
-            <option value="0">18–22 años</option>
-            <option value="1">23–27 años</option>
-            <option value="2">28–32 años</option>
-            <option value="3">33–37 años</option>
-            <option value="4">38–42 años</option>
-            <option value="5">43–47 años</option>
-            <option value="6">48–52 años</option>
-            <option value="7">53–57 años</option>
-            <option value="8">58–62 años</option>
-            <option value="9">63–67 años</option>
-            <option value="10">68–72 años</option>
-            <option value="11">73–77 años</option>
-            <option value="12">&gt;77 años</option>
-          </select>
-        </div>
-        <div class="field"><label>Escolaridad *</label>
-          <select id="fcr-escol">
-            <option value="">— Seleccionar —</option>
-            <option value="0">&gt;12 años de educación</option>
-            <option value="1">1–12 años de educación</option>
-          </select>
-        </div>
         <div class="field"><label>Fecha</label><input type="date" id="fcr-fecha"></div>
+        <div class="field"><label>Edad (paciente)</label><input type="text" id="fcr-edad-display" disabled placeholder="Seleccioná paciente"></div>
+        <div class="field"><label>Grupo baremo · manual TEA</label><input type="text" id="fcr-tea-grupo" disabled placeholder="Según edad"></div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);margin:10px 0 0;">Baremos <strong>Manual TEA Ediciones · Figura A</strong>: Tabla 3 (Copia) y Tabla 6 (Reproducción de memoria). Z = (PB − M) / Dt. Recuerdo 30 min: mismo baremo Tabla 6 (extensión clínica; el manual TEA solo norma la memoria ~3 min).</p>
+    </div>
+
+    <div class="card" style="border-left:3px solid var(--accent);">
+      <div class="card-title" style="cursor:pointer;" onclick="fcrToggleGuia()">📐 Guía de corrección · Figura A <span id="fcr-guia-toggle" style="font-size:0.75rem;color:var(--muted);font-weight:400;">(mostrar)</span></div>
+      <div id="fcr-guia-body" style="display:none;">
+        <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;">
+          <div style="flex:0 0 220px;max-width:100%;">
+            <img src="figuras/rey-figura-a.png" alt="Figura A — Rey-Osterrieth" style="width:100%;max-width:240px;border:1px solid var(--border);border-radius:8px;background:#fff;padding:6px;">
+            <p style="font-size:0.72rem;color:var(--muted);margin:6px 0 0;text-align:center;">Lámina A · modelo de referencia</p>
+          </div>
+          <div style="flex:1;min-width:260px;">
+            <p style="font-size:0.82rem;margin:0 0 8px;"><strong>Criterios por ítem</strong> (máx. 2 pts · total 36):</p>
+            <ul style="font-size:0.8rem;color:var(--text);margin:0 0 10px;padding-left:18px;line-height:1.45;">
+              <li><strong>2</strong> — Elemento correcto y bien emplazado</li>
+              <li><strong>1</strong> — Correcto mal emplazado, o incorrecto bien emplazado</li>
+              <li><strong>0,5</strong> — Incorrecto pero reconocible</li>
+              <li><strong>0</strong> — Ausente o irreconocible</li>
+            </ul>
+            <div style="font-size:0.78rem;max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--bg);">
+              <table style="width:100%;border-collapse:collapse;font-size:0.76rem;">
+                <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:2px 4px;">#</th><th style="text-align:left;padding:2px 4px;">Elemento</th></tr></thead>
+                <tbody id="fcr-guia-items"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">Puntajes brutos</div>
-      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Puntuación según criterios de Taylor (1959). Máximo 36 puntos por condición.</div>
-      <div class="form-grid-3">
-        <div class="field">
-          <label>Copia</label>
-          <input type="number" id="fcr-copia" min="0" max="36" step="0.5" placeholder="0–36" oninput="fcrActualizar()">
-        </div>
-        <div class="field">
-          <label>Recuerdo Inmediato</label>
-          <input type="number" id="fcr-ri" min="0" max="36" step="0.5" placeholder="0–36" oninput="fcrActualizar()">
+
+    <div class="modo-toggle">
+      <button class="modo-btn active" id="modo-auto-fcr" onclick="setModo('fcr','auto')">📋 Corrección por ítems</button>
+      <button class="modo-btn" id="modo-man-fcr" onclick="setModo('fcr','manual')">✏ Carga manual (totales)</button>
+    </div>
+
+    <div id="auto-area-fcr">
+      <div class="card">
+        <div class="card-title">Copia</div>
+        <div id="fcr-grid-copia" class="fcr-items-grid"></div>
+        <div id="fcr-sum-copia" class="fcr-sum-bar">Total copia: <strong>—</strong> / 36</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recuerdo a 3 minutos</div>
+        <div id="fcr-grid-ri" class="fcr-items-grid"></div>
+        <div id="fcr-sum-ri" class="fcr-sum-bar">Total recuerdo 3 min: <strong>—</strong> / 36</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recuerdo diferido · 30 minutos</div>
+        <div id="fcr-grid-rd" class="fcr-items-grid"></div>
+        <div id="fcr-sum-rd" class="fcr-sum-bar">Total recuerdo 30 min: <strong>—</strong> / 36</div>
+      </div>
+    </div>
+
+    <div id="man-area-fcr" style="display:none;">
+      <div class="card">
+        <div class="card-title">Puntajes brutos (totales)</div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá el total de cada condición (0–36, pasos de 0,5). Máximo 36 por fase.</p>
+        <div class="form-grid-3">
+          <div class="field"><label>Copia</label><input type="number" id="fcr-man-copia" min="0" max="36" step="0.5" placeholder="0–36" oninput="fcrActualizar()"></div>
+          <div class="field"><label>Recuerdo 3 min</label><input type="number" id="fcr-man-ri" min="0" max="36" step="0.5" placeholder="0–36" oninput="fcrActualizar()"></div>
+          <div class="field"><label>Recuerdo 30 min</label><input type="number" id="fcr-man-rd" min="0" max="36" step="0.5" placeholder="0–36" oninput="fcrActualizar()"></div>
         </div>
       </div>
-      <div id="fcr-live" style="margin-top:10px;padding:8px 14px;background:var(--bg);border-radius:8px;font-size:0.85rem;min-height:28px;"></div>
     </div>
+
+    <div id="fcr-live" style="margin-top:4px;padding:8px 14px;background:var(--bg);border-radius:8px;font-size:0.85rem;min-height:28px;"></div>
+
     <div class="btn-row">
       <button class="btn-secondary" onclick="limpiarFCR()">🗑 Limpiar</button>
       <button class="btn-primary" onclick="calcularFCR()">Calcular resultado →</button>
@@ -6337,7 +6370,8 @@ function aplicarPacienteActivoATest(testId) {
     pacSetVal('spaib-edad', grupoSpaib(edad));
     pacSetVal('ifs-edad', grupoIfs(edad));
     pacSetVal('wcst-edad', grupoWcst(edad));
-    pacSetVal('fcr-edad', grupoQuinquenal18(edad, 12));
+    pacSetVal('fcr-edad-display', edad + ' años');
+    if (typeof fcrActualizarTeaGrupo === 'function') fcrActualizarTeaGrupo();
     pacSetVal('bta-edad', grupoQuinquenal18(edad, 12));
     pacSetVal('sdmt-edad-escrita', grupoQuinquenal18(edad, 12));
     pacSetVal('sdmt-edad-oral', grupoSdmtOral(edad));
@@ -6362,7 +6396,6 @@ function aplicarPacienteActivoATest(testId) {
     pacSetVal('wcst-ne', neAltoBajo(anios));
     pacSetVal('acer-ne', neAcer(anios));
     pacSetVal('moca-ne', neMoca(anios));
-    pacSetVal('fcr-escol', escolFcrBtaSdmtEscrita(anios));
     pacSetVal('bta-escol', escolFcrBtaSdmtEscrita(anios));
     pacSetVal('sdmt-escol-escrita', escolFcrBtaSdmtEscrita(anios));
     pacSetVal('sdmt-escol-oral', escolSdmtOral(anios));
@@ -7547,6 +7580,7 @@ var GLOSARIO_ALIAS = {
   'LoEs': 'WMS-III LoEs',
   'Fig.Rey Copia': 'Figura Rey',
   'Fig.Rey RI': 'Figura Rey',
+  'Fig.Rey RD': 'Figura Rey',
   'SDMT (Esc.)': 'SDMT-escrita',
   'SDMT (Oral)': 'SDMT-oral'
 };
@@ -8420,7 +8454,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
         { t:'Fluencia Verbal',fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){addPunto(v.label.replace('Fluencia ','Fl. '),v.z,'LENGUAJE','Fluencia Verbal');});}else{addPunto('Fluencia',r.puntaje_z,'LENGUAJE','Fluencia Verbal');} } },
       ]},
       { dom: 'VISOC.', tests: [
-        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; addPunto('Fig.Rey Copia',d.zCopia,'VISOC.','Figura Rey'); addPunto('Fig.Rey RI',d.zRI,'VISOC.','Figura Rey'); } },
+        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; var zC=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'copia'):d.zCopia; var zR=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'ri'):d.zRi; var zD=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'rd'):d.zRd; if(zC!=null) addPunto('Fig.Rey Copia',zC,'VISOC.','Figura Rey'); if(zR!=null) addPunto('Fig.Rey RI',zR,'VISOC.','Figura Rey'); if(zD!=null) addPunto('Fig.Rey RD',zD,'VISOC.','Figura Rey'); } },
       ]},
     ];
 
@@ -8875,15 +8909,42 @@ function renderCuestionariosFam(d) {
           });
 
         } else if (testNombre === 'Figura Rey') {
-          var escolLabelsF = ['>12 años educ.','1–12 años educ.'];
-          var edadLabelsF  = ['18–22','23–27','28–32','33–37','38–42','43–47','48–52','53–57','58–62','63–67','68–72','73–77','>77'];
-          var gi2F = d.gi != null ? d.gi : null;
-          var ei2F = d.ei != null ? d.ei : null;
-          var notaF = gi2F!==null && ei2F!==null ? edadLabelsF[gi2F]+' · '+escolLabelsF[ei2F] : null;
-          rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">Figura Compleja de Rey-Osterrieth · ROCF (Rivera et al., 2015)</td></tr>';
-          if (d.copia != null) rows += filaTabla('Copia', d.copia, null, null, d.zCopia, r.fecha, 'Pc '+(d.pcCopia||'—'));
-          if (d.ri    != null) rows += filaTabla('Recuerdo Inmediato', d.ri, null, null, d.zRI, r.fecha, 'Pc '+(d.pcRI||'—'));
-          if (d.ir    != null) rows += filaTabla('Índice de Retención', d.ir+'%', null, null, null, r.fecha, d.ir+'%');
+          var teaLblF = d.teaLbl || (d.teaGi != null ? FCR_TEA_EDADES[d.teaGi] : null);
+          var notaF = teaLblF ? 'Fig. A · Grupo ' + teaLblF + ' años · Manual TEA' : 'Fig. A · Manual TEA';
+          rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">Figura Compleja de Rey-Osterrieth · Figura A · ' + notaF + '</td></tr>';
+          function fcrFilaPdf(lbl, pb, m, ds, z, interp) {
+            if (pb == null) return '';
+            return filaTabla(lbl, pb, m, ds, z, r.fecha, interp || null, interp || null);
+          }
+          function fcrNormPdf(cond) {
+            if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
+            return { m: null, ds: null };
+          }
+          if (d.copia != null) {
+            var nC = fcrNormPdf('copia');
+            var mC = d.mCopia != null ? d.mCopia : nC.m;
+            var dsC = d.dsCopia != null ? d.dsCopia : nC.ds;
+            var zC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
+            var iC = d.interpCopia || (zC != null && typeof fcrZLabel === 'function' ? fcrZLabel(zC) : null);
+            rows += fcrFilaPdf('Copia', d.copia, mC, dsC, zC, iC);
+          }
+          if (d.ri != null) {
+            var nR = fcrNormPdf('ri');
+            var mR = d.mRi != null ? d.mRi : nR.m;
+            var dsR = d.dsRi != null ? d.dsRi : nR.ds;
+            var zR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
+            var iR = d.interpRi || (zR != null && typeof fcrZLabel === 'function' ? fcrZLabel(zR) : null);
+            rows += fcrFilaPdf('Recuerdo 3 min', d.ri, mR, dsR, zR, iR);
+          }
+          if (d.rd != null) {
+            var nD = fcrNormPdf('rd');
+            var mD = d.mRd != null ? d.mRd : nD.m;
+            var dsD = d.dsRd != null ? d.dsRd : nD.ds;
+            var zD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
+            var iD = d.interpRd || (zD != null && typeof fcrZLabel === 'function' ? fcrZLabel(zD) : null);
+            rows += fcrFilaPdf('Recuerdo 30 min', d.rd, mD, dsD, zD, iD);
+          }
+          if (d.ir != null) rows += filaTabla('Índice de Retención (3 min/Copia)', d.ir+'%', null, null, null, r.fecha, d.ir+'%', d.ir+'%');
 
         } else if (testNombre === 'Stroop') {
           var escolLabelsS = ['Baja','Media','Alta'];
@@ -9788,6 +9849,11 @@ function aplicarEdicionResultado(vistaId, r) {
       if (d.parte_b != null) pacSetVal('loes-parte-b', d.parte_b);
       loesActualizar();
       break;
+    case 'fcr':
+      iniciarFCR();
+      if (typeof fcrRestaurarEdicion === 'function') fcrRestaurarEdicion(d);
+      if (typeof calcularFCR === 'function') calcularFCR();
+      break;
     default:
       if (MANUAL_CAMPOS[vistaId] && r.puntaje_total != null) {
         edicionManualSimple(vistaId, r.puntaje_total);
@@ -9876,7 +9942,7 @@ var NP_TESTS = [
   {id:'flv',      n:'Fluencia Verbal',   d:'Semántica y fonológica',                      t:'Lenguaje',           dom:'lenguaje'},
   {id:'bnt',      n:'BNT',               d:'Denominación de Boston · BNT-12 / BNT-60',   t:'Lenguaje',           dom:'lenguaje'},
   // Visoconstructivo
-  {id:'fcr',      n:'Figura de Rey',     d:'Copia y Recuerdo Inmediato · ROCF',           t:'Visoconstructivo',   dom:'visoc'},
+  {id:'fcr',      n:'Figura de Rey',     d:'Figura A · Copia, Recuerdo 3 min y 30 min', t:'Visoconstructivo',   dom:'visoc'},
   // Ejecutivas
   {id:'fab',      n:'FAB',               d:'Frontal Assessment Battery · Aceiro 2018',    t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'ifs',      n:'IFS',               d:'INECO Frontal Screening',                    t:'Ejecutivas',         dom:'ejecutivas'},
@@ -18582,182 +18648,302 @@ function guardarCSI() {
   }).catch(function(){ toast('Error al guardar','error'); });
 }
 
-// ══ FIGURA COMPLEJA DE REY · ROCF ════════════════════════════════════════════
-// Rivera et al. (2015) — NeuroRehabilitation 37(4):677-698
-// Baremos Argentina — por grupo etario (13) × escolaridad (2)
-// Escol 0 = >12 años educación / Escol 1 = 1-12 años educación
-// Grupos edad: 0=18-22, 1=23-27, 2=28-32, 3=33-37, 4=38-42, 5=43-47,
-//              6=48-52, 7=53-57, 8=58-62, 9=63-67, 10=68-72, 11=73-77, 12=>77
+// ══ FIGURA COMPLEJA DE REY · FIGURA A ════════════════════════════════════════
+// Manual TEA Ediciones (Rey/Osterrieth) — Tabla 3 Copia · Tabla 6 Memoria
+// 18 ítems · 0 / 0,5 / 1 / 2 · máx. 36 · Z = (PB − M) / Dt
 
-// Tabla de percentiles COPIA — [escol][edad_idx][pc_idx]
-// pc_idx: 0=Pc5, 1=Pc10, 2=Pc15, 3=Pc20, 4=Pc30, 5=Pc40, 6=Pc50, 7=Pc60, 8=Pc70, 9=Pc80, 10=Pc85, 11=Pc90, 12=Pc95
-// null = no especificado (ceiling)
-var FCR_PC_LABELS = [5,10,15,20,30,40,50,60,70,80,85,90,95];
-
-var FCR_COPIA = [
-  // Escol 0: >12 años educación
-  [
-    //        Pc5   Pc10  Pc15  Pc20  Pc30  Pc40  Pc50  Pc60  Pc70  Pc80  Pc85  Pc90  Pc95
-    /* 18-22 */ [31.6, 32.5, 33.2, 33.7, 34.5, 35.2, 35.8, 36.0, null, null, null, null, null],
-    /* 23-27 */ [31.5, 32.4, 33.1, 33.6, 34.4, 35.1, 35.7, 36.0, null, null, null, null, null],
-    /* 28-32 */ [31.4, 32.4, 33.0, 33.5, 34.3, 35.0, 35.6, 36.0, null, null, null, null, null],
-    /* 33-37 */ [31.3, 32.3, 32.9, 33.4, 34.2, 34.9, 35.6, 36.0, null, null, null, null, null],
-    /* 38-42 */ [31.2, 32.2, 32.8, 33.3, 34.1, 34.8, 35.5, 36.0, null, null, null, null, null],
-    /* 43-47 */ [31.2, 32.1, 32.7, 33.2, 34.0, 34.7, 35.4, 36.0, 36.0, null, null, null, null],
-    /* 48-52 */ [31.1, 31.9, 32.5, 33.1, 33.9, 34.6, 35.3, 35.9, 36.0, 36.0, null, null, null],
-    /* 53-57 */ [31.0, 31.9, 32.5, 33.0, 33.9, 34.5, 35.2, 35.8, 36.0, 36.0, null, null, null],
-    /* 58-62 */ [30.9, 31.8, 32.4, 32.9, 33.8, 34.5, 35.1, 35.7, 36.0, 36.0, null, null, null],
-    /* 63-67 */ [30.8, 31.7, 32.3, 32.8, 33.7, 34.4, 35.0, 35.6, 36.0, 36.0, null, null, null],
-    /* 68-72 */ [30.7, 31.6, 32.2, 32.8, 33.6, 34.3, 34.9, 35.6, 36.0, 36.0, null, null, null],
-    /* 73-77 */ [30.6, 31.5, 32.1, 32.7, 33.5, 34.2, 34.8, 35.5, 36.0, 36.0, null, null, null],
-    /* >77   */ [30.5, 31.4, 32.1, 32.6, 33.4, 34.1, 34.7, 35.4, 36.0, 36.0, null, null, null]
-  ],
-  // Escol 1: 1-12 años educación
-  [
-    /* 18-22 */ [30.4, 31.4, 32.0, 32.5, 33.3, 34.0, 34.7, 35.3, 36.0, null, null, null, null],
-    /* 23-27 */ [30.4, 31.3, 31.9, 32.4, 33.2, 33.9, 35.2, 35.9, 36.0, 36.0, null, null, null],
-    /* 28-32 */ [30.3, 31.2, 31.8, 32.3, 33.1, 33.8, 34.5, 35.1, 35.8, 36.0, 36.0, null, null],
-    /* 33-37 */ [30.2, 31.1, 31.6, 32.2, 33.0, 33.7, 34.4, 35.0, 35.7, 36.0, 36.0, null, null],
-    /* 38-42 */ [30.1, 31.0, 31.6, 32.1, 33.0, 33.7, 34.3, 35.0, 35.6, 36.0, 36.0, null, null],
-    /* 43-47 */ [30.0, 30.9, 31.5, 32.0, 32.9, 33.6, 34.2, 34.8, 35.5, 36.0, 36.0, null, null],
-    /* 48-52 */ [30.0, 30.8, 31.4, 32.0, 32.8, 33.5, 34.1, 34.8, 35.4, 36.0, 36.0, null, null],
-    /* 53-57 */ [29.8, 30.8, 31.3, 31.9, 32.8, 33.4, 34.1, 34.7, 35.4, 36.0, 36.0, null, null],
-    /* 58-62 */ [29.7, 30.6, 31.3, 31.8, 32.6, 33.3, 33.9, 34.6, 35.3, 36.0, 36.0, null, null],
-    /* 63-67 */ [29.6, 30.5, 31.2, 31.7, 32.5, 33.2, 33.8, 34.5, 35.2, 36.0, 36.0, null, null],
-    /* 68-72 */ [29.5, 30.5, 31.2, 31.6, 32.4, 33.1, 33.7, 35.9, 36.0, 36.0, null, null, null],
-    /* 73-77 */ [29.4, 30.4, 31.0, 31.5, 32.3, 35.0, 35.8, 36.0, 36.0, null, null, null, null],
-    /* >77   */ [29.3, 30.3, 30.9, 31.4, 32.2, 32.9, 34.9, 35.7, 36.0, 36.0, null, null, null]
-  ]
+var FCR_ITEMS = [
+  { n: 1,  label: 'Cruz exterior, ángulo superior izquierdo' },
+  { n: 2,  label: 'Rectángulo grande (armazón)' },
+  { n: 3,  label: 'Cruz de San Andrés (diagonales)' },
+  { n: 4,  label: 'Mediana horizontal del rectángulo' },
+  { n: 5,  label: 'Mediana vertical del rectángulo' },
+  { n: 6,  label: 'Rectángulo pequeño interior (izq.)' },
+  { n: 7,  label: 'Segmento sobre rectángulo pequeño' },
+  { n: 8,  label: 'Cuatro líneas paralelas (sup. izq.)' },
+  { n: 9,  label: 'Triángulo rectángulo superior derecho' },
+  { n: 10, label: 'Pequeña perpendicular (sup. der.)' },
+  { n: 11, label: 'Círculo con tres puntos (sup. der.)' },
+  { n: 12, label: 'Cinco líneas en diagonal (inf. der.)' },
+  { n: 13, label: 'Dos lados del triángulo isósceles derecho' },
+  { n: 14, label: 'Rombo en vértice del triángulo' },
+  { n: 15, label: 'Segmento vertical interior del triángulo' },
+  { n: 16, label: 'Prolongación mediana horizontal (altura triángulo)' },
+  { n: 17, label: 'Cruz en extremo inferior del rectángulo' },
+  { n: 18, label: 'Cuadrado y diagonal (inf. izq.)' }
 ];
 
-// Tabla percentiles RECUERDO INMEDIATO
-var FCR_RI = [
-  // Escol 0: >12 años
-  [
-    /* 18-22 */ [17.7, 20.1, 21.7, 23.0, 25.1, 26.8, 28.5, 30.1, 31.8, 33.9, 35.2, 36.0, null],
-    /* 23-27 */ [17.0, 19.3, 20.9, 22.2, 24.3, 26.0, 27.7, 29.3, 31.1, 33.1, 34.4, 36.0, null],
-    /* 28-32 */ [16.2, 18.5, 20.1, 21.4, 23.5, 25.2, 26.9, 28.5, 30.3, 32.3, 33.7, 35.2, 36.0],
-    /* 33-37 */ [15.4, 17.7, 19.3, 20.6, 22.7, 24.4, 26.1, 27.7, 29.5, 31.6, 32.9, 34.4, 36.0],
-    /* 38-42 */ [14.6, 16.9, 18.5, 19.8, 21.9, 23.6, 25.3, 26.9, 28.7, 30.8, 32.1, 33.6, 36.0],
-    /* 43-47 */ [13.8, 16.1, 17.7, 19.0, 21.1, 22.9, 24.5, 26.1, 27.9, 30.0, 31.3, 32.8, 35.2],
-    /* 48-52 */ [13.0, 15.3, 16.9, 18.2, 20.3, 22.1, 23.7, 25.3, 27.1, 29.2, 30.5, 32.0, 34.4],
-    /* 53-57 */ [12.2, 14.6, 16.1, 17.4, 19.5, 21.3, 22.9, 24.5, 26.3, 28.4, 29.7, 31.3, 33.6],
-    /* 58-62 */ [11.4, 13.8, 15.3, 16.6, 18.7, 20.5, 22.1, 23.7, 25.5, 27.6, 28.9, 30.5, 32.8],
-    /* 63-67 */ [10.6, 13.0, 14.5, 15.8, 17.9, 19.7, 21.3, 23.0, 24.7, 26.8, 28.1, 29.7, 32.0],
-    /* 68-72 */ [9.8,  12.2, 13.7, 15.0, 17.1, 18.9, 20.5, 22.2, 23.9, 26.0, 27.3, 28.9, 31.2],
-    /* 73-77 */ [9.0,  11.4, 12.9, 14.3, 16.3, 18.1, 19.7, 21.4, 23.1, 25.2, 26.5, 28.1, 30.4],
-    /* >77   */ [8.2,  10.6, 12.2, 13.5, 15.5, 17.3, 18.9, 20.6, 22.3, 24.4, 25.7, 27.3, 29.6]
-  ],
-  // Escol 1: 1-12 años
-  [
-    /* 18-22 */ [14.1, 16.4, 18.0, 19.3, 21.4, 23.1, 24.8, 26.4, 28.2, 30.2, 31.6, 33.1, 35.5],
-    /* 23-27 */ [13.3, 15.6, 17.2, 18.5, 20.6, 22.3, 24.0, 25.6, 27.4, 29.5, 30.8, 32.3, 34.7],
-    /* 28-32 */ [12.5, 14.8, 16.4, 17.7, 19.8, 21.5, 23.2, 24.8, 26.6, 28.7, 30.0, 31.5, 33.9],
-    /* 33-37 */ [11.7, 14.0, 15.6, 16.9, 19.0, 20.8, 22.4, 24.0, 25.8, 27.9, 29.2, 30.7, 33.1],
-    /* 38-42 */ [10.9, 13.2, 14.8, 16.1, 18.2, 20.0, 21.6, 23.2, 25.0, 27.1, 28.4, 29.9, 32.3],
-    /* 43-47 */ [10.1, 12.5, 14.0, 15.3, 17.4, 19.2, 20.8, 22.4, 24.2, 26.3, 27.6, 29.2, 31.5],
-    /* 48-52 */ [9.3,  11.7, 13.2, 14.5, 16.6, 18.4, 20.0, 21.6, 23.4, 25.5, 26.8, 28.4, 30.7],
-    /* 53-57 */ [8.5,  10.9, 12.4, 13.7, 15.8, 17.6, 19.2, 20.9, 22.6, 24.7, 26.0, 27.6, 29.9],
-    /* 58-62 */ [7.7,  10.1, 11.6, 12.9, 15.0, 16.8, 18.4, 20.1, 21.8, 23.9, 25.2, 26.8, 29.1],
-    /* 63-67 */ [6.9,  9.3,  10.8, 12.2, 14.2, 16.0, 17.6, 19.3, 21.0, 23.1, 24.4, 26.0, 28.3],
-    /* 68-72 */ [6.1,  8.5,  10.1, 11.4, 13.4, 15.2, 16.8, 18.5, 20.2, 22.3, 23.6, 25.2, 27.5],
-    /* 73-77 */ [5.3,  7.7,  9.3,  10.6, 12.7, 14.4, 16.0, 17.7, 19.4, 21.5, 22.8, 24.4, 26.8],
-    /* >77   */ [4.6,  6.9,  8.5,  9.8,  11.9, 13.6, 15.3, 16.9, 18.7, 20.7, 22.0, 23.6, 26.0]
-  ]
-];
+var FCR_COND_LBL = { copia: 'Copia', ri: 'Recuerdo 3 min', rd: 'Recuerdo 30 min' };
+var FCR_COND_KEYS = ['copia', 'ri', 'rd'];
 
-// Buscar percentil en tabla FCR
-function fcrBuscarPc(tabla, ei, gi, score) {
-  var row = tabla[ei][gi];
-  var pc = 1;
-  for (var i = 0; i < FCR_PC_LABELS.length; i++) {
-    if (row[i] !== null && score >= row[i]) pc = FCR_PC_LABELS[i];
-    else if (row[i] !== null && score < row[i]) break;
-  }
-  return pc;
+// Tabla 3 — exactitud y riqueza de la Copia (datos españoles)
+// Tabla 6 — exactitud y riqueza de la Reproducción de Memoria
+var FCR_TEA_EDADES = ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15+'];
+var FCR_TEA_COPIA  = { M: [11.76, 13.55, 17.25, 19.63, 21.67, 24.38, 25.73, 26.58, 27.91, 29.06, 30.48], DS: [3.85, 5.13, 3.95, 5.26, 5.17, 6.63, 3.79, 9.50, 3.70, 3.50, 3.45] };
+var FCR_TEA_MEMORIA = { M: [5.63, 6.38, 8.70, 8.45, 16.11, 16.50, 17.69, 18.08, 20.09, 20.57, 21.48], DS: [2.93, 3.30, 5.18, 2.89, 6.95, 4.52, 2.15, 4.91, 4.23, 2.00, 5.54] };
+
+function fcrTeaGrupoIdx(edad) {
+  if (edad == null) return null;
+  if (edad >= 15) return 10;
+  if (edad >= 5) return edad - 5;
+  return 0;
 }
 
-// Pc → Z (tabla normal inversa aproximada)
-function fcrPcToZ(pc) {
-  var table = {1:-2.33,2:-2.05,3:-1.88,4:-1.75,5:-1.64,6:-1.55,7:-1.48,8:-1.41,9:-1.34,
-    10:-1.28,12:-1.18,15:-1.04,16:-1.0,20:-0.84,25:-0.67,30:-0.52,35:-0.39,40:-0.25,
-    45:-0.13,50:0,55:0.13,60:0.25,65:0.39,70:0.52,75:0.67,80:0.84,85:1.04,90:1.28,
-    95:1.64,96:1.75,97:1.88,98:2.05,99:2.33};
-  return table[pc] !== undefined ? table[pc] : null;
+function fcrTeaNorm(edad, cond) {
+  var idx = fcrTeaGrupoIdx(edad);
+  if (idx === null) return { m: null, ds: null, teaGi: null, teaLbl: null, tabla: null };
+  var tbl = cond === 'copia' ? FCR_TEA_COPIA : FCR_TEA_MEMORIA;
+  return {
+    m: tbl.M[idx], ds: tbl.DS[idx], teaGi: idx, teaLbl: FCR_TEA_EDADES[idx],
+    tabla: cond === 'copia' ? 'Tabla 3' : 'Tabla 6'
+  };
+}
+
+function fcrCalcZ(pb, edad, cond) {
+  var normCond = cond === 'copia' ? 'copia' : 'memoria';
+  var n = fcrTeaNorm(edad, normCond === 'memoria' ? 'ri' : 'copia');
+  if (pb == null || n.m == null || n.ds == null) return Object.assign({ z: null, pb: pb }, n);
+  var z = parseFloat(((pb - n.m) / n.ds).toFixed(2));
+  return Object.assign({ z: z, pb: pb }, n);
 }
 
 function fcrZLabel(z) {
-  if (z === null) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
+  if (z === null || z === undefined) return '—';
+  if (z >= 2.0) return 'Muy superior';
+  if (z >= 1.5) return 'Superior';
+  if (z >= 1.0) return 'Límite superior normativo';
+  if (z >= -0.49) return 'Normal';
+  if (z >= -1.0) return 'Límite inferior normativo';
+  if (z >= -1.5) return 'Dificultad leve';
+  if (z >= -2.0) return 'Dificultad moderada';
   return 'Dificultad elevada';
 }
 
-function fcrActualizar() {
-  var copia = parseFloat(document.getElementById('fcr-copia').value);
-  var ri    = parseFloat(document.getElementById('fcr-ri').value);
-  var el    = document.getElementById('fcr-live');
+function fcrActualizarTeaGrupo() {
+  var edad = fcrGetEdadAnios();
+  var el = document.getElementById('fcr-tea-grupo');
   if (!el) return;
-  if (!isNaN(copia) && !isNaN(ri) && copia > 0) {
-    var ir = parseFloat((ri / copia * 100).toFixed(1));
-    el.innerHTML = 'Índice de Retención: <strong>'+ir+'%</strong> (RI/Copia × 100)';
-  } else {
-    el.innerHTML = '';
+  if (edad == null) { el.value = ''; return; }
+  var idx = fcrTeaGrupoIdx(edad);
+  el.value = FCR_TEA_EDADES[idx] + ' años · Tabla 3 / Tabla 6';
+}
+
+function fcrResolveNorms(d, cond) {
+  var edad = d.edad;
+  if (edad == null && d.teaGi != null) {
+    var gi = d.teaGi;
+    var tbl = cond === 'copia' ? FCR_TEA_COPIA : FCR_TEA_MEMORIA;
+    return { m: tbl.M[gi], ds: tbl.DS[gi], teaGi: gi, teaLbl: FCR_TEA_EDADES[gi] };
   }
+  return fcrTeaNorm(edad, cond === 'copia' ? 'copia' : 'ri');
+}
+
+function fcrToggleGuia() {
+  var body = document.getElementById('fcr-guia-body');
+  var tog = document.getElementById('fcr-guia-toggle');
+  if (!body) return;
+  var show = body.style.display === 'none';
+  body.style.display = show ? 'block' : 'none';
+  if (tog) tog.textContent = show ? '(ocultar)' : '(mostrar)';
+}
+
+function fcrRenderGuiaItems() {
+  var tb = document.getElementById('fcr-guia-items');
+  if (!tb || tb.dataset.ready) return;
+  tb.innerHTML = FCR_ITEMS.map(function(it) {
+    return '<tr><td style="padding:2px 4px;color:var(--muted);">' + it.n + '</td><td style="padding:2px 4px;">' + it.label + '</td></tr>';
+  }).join('');
+  tb.dataset.ready = '1';
+}
+
+function fcrItemSelectHtml(prefix, n) {
+  var id = 'fcr-' + prefix + '-item-' + n;
+  var opts = ['', '0', '0.5', '1', '2'].map(function(v) {
+    var lbl = v === '' ? '—' : v.replace('.', ',');
+    return '<option value="' + v + '">' + lbl + '</option>';
+  }).join('');
+  return '<select id="' + id + '" onchange="fcrSumCond(\'' + prefix + '\')">' + opts + '</select>';
+}
+
+function fcrRenderGrids() {
+  fcrRenderGuiaItems();
+  FCR_COND_KEYS.forEach(function(prefix) {
+    var grid = document.getElementById('fcr-grid-' + prefix);
+    if (!grid || grid.dataset.ready) return;
+    grid.innerHTML = FCR_ITEMS.map(function(it) {
+      return '<div class="fcr-item-row"><label>' + it.n + '. ' + it.label + '</label>' + fcrItemSelectHtml(prefix, it.n) + '</div>';
+    }).join('');
+    grid.dataset.ready = '1';
+  });
+}
+
+function fcrGetEdadAnios() {
+  var pid = document.getElementById('fcr-paciente') && document.getElementById('fcr-paciente').value;
+  if (!pid) return null;
+  var p = (typeof PACIENTES !== 'undefined' && PACIENTES) ? PACIENTES.find(function(x) { return String(x.id) === String(pid); }) : null;
+  if (!p && PAC_ACTIVO && String(PAC_ACTIVO.id) === String(pid)) p = PAC_ACTIVO;
+  if (!p || !p.fecha_nacimiento) return null;
+  return calcularEdad(p.fecha_nacimiento);
+}
+
+function fcrIsManual() {
+  var btn = document.getElementById('modo-man-fcr');
+  return btn && btn.classList.contains('active');
+}
+
+function fcrSumItems(prefix) {
+  var total = 0, count = 0;
+  for (var i = 1; i <= 18; i++) {
+    var el = document.getElementById('fcr-' + prefix + '-item-' + i);
+    if (!el || el.value === '') continue;
+    total += parseFloat(el.value);
+    count++;
+  }
+  return count ? parseFloat(total.toFixed(1)) : null;
+}
+
+function fcrSumCond(prefix) {
+  var sum = fcrSumItems(prefix);
+  var bar = document.getElementById('fcr-sum-' + prefix);
+  if (bar) bar.innerHTML = 'Total ' + (FCR_COND_LBL[prefix] || prefix).toLowerCase() + ': <strong>' + (sum !== null ? sum : '—') + '</strong> / 36';
+  fcrActualizar();
+  return sum;
+}
+
+function fcrGetScores() {
+  if (fcrIsManual()) {
+    function rd(id) {
+      var el = document.getElementById(id);
+      if (!el || el.value === '') return null;
+      return parseFloat(el.value);
+    }
+    return { copia: rd('fcr-man-copia'), ri: rd('fcr-man-ri'), rd: rd('fcr-man-rd'), modo: 'manual' };
+  }
+  return {
+    copia: fcrSumItems('copia'),
+    ri: fcrSumItems('ri'),
+    rd: fcrSumItems('rd'),
+    modo: 'items'
+  };
+}
+
+function fcrGetStoredOrCalcZ(d, cond) {
+  var zKey = 'z' + cond.charAt(0).toUpperCase() + cond.slice(1);
+  if (d[zKey] != null) return d[zKey];
+  var pb = d[cond];
+  if (pb == null || d.edad == null || typeof fcrCalcZ !== 'function') return null;
+  return fcrCalcZ(pb, d.edad, cond).z;
+}
+
+function fcrCollectItemScores(prefix) {
+  var items = [];
+  for (var i = 1; i <= 18; i++) {
+    var el = document.getElementById('fcr-' + prefix + '-item-' + i);
+    items.push(el && el.value !== '' ? parseFloat(el.value) : null);
+  }
+  return items;
+}
+
+function fcrActualizar() {
+  var sc = fcrGetScores();
+  var el = document.getElementById('fcr-live');
+  if (!el) return;
+  var parts = [];
+  if (sc.copia !== null) parts.push('Copia: <strong>' + sc.copia + '</strong>/36');
+  if (sc.ri !== null) parts.push('Rec. 3 min: <strong>' + sc.ri + '</strong>/36');
+  if (sc.rd !== null) parts.push('Rec. 30 min: <strong>' + sc.rd + '</strong>/36');
+  if (sc.copia !== null && sc.ri !== null && sc.copia > 0) {
+    var ir = parseFloat((sc.ri / sc.copia * 100).toFixed(1));
+    parts.push('Retención RI/Copia: <strong>' + ir + '%</strong>');
+  }
+  el.innerHTML = parts.length ? parts.join(' · ') : '';
 }
 
 function iniciarFCR() {
+  fcrRenderGrids();
   document.getElementById('fcr-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('fcr-form').style.display = 'block';
   document.getElementById('fcr-resultado').style.display = 'none';
+  if (typeof setModo === 'function') setModo('fcr', 'auto');
+  if (typeof fcrActualizarTeaGrupo === 'function') fcrActualizarTeaGrupo();
+  var guia = document.getElementById('fcr-guia-body');
+  var tog = document.getElementById('fcr-guia-toggle');
+  if (guia && guia.style.display === 'none') fcrToggleGuia();
+  else if (tog) tog.textContent = '(ocultar)';
 }
 
 function limpiarFCR() {
-  document.getElementById('fcr-copia').value = '';
-  document.getElementById('fcr-ri').value = '';
-  document.getElementById('fcr-live').innerHTML = '';
+  FCR_COND_KEYS.forEach(function(prefix) {
+    for (var i = 1; i <= 18; i++) {
+      var el = document.getElementById('fcr-' + prefix + '-item-' + i);
+      if (el) el.value = '';
+    }
+    var bar = document.getElementById('fcr-sum-' + prefix);
+    var lbl = (FCR_COND_LBL[prefix] || prefix).toLowerCase();
+    if (bar) bar.innerHTML = 'Total ' + lbl + ': <strong>—</strong> / 36';
+  });
+  ['fcr-man-copia', 'fcr-man-ri', 'fcr-man-rd'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  var live = document.getElementById('fcr-live');
+  if (live) live.innerHTML = '';
 }
 
 function calcularFCR() {
-  var gi = document.getElementById('fcr-edad').value;
-  var ei = document.getElementById('fcr-escol').value;
-  if (gi === '' || ei === '') { toast('Seleccioná grupo de edad y escolaridad.','error'); return; }
-  gi = parseInt(gi); ei = parseInt(ei);
+  var edad = fcrGetEdadAnios();
+  if (edad === null) { toast('El paciente necesita fecha de nacimiento para el baremo TEA.', 'error'); return; }
 
-  var copaVal = document.getElementById('fcr-copia').value;
-  var riVal   = document.getElementById('fcr-ri').value;
-  if (copaVal === '' && riVal === '') { toast('Ingresá al menos un puntaje.','error'); return; }
+  var sc = fcrGetScores();
+  if (sc.copia === null && sc.ri === null && sc.rd === null) {
+    toast('Ingresá al menos un puntaje.', 'error');
+    return;
+  }
 
-  var copia = copaVal !== '' ? parseFloat(copaVal) : null;
-  var ri    = riVal   !== '' ? parseFloat(riVal)   : null;
-
-  var pcCopia = copia !== null ? fcrBuscarPc(FCR_COPIA, ei, gi, copia) : null;
-  var pcRI    = ri    !== null ? fcrBuscarPc(FCR_RI,    ei, gi, ri)    : null;
-  var zCopia  = pcCopia !== null ? fcrPcToZ(pcCopia) : null;
-  var zRI     = pcRI    !== null ? fcrPcToZ(pcRI)    : null;
-  var ir      = (copia !== null && ri !== null && copia > 0) ? parseFloat((ri / copia * 100).toFixed(1)) : null;
-
-  var escolLabel = ei === 0 ? '>12 años educación' : '1–12 años educación';
-  var edadLabels = ['18–22','23–27','28–32','33–37','38–42','43–47','48–52','53–57','58–62','63–67','68–72','73–77','>77'];
-
+  var teaIdx = fcrTeaGrupoIdx(edad);
+  var result = { edad: edad, teaGi: teaIdx, teaLbl: FCR_TEA_EDADES[teaIdx], modo: sc.modo, figura: 'A' };
   var detalleHtml = '';
-  if (pcCopia !== null) detalleHtml += '<div class="detalle-item"><div class="detalle-num">Pc '+pcCopia+'</div><div class="detalle-lbl">Copia<br><small>'+(copia)+'/36</small></div></div>';
-  if (pcRI    !== null) detalleHtml += '<div class="detalle-item"><div class="detalle-num">Pc '+pcRI+'</div><div class="detalle-lbl">Rec. Inmediato<br><small>'+(ri)+'/36</small></div></div>';
-  if (ir      !== null) detalleHtml += '<div class="detalle-item"><div class="detalle-num">'+ir+'%</div><div class="detalle-lbl">Índice<br>Retención</div></div>';
 
-  var interp = '<p><strong>Grupo:</strong> '+edadLabels[gi]+' años · '+escolLabel+'</p>';
-  if (copia !== null) interp += '<p><strong>Copia ('+copia+'/36):</strong> Pc '+pcCopia+' · Z='+(zCopia!==null?(zCopia>=0?'+':'')+zCopia:'—')+' — '+fcrZLabel(zCopia)+'</p>';
-  if (ri !== null)    interp += '<p><strong>Recuerdo Inmediato ('+ri+'/36):</strong> Pc '+pcRI+' · Z='+(zRI!==null?(zRI>=0?'+':'')+zRI:'—')+' — '+fcrZLabel(zRI)+'</p>';
-  if (ir !== null)    interp += '<p><strong>Índice de Retención:</strong> '+ir+'% — '+(ir>=70?'Retención adecuada':ir>=50?'Retención parcial':'Dificultad en retención visuoespacial')+'</p>';
-  interp += '<p style="font-size:0.8rem;color:var(--muted);">Baremos: Rivera et al. (2015) — NeuroRehabilitation 37(4):677-698. NEURONORMA Latinoamérica — Argentina. Recuerdo diferido: pendiente.</p>';
+  FCR_COND_KEYS.forEach(function(k) {
+    var pb = sc[k];
+    if (pb === null) return;
+    var cz = fcrCalcZ(pb, edad, k);
+    var cap = k.charAt(0).toUpperCase() + k.slice(1);
+    result[k] = pb;
+    result['m' + cap] = cz.m;
+    result['ds' + cap] = cz.ds;
+    result['z' + cap] = cz.z;
+    result['interp' + cap] = fcrZLabel(cz.z) + (cz.z != null ? ' (Z=' + (cz.z >= 0 ? '+' : '') + cz.z + ')' : '');
+    if (sc.modo === 'items') result['items' + cap] = fcrCollectItemScores(k);
+    detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + pb + '</div><div class="detalle-lbl">' + FCR_COND_LBL[k] +
+      '<br><small>Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds + '</small></div></div>';
+  });
 
-  window._fcrData = { copia:copia, ri:ri, ir:ir, pcCopia:pcCopia, pcRI:pcRI, zCopia:zCopia, zRI:zRI, gi:gi, ei:ei };
+  if (sc.copia !== null && sc.ri !== null && sc.copia > 0) {
+    result.ir = parseFloat((sc.ri / sc.copia * 100).toFixed(1));
+    detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + result.ir + '%</div><div class="detalle-lbl">Índice<br>Retención</div></div>';
+  }
+
+  var interp = '<p><strong>Figura A</strong> · Manual TEA Ediciones · Grupo edad ' + FCR_TEA_EDADES[teaIdx] + ' años</p>';
+  FCR_COND_KEYS.forEach(function(k) {
+    if (result[k] === undefined) return;
+    var cap = k.charAt(0).toUpperCase() + k.slice(1);
+    var tbl = k === 'copia' ? 'Tabla 3' : 'Tabla 6';
+    var nota30 = k === 'rd' ? ' <span style="font-size:0.85em;">(memoria TEA; extensión clínica 30 min)</span>' : '';
+    interp += '<p><strong>' + FCR_COND_LBL[k] + ' (' + result[k] + '/36):</strong> ' + tbl +
+      ' · M=' + result['m' + cap] + ' · DS=' + result['ds' + cap] + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
+      ' — ' + result['interp' + cap] + nota30 + '</p>';
+  });
+  if (result.ir !== undefined) {
+    interp += '<p><strong>Índice de Retención (Rec. 3 min / Copia):</strong> ' + result.ir + '% — ' +
+      (result.ir >= 70 ? 'Retención adecuada' : result.ir >= 50 ? 'Retención parcial' : 'Dificultad en retención visuoespacial') + '</p>';
+  }
+  interp += '<p style="font-size:0.8rem;color:var(--muted);">Baremos: Manual TEA Ediciones (Figura Compleja de Rey, 8ª ed.) — Tabla 3 Copia · Tabla 6 Reproducción de memoria. Z = (PB − M) / Dt.</p>';
+
+  window._fcrData = result;
 
   document.getElementById('fcr-detalle').innerHTML = detalleHtml;
-  document.getElementById('fcr-interp').innerHTML  = interp;
+  document.getElementById('fcr-interp').innerHTML = interp;
   document.getElementById('fcr-form').style.display = 'none';
   document.getElementById('fcr-resultado').style.display = 'block';
 }
@@ -18766,22 +18952,54 @@ function guardarFCR() {
   if (!SESSION) return;
   var pacId = document.getElementById('fcr-paciente').value;
   var fecha = document.getElementById('fcr-fecha').value;
-  if (!pacId) { toast('Seleccioná un paciente.','error'); return; }
-  if (!window._fcrData) { toast('Calculá el resultado antes de guardar.','error'); return; }
+  if (!pacId) { toast('Seleccioná un paciente.', 'error'); return; }
+  if (!window._fcrData) { toast('Calculá el resultado antes de guardar.', 'error'); return; }
   var d = window._fcrData;
-  supaFetch('/rest/v1/psico_resultados','POST',{
+  var catParts = [];
+  if (d.copia != null) catParts.push('Copia ' + d.copia + '/36' + (d.zCopia != null ? ' Z=' + d.zCopia : ''));
+  if (d.ri != null) catParts.push('R3m ' + d.ri + '/36' + (d.zRi != null ? ' Z=' + d.zRi : ''));
+  if (d.rd != null) catParts.push('R30m ' + d.rd + '/36' + (d.zRd != null ? ' Z=' + d.zRd : ''));
+
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
     user_id: SESSION.user.id, paciente_id: pacId,
     test: 'Figura Rey', fecha: fecha,
-    puntaje_total: d.copia,
-    puntaje_z: d.zCopia,
-    categoria: d.pcCopia!=null?'Copia Pc'+d.pcCopia+(d.pcRI!=null?' · RI Pc'+d.pcRI:''):'—',
-    datos: { copia:d.copia, ri:d.ri, ir:d.ir, pcCopia:d.pcCopia, pcRI:d.pcRI, zCopia:d.zCopia, zRI:d.zRI, gi:d.gi, ei:d.ei }
-  }, SESSION.access_token).then(function(){
-    cargarResultados(); toast('✓ Resultado guardado','success');
+    puntaje_total: d.copia != null ? d.copia : (d.ri != null ? d.ri : d.rd),
+    puntaje_z: d.zCopia != null ? d.zCopia : (d.zRi != null ? d.zRi : d.zRd),
+    categoria: catParts.join(' · ') || 'Figura A',
+    datos: d
+  }, SESSION.access_token).then(function() {
+    cargarResultados(); toast('✓ Resultado guardado', 'success');
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
-    var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
-    if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+    var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
+    if (btn) { btn.classList.add('btn-saved'); setTimeout(function() { btn.classList.remove('btn-saved'); }, 1500); }
+  }).catch(function() { toast('Error al guardar', 'error'); });
+}
+
+function fcrRestaurarEdicion(d) {
+  if (!d) return;
+  fcrRenderGrids();
+  if (d.edad != null) pacSetVal('fcr-edad-display', d.edad + ' años');
+  if (typeof fcrActualizarTeaGrupo === 'function') fcrActualizarTeaGrupo();
+  var hasItems = d.itemsCopia || d.itemsRi || d.itemsRd;
+  if (d.modo === 'manual' || (!hasItems && (d.copia != null || d.ri != null || d.rd != null))) {
+    setModo('fcr', 'manual');
+    if (d.copia != null) pacSetVal('fcr-man-copia', d.copia);
+    if (d.ri != null) pacSetVal('fcr-man-ri', d.ri);
+    if (d.rd != null) pacSetVal('fcr-man-rd', d.rd);
+  } else {
+    setModo('fcr', 'auto');
+    FCR_COND_KEYS.forEach(function(k) {
+      var keyItems = 'items' + k.charAt(0).toUpperCase() + k.slice(1);
+      var arr = d[keyItems];
+      if (arr && arr.length) {
+        for (var i = 0; i < 18; i++) {
+          if (arr[i] != null) pacSetVal('fcr-' + k + '-item-' + (i + 1), arr[i]);
+        }
+        fcrSumCond(k);
+      }
+    });
+  }
+  fcrActualizar();
 }
 
 // ══ BTA · Brief Test of Attention ════════════════════════════════════════════
@@ -19671,7 +19889,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BEM 144 Signoret':'Batería de Eficacia Mnésica 144 — Signoret (BEM-144)',
     'WCST-64':'Wisconsin Card Sorting Test — 64 cartas (WCST-64)',
     'Stroop':'Test de Colores y Palabras Stroop (Golden, 1978)',
-    'Figura Rey':'Figura Compleja de Rey-Osterrieth (ROCF)',
+    'Figura Rey':'Figura Compleja de Rey-Osterrieth · Figura A',
     'BTA':'Brief Test of Attention (BTA)',
     'Test del Hotel':'Test del Hotel (Pinasco et al., 2023)',
     'BADS-Llaves':'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
@@ -19794,8 +20012,31 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.zPC!=null)add('Stroop — Palabra/Color',d.pc!=null?d.pc:d.pcCorr,50,10,d.zPC,null);
           if(d.zInt!=null)add('Stroop — Interferencia',d.interf,50,10,d.zInt,null);
         } else if(tn==='Figura Rey'){
-          if(d.zCopia!=null)add('Fig. Rey — Copia',d.pbCopia,null,null,d.zCopia,null);
-          if(d.zRI!=null)add('Fig. Rey — Rec. Inmediato',d.pbRI,null,null,d.zRI,null);
+          function fcrWordAdd(lbl, pb, m, ds, z, interp) {
+            if (pb == null) return;
+            rows.push(_zGrillaRows(lbl, pb, m, ds, z, null, rowCount % 2 === 0, false, interp ? { label: interp } : null));
+            rowCount++;
+          }
+          function fcrWN(cond) {
+            if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
+            return { m: null, ds: null };
+          }
+          if (d.copia != null) {
+            var wnC = fcrWN('copia');
+            var zWC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
+            fcrWordAdd('Fig. Rey — Copia', d.copia, d.mCopia != null ? d.mCopia : wnC.m, d.dsCopia != null ? d.dsCopia : wnC.ds, zWC, d.interpCopia || (zWC != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWC) : null));
+          }
+          if (d.ri != null) {
+            var wnR = fcrWN('ri');
+            var zWR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
+            fcrWordAdd('Fig. Rey — Rec. 3 min', d.ri, d.mRi != null ? d.mRi : wnR.m, d.dsRi != null ? d.dsRi : wnR.ds, zWR, d.interpRi || (zWR != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWR) : null));
+          }
+          if (d.rd != null) {
+            var wnD = fcrWN('rd');
+            var zWD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
+            fcrWordAdd('Fig. Rey — Rec. 30 min', d.rd, d.mRd != null ? d.mRd : wnD.m, d.dsRd != null ? d.dsRd : wnD.ds, zWD, d.interpRd || (zWD != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWD) : null));
+          }
+          if (d.ir != null) fcrWordAdd('Fig. Rey — Retención %', d.ir + '%', null, null, null, d.ir + '%');
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){
           var loesBrutoW=d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
@@ -20818,8 +21059,12 @@ function renderPerfilZ() {
         if (idx.CON && idx.CON.z != null) filas.push({lbl:'D2 CON', z: idx.CON.z});
         if (idx.TOT && idx.TOT.z != null) filas.push({lbl:'D2 TOT', z: idx.TOT.z});
       } else if (tn === 'Figura Rey') {
-        if (d.zCopia != null) filas.push({lbl:'Rey Copia', z: d.zCopia});
-        if (d.zRI    != null) filas.push({lbl:'Rey Rec. Inm.', z: d.zRI});
+        var zFC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
+        var zFR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
+        var zFD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
+        if (zFC != null) filas.push({lbl:'Fig.Rey Copia', z: zFC});
+        if (zFR != null) filas.push({lbl:'Fig.Rey RI', z: zFR});
+        if (zFD != null) filas.push({lbl:'Fig.Rey RD', z: zFD});
       } else if (tn === 'BEM 144 Signoret') {
         ['rli','rld','as','rs','rc','reco'].forEach(function(k){
           var lbs = {rli:'BEM Rec.Lóg.Inm',rld:'BEM Rec.Lóg.Dif',as:'BEM Aprendizaje',rs:'BEM Rec.Serial',rc:'BEM Rec.Claves',reco:'BEM Reconocimiento'};
