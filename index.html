@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.7</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.8</div>
     </div>
   </aside>
 
@@ -4315,30 +4315,30 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <!-- AD8-ARG -->
         <div class="card">
           <div class="card-title">AD8-ARG · Cuestionario del Informante (versión argentina)</div>
-          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Indique si hubo <strong>cambio</strong> en los últimos años en cada área (Sí / No / No sé). Puntaje ≥ 2 es clínicamente significativo.</p>
-          <div id="ad8-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">En los últimos años, indique si notó el cambio en cada área (<strong>Sí / No / No sabe</strong>). Puntaje ≥ 2 es clínicamente significativo.</p>
+          <div id="ad8-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
           <div id="ad8-total-box" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;"></div>
         </div>
 
         <!-- AVD Básicas -->
         <div class="card">
-          <div class="card-title">AVD Básicas (Índice de Katz adaptado)</div>
-          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Indique el nivel de <strong>independencia</strong>: 1=Independiente · 2=Necesita ayuda · 3=Dependiente.</p>
-          <div id="avdb-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+          <div class="card-title">Actividades Básicas de la Vida Diaria</div>
+          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Últimos 6 meses. Escala <strong>0 a 3</strong>: 0 = total independencia · 3 = necesita completa asistencia.</p>
+          <div id="avdb-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
         </div>
 
         <!-- AVD Instrumentales -->
         <div class="card">
-          <div class="card-title">AVD Instrumentales (Lawton & Brody adaptado)</div>
-          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Indique el nivel de <strong>independencia</strong>: 1=Independiente · 2=Necesita ayuda · 3=Dependiente.</p>
-          <div id="avdi-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+          <div class="card-title">Actividades Instrumentales de la Vida Diaria</div>
+          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Escala <strong>0 a 3</strong> (transporte: 0 a 4). 0 = independencia total · valores altos = mayor dependencia.</p>
+          <div id="avdi-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
         </div>
 
         <!-- AVD Expansivas -->
         <div class="card">
-          <div class="card-title">AVD Expansivas</div>
-          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Indique el nivel de <strong>independencia</strong>: 1=Independiente · 2=Necesita ayuda · 3=Dependiente.</p>
-          <div id="avde-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+          <div class="card-title">Actividades Expansivas de la Vida Diaria</div>
+          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Escala <strong>0 a 3</strong>: 0 = independencia total · 3 = necesita completa asistencia.</p>
+          <div id="avde-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
         </div>
 
         <div class="btn-row" style="margin-top:8px;">
@@ -8545,11 +8545,6 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
 function renderCuestionariosFam(d) {
     if (!d || (!d.npiq && !d.avdb && !d.avdi && !d.avde && !d.ad8)) return '';
     var informante = d.informante ? ' · Informante: '+d.informante : '';
-    var npiqItems = [{id:'delirios',label:'Delirios'},{id:'alucin',label:'Alucinaciones'},{id:'agitacion',label:'Agitación/Agresión'},{id:'depresion',label:'Depresión/Disforia'},{id:'ansiedad',label:'Ansiedad'},{id:'euforia',label:'Euforia'},{id:'apatia',label:'Apatía/Indiferencia'},{id:'desinhib',label:'Desinhibición'},{id:'irritab',label:'Irritabilidad'},{id:'motora',label:'Cond. Motora Anormal'},{id:'sueno',label:'Cambios Sueño'},{id:'apetito',label:'Cambios Apetito'}];
-    var avdbItems = [{id:'identif',label:'Identificación'},{id:'aseo',label:'Aseo'},{id:'vestirse',label:'Vestirse'},{id:'continen',label:'Continencia'}];
-    var avdiItems = [{id:'telefono',label:'Teléfono'},{id:'compras',label:'Compras'},{id:'comida',label:'Preparar comida'},{id:'transp',label:'Transporte'},{id:'medic',label:'Medicación'},{id:'dinero',label:'Dinero'}];
-    var avdeItems = [{id:'inform',label:'Información'},{id:'social',label:'Contacto social'},{id:'recreat',label:'Recreación'},{id:'autono',label:'Autonomía'},{id:'planes',label:'Planes de futuro'},{id:'responsab',label:'Responsabilidad'},{id:'opinion',label:'Expresión opinión'},{id:'aprende',label:'Aprendizaje'}];
-    var ad8Items = [{id:'ad8_1',label:'Juicios/Decisiones'},{id:'ad8_2',label:'Hobbies'},{id:'ad8_3',label:'Repite preguntas'},{id:'ad8_4',label:'Aparatos/Dispositivos'},{id:'ad8_5',label:'Olvida mes/año'},{id:'ad8_6',label:'Finanzas complejas'},{id:'ad8_7',label:'Recordar citas'},{id:'ad8_8',label:'Memoria/Razonamiento'}];
     var gravLbl = ['','Leve','Moderado','Severo'];
     var thS = 'padding:5px 8px;background:#d8ecd0;color:#2a6e6e;font-weight:700;border:0.5px solid #a8c4a0;font-size:9px;text-align:left;';
     var thC = 'padding:5px 8px;background:#d8ecd0;color:#2a6e6e;font-weight:700;border:0.5px solid #a8c4a0;font-size:9px;text-align:center;';
@@ -8557,29 +8552,36 @@ function renderCuestionariosFam(d) {
     var tdC = 'padding:5px 8px;border:0.5px solid #a8c4a0;font-size:9px;font-weight:700;color:#111;text-align:center;vertical-align:top;';
     var tdT = 'padding:5px 8px;border:0.5px solid #a8c4a0;font-size:9px;color:#111;vertical-align:top;';
 
-    function famRow(nombre, items, data, cutoff, labelFn) {
+    function famRowAvd(nombre, items, data) {
       if (!data) return '';
-      var sig = items.filter(function(i){ return (data[i.id]||0) >= cutoff; });
-      var isSig = sig.length > 0;
+      var sig = famAvdHaySignificativo(data, items);
+      var sint = famReporteSintomasAvd(data, items);
       return '<tr><td style="'+tdS+'">'+nombre+'</td>'+
-        '<td style="'+tdC+'">'+(isSig?'Sintomatología significativa':'Sin sintomatología significativa')+'</td>'+
-        '<td style="'+tdT+'">'+( isSig ? sig.map(labelFn).join(' ; ') : '—' )+'</td></tr>';
+        '<td style="'+tdC+'">'+(sig ? 'Significativo' : 'No significativo')+'</td>'+
+        '<td style="'+tdT+'">'+sint+'</td></tr>';
     }
 
     var html = '<div style="margin-top:14px;page-break-inside:avoid;">';
     html += '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#eef6ea;background:#214b1a;padding:5px 10px;margin-bottom:0;">REPORTE DEL ACOMPAÑANTE'+informante+'</div>';
     html += '<table style="width:100%;border-collapse:collapse;">';
     html += '<thead><tr><th style="'+thS+'width:27%;">Tests</th><th style="'+thC+'width:22%;">Significativo / No significativo</th><th style="'+thS+'">Síntomas significativos</th></tr></thead><tbody>';
-    if (d.npiq) html += famRow('Inventario neuropsiquiátrico NPI-Q', npiqItems, d.npiq, 1, function(i){ return i.label+(d.npiq[i.id]>0?' ('+gravLbl[d.npiq[i.id]]+')':''); });
-    if (d.avdb) html += famRow('Escala de AVD Básicas', avdbItems, d.avdb, 2, function(i){ return i.label+' ('+d.avdb[i.id]+')'; });
-    if (d.avdi) html += famRow('Escala de AVD Instrumentales', avdiItems, d.avdi, 2, function(i){ return i.label+' ('+d.avdi[i.id]+')'; });
-    if (d.avde) html += famRow('Escala de AVD Expansivas', avdeItems, d.avde, 2, function(i){ return i.label+' ('+d.avde[i.id]+')'; });
+    if (d.npiq) {
+      var npiqSig = Object.keys(d.npiq).some(function(k){ return d.npiq[k] > 0; });
+      var npiqTxt = FAM_NPIQ.filter(function(i){ return d.npiq[i.id] > 0; }).map(function(i){
+        return i.label + (d.npiq[i.id] > 0 ? ' ('+gravLbl[d.npiq[i.id]]+')' : '');
+      }).join(' ; ') || '—';
+      html += '<tr><td style="'+tdS+'">Inventario neuropsiquiátrico NPI-Q</td>'+
+        '<td style="'+tdC+'">'+(npiqSig?'Significativo':'No significativo')+'</td>'+
+        '<td style="'+tdT+'">'+npiqTxt+'</td></tr>';
+    }
+    if (d.avdb) html += famRowAvd('Escala de AVD Básicas', FAM_AVDB, d.avdb);
+    if (d.avdi) html += famRowAvd('Escala de AVD Instrumentales', FAM_AVDI, d.avdi);
+    if (d.avde) html += famRowAvd('Escala de AVD Expansivas', FAM_AVDE, d.avde);
     if (d.ad8) {
-      var ad8Sig = (d.ad8Total||0) >= 3;
-      var siAD8 = ad8Items.filter(function(i){ return d.ad8[i.id]==='si'; });
+      var ad8Sig = (d.ad8Total||0) >= 2;
       html += '<tr><td style="'+tdS+'">Cuestionario del informante AD8-ARG</td>'+
-        '<td style="'+tdC+'">'+(ad8Sig?'Sintomatología significativa':'Sin sintomatología significativa')+'</td>'+
-        '<td style="'+tdT+'">'+(siAD8.length ? siAD8.map(function(i){return i.label;}).join(' ; ') : '—')+'</td></tr>';
+        '<td style="'+tdC+'">'+(ad8Sig?'Significativo ('+(d.ad8Total||0)+'/8)':'No significativo ('+(d.ad8Total||0)+'/8)')+'</td>'+
+        '<td style="'+tdT+'">'+famReporteSintomasAd8(d.ad8)+'</td></tr>';
     }
     html += '</tbody></table></div>';
     return html;
@@ -20239,22 +20241,22 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     famRows.push(_wRow([famCell('Inventario neuropsiquiátrico NPI-Q',COL_FAM[0],'F2F2F2'),famCell(npiqSig,COL_FAM[1],'F2F2F2',true),famCell(npiqSint,COL_FAM[2],'F2F2F2')]));
     
     // AVD Básicas
-    var avdbVal = fam.avdbTotal!=null?fam.avdbTotal:(fam.avdb_total!=null?fam.avdb_total:null);
-    var avdbSig = avdbVal!=null ? (avdbVal<4?'No significativo':'Significativo') : '—';
+    var avdbSig = famAvdHaySignificativo(fam.avdb, FAM_AVDB);
+    var avdbSigTxt = avdbSig === null ? '—' : (avdbSig ? 'Significativo' : 'No significativo');
     var avdbSint = famReporteSintomasAvd(fam.avdb, FAM_AVDB);
-    famRows.push(_wRow([famCell('Escala de AVD Básicas',COL_FAM[0]),famCell(avdbSig,COL_FAM[1],'',true),famCell(avdbSint,COL_FAM[2])]));
+    famRows.push(_wRow([famCell('Escala de AVD Básicas',COL_FAM[0]),famCell(avdbSigTxt,COL_FAM[1],'',true),famCell(avdbSint,COL_FAM[2])]));
     
     // AVD Instrumentales
-    var avdiVal = fam.avdiTotal!=null?fam.avdiTotal:(fam.avdi_total!=null?fam.avdi_total:null);
-    var avdiSig = avdiVal!=null ? (avdiVal<6?'No significativo':'Significativo') : '—';
+    var avdiSig = famAvdHaySignificativo(fam.avdi, FAM_AVDI);
+    var avdiSigTxt = avdiSig === null ? '—' : (avdiSig ? 'Significativo' : 'No significativo');
     var avdiSint = famReporteSintomasAvd(fam.avdi, FAM_AVDI);
-    famRows.push(_wRow([famCell('Escala de AVD Instrumentales',COL_FAM[0],'F2F2F2'),famCell(avdiSig,COL_FAM[1],'F2F2F2',true),famCell(avdiSint,COL_FAM[2],'F2F2F2')]));
+    famRows.push(_wRow([famCell('Escala de AVD Instrumentales',COL_FAM[0],'F2F2F2'),famCell(avdiSigTxt,COL_FAM[1],'F2F2F2',true),famCell(avdiSint,COL_FAM[2],'F2F2F2')]));
     
     // AVD Expansivas
-    var avdeVal = fam.avdeTotal!=null?fam.avdeTotal:(fam.avde_total!=null?fam.avde_total:null);
-    var avdeSig = avdeVal!=null ? (avdeVal<8?'No significativo':'Significativo') : '—';
+    var avdeSig = famAvdHaySignificativo(fam.avde, FAM_AVDE);
+    var avdeSigTxt = avdeSig === null ? '—' : (avdeSig ? 'Significativo' : 'No significativo');
     var avdeSint = famReporteSintomasAvd(fam.avde, FAM_AVDE);
-    famRows.push(_wRow([famCell('Escala de AVD Expansivas',COL_FAM[0]),famCell(avdeSig,COL_FAM[1],'',true),famCell(avdeSint,COL_FAM[2])]));
+    famRows.push(_wRow([famCell('Escala de AVD Expansivas',COL_FAM[0]),famCell(avdeSigTxt,COL_FAM[1],'',true),famCell(avdeSint,COL_FAM[2])]));
     
     // AD8-ARG
     var ad8Val = fam.ad8Total!=null?fam.ad8Total:(fam.ad8_total!=null?fam.ad8_total:null);
@@ -20861,63 +20863,187 @@ function renderPerfilZ() {
   tabla.innerHTML = html;
 }
 
-// ══ CUESTIONARIOS FAMILIARES ══════════════════════════════════════════════════
+// ══ CUESTIONARIOS FAMILIARES (protocolo CIATEC / González Palau) ═══════════════
 var FAM_NPIQ = [
-  {id:'delirios', label:'Delirios'},
-  {id:'alucin',   label:'Alucinaciones'},
-  {id:'agitacion',label:'Agitación / Agresión'},
-  {id:'depresion',label:'Depresión / Disforia'},
-  {id:'ansiedad', label:'Ansiedad'},
-  {id:'euforia',  label:'Euforia / Elación'},
-  {id:'apatia',   label:'Apatía / Indiferencia'},
-  {id:'desinhib', label:'Desinhibición'},
-  {id:'irritab',  label:'Irritabilidad / Labilidad'},
-  {id:'motora',   label:'Conducta Motora Anormal'},
-  {id:'sueno',    label:'Cambios en el Sueño'},
-  {id:'apetito',  label:'Cambios en el Apetito'}
+  {id:'delirios',  label:'Delirios',  prompt:'Creencias falsas (robos, daño).'},
+  {id:'alucin',    label:'Alucinaciones', prompt:'Visiones o voces; actúa como si las oyera/viera.'},
+  {id:'agitacion', label:'Agitación o agresión', prompt:'Se niega a cooperar o no deja ayudarle.'},
+  {id:'depresion', label:'Depresión o disforia', prompt:'Triste, desanimado o llora.'},
+  {id:'ansiedad',  label:'Ansiedad', prompt:'Nervioso, preocupado o tenso sin motivo.'},
+  {id:'euforia',   label:'Euforia o elación', prompt:'Demasiado contento sin motivo aparente.'},
+  {id:'apatia',    label:'Apatía o indiferencia', prompt:'Perdió interés o motivación.'},
+  {id:'desinhib',  label:'Desinhibición', prompt:'Actúa impulsivo; cosas inapropiadas.'},
+  {id:'irritab',   label:'Irritabilidad o labilidad', prompt:'Se irrita fácil; cambios de ánimo.'},
+  {id:'motora',    label:'Conducta motora anormal', prompt:'Deambula, abre cajones repetidamente.'},
+  {id:'sueno',     label:'Cambios en el sueño', prompt:'Insomnio, deambula o se viste de noche.'},
+  {id:'apetito',   label:'Cambios en el apetito', prompt:'Cambios en apetito, peso o alimentación.'}
 ];
 var FAM_AD8 = [
-  {id:'ad8_1', label:'Cambios en el juicio o decisiones', wordReport:'Dificultad para emitir juicios o tomar decisiones correctas'},
-  {id:'ad8_2', label:'Menor interés en hobbies o actividades', wordReport:'Menor interés en hobbies y pasatiempos'},
-  {id:'ad8_3', label:'Repite preguntas, historias o frases', wordReport:'Repite las preguntas, los comentarios o las cosas que cuenta'},
-  {id:'ad8_4', label:'Dificultad con aparatos o dispositivos', wordReport:'Dificultad para usar aparatos o dispositivos habituales'},
-  {id:'ad8_5', label:'Olvida el mes o el año', wordReport:'Olvida con frecuencia el mes o el año en curso'},
-  {id:'ad8_6', label:'Dificultad para finanzas complejas', wordReport:'Dificultad para llevar finanzas o trámites complejos'},
-  {id:'ad8_7', label:'Olvida citas o compromisos', wordReport:'Olvida citas o compromisos habitualmente'},
-  {id:'ad8_8', label:'Problemas de memoria o razonamiento', wordReport:'Problemas de memoria o dificultades de razonamiento'},
+  {id:'ad8_1', n:1, label:'Dificultad para emitir juicios o tomar decisiones correctas', wordReport:'Dificultad emitir juicios'},
+  {id:'ad8_2', n:2, label:'Menor interés en hobbies y pasatiempos', wordReport:'Menor interés hobbies'},
+  {id:'ad8_3', n:3, label:'Repite las preguntas, comentarios o cosas que cuenta', wordReport:'Repite preguntas comentarios'},
+  {id:'ad8_4', n:4, label:'Dificultad para aprender a usar aparatos o dispositivos', wordReport:'Dificultad aparatos dispositivos'},
+  {id:'ad8_5', n:5, label:'Olvidar el mes y el año en que se encuentra', wordReport:'Olvida mes y año'},
+  {id:'ad8_6', n:6, label:'Dificultad en manejo de asuntos financieros complejos', wordReport:'Dificultad finanzas complejas'},
+  {id:'ad8_7', n:7, label:'Dificultad para recordar citas y cosas que tiene que hacer', wordReport:'Dificultad recordar citas'},
+  {id:'ad8_8', n:8, label:'Problemas recurrentes de memoria y razonamiento', wordReport:'Problemas memoria razonamiento'}
 ];
 var FAM_AVDB = [
-  {id:'identif',  label:'Alimentación', wordReport:'Con frecuencia duda o equivoca sus datos de identificación y vivienda'},
-  {id:'aseo',     label:'Higiene personal', wordReport:'Recibe ayuda frecuentemente para bañarse o asearse'},
-  {id:'vestirse', label:'Vestirse / Desvestirse', wordReport:'Necesita que le elijan la ropa o que le ayuden a vestirse casi completamente'},
-  {id:'continen', label:'Continencia esfínteres', wordReport:'Presenta dificultades con el control de esfínteres y necesita ayuda para la continencia'},
+  {id:'identif', label:'A) Identificación personal', wordReport:'Identificación personal',
+    options:[
+      {v:0,t:'0 · Datos correctos siempre'},
+      {v:1,t:'1 · Ocasional duda en algún dato'},
+      {v:2,t:'2 · Solo algún dato personal'},
+      {v:3,t:'3 · Duda datos personales'}
+    ]},
+  {id:'aseo', label:'B) Aseo personal', wordReport:'Aseo personal',
+    options:[
+      {v:0,t:'0 · Se asea sin ayuda'},
+      {v:1,t:'1 · Asea bien, hay que indicarle'},
+      {v:2,t:'2 · Requiere indicación o ayuda parcial'},
+      {v:3,t:'3 · Ayuda frecuente para asearse'}
+    ]},
+  {id:'vestirse', label:'C) Vestirse apropiadamente', wordReport:'Vestirse apropiadamente',
+    options:[
+      {v:0,t:'0 · Elige ropa y se viste solo'},
+      {v:1,t:'1 · Necesita indicación de ropa'},
+      {v:2,t:'2 · Ayuda para elegir o vestirse'},
+      {v:3,t:'3 · Le eligen ropa o visten casi completo'}
+    ]},
+  {id:'continen', label:'F) Continencia', wordReport:'Continencia esfínteres',
+    options:[
+      {v:0,t:'0 · Control esfinteriano completo'},
+      {v:1,t:'1 · Dificultad ocasional nocturna'},
+      {v:2,t:'2 · Accidentes ocasionales diurnos'},
+      {v:3,t:'3 · Ayuda para esfínteres'}
+    ]}
 ];
 var FAM_AVDI = [
-  {id:'telefono', label:'Uso del teléfono', wordReport:'Necesita ayuda para usar el teléfono o realizar llamadas'},
-  {id:'compras',  label:'Compras', wordReport:'Ya no puede realizar las compras de manera autónoma'},
-  {id:'comida',   label:'Preparar comida', wordReport:'Necesita ayuda para preparar sus comidas'},
-  {id:'transp',   label:'Transporte / movilidad', wordReport:'Depende de ayuda para trasladarse o utilizar medios de transporte'},
-  {id:'medic',    label:'Medicación', wordReport:'Necesita que le administren o supervisen la medicación'},
-  {id:'dinero',   label:'Manejo del dinero', wordReport:'Ya no puede manejar dinero ni realizar operaciones financieras cotidianas'},
+  {id:'telefono', label:'A) Capacidad para usar el teléfono', wordReport:'Uso del teléfono',
+    options:[
+      {v:0,t:'0 · Usa teléfono con independencia'},
+      {v:1,t:'1 · Marca números conocidos'},
+      {v:2,t:'2 · Contesta, no marca'},
+      {v:3,t:'3 · No usa el teléfono'}
+    ]},
+  {id:'compras', label:'B) Ir de compras', wordReport:'Ir de compras',
+    options:[
+      {v:0,t:'0 · Compras independientes'},
+      {v:1,t:'1 · Compras pequeñas solo'},
+      {v:2,t:'2 · Necesita compañía'},
+      {v:3,t:'3 · Incapaz de comprar'}
+    ]},
+  {id:'comida', label:'C) Preparación de la comida', wordReport:'Preparación comida',
+    options:[
+      {v:0,t:'0 · Planea y cocina solo'},
+      {v:1,t:'1 · Cocina con ingredientes dados'},
+      {v:2,t:'2 · Calienta o prepara parcialmente'},
+      {v:3,t:'3 · Necesita que le preparen comida'}
+    ]},
+  {id:'transp', label:'F) Medio de transporte', wordReport:'Medio de transporte',
+    options:[
+      {v:0,t:'0 · Transporte público o maneja'},
+      {v:1,t:'1 · Organiza taxi, no otros medios'},
+      {v:2,t:'2 · Transporte público acompañado'},
+      {v:3,t:'3 · Solo taxi o auto con ayuda'},
+      {v:4,t:'4 · No viaja'}
+    ]},
+  {id:'medic', label:'G) Responsabilidad sobre la medicación', wordReport:'Responsabilidad medicación',
+    options:[
+      {v:0,t:'0 · Medicación autónoma'},
+      {v:1,t:'1 · Toma si está preparada'},
+      {v:2,t:'2 · No se responsabiliza'}
+    ]},
+  {id:'dinero', label:'H) Capacidad de utilizar el dinero', wordReport:'Uso del dinero',
+    options:[
+      {v:0,t:'0 · Finanzas independientes'},
+      {v:1,t:'1 · Gastos diarios, ayuda banco'},
+      {v:2,t:'2 · Incapaz de manejar dinero'}
+    ]}
 ];
 var FAM_AVDE = [
-  {id:'inform',    label:'Acceso a información', wordReport:'Tiene dificultad para acceder o procesar información de interés personal'},
-  {id:'social',    label:'Contacto social', wordReport:'Ha disminuido o perdido el contacto social habitual'},
-  {id:'recreat',   label:'Actividades recreativas', wordReport:'Ya no participa en actividades recreativas o de ocio de forma autónoma'},
-  {id:'autono',    label:'Autonomía', wordReport:'Presenta limitaciones en su autonomía personal y en la toma de decisiones cotidianas'},
-  {id:'planes',    label:'Planes de futuro', wordReport:'Ya no planifica ni organiza actividades de futuro'},
-  {id:'responsab', label:'Responsabilidades', wordReport:'Ha dejado de cumplir con responsabilidades habituales'},
-  {id:'opinion',   label:'Expresión de opinión', wordReport:'Tiene dificultad para expresar opiniones o preferencias personales'},
-  {id:'aprende',   label:'Aprendizaje de cosas nuevas', wordReport:'Presenta dificultad para aprender o incorporar cosas nuevas'},
+  {id:'inform', label:'A) Se mantiene informado', wordReport:'Se mantiene informado',
+    options:[
+      {v:0,t:'0 · Informado de varios temas'},
+      {v:1,t:'1 · Solo uno o dos temas'},
+      {v:2,t:'2 · Depende que le informen'},
+      {v:3,t:'3 · No se informa'}
+    ]},
+  {id:'social', label:'B) Contactos socio afectivos', wordReport:'Contactos socio afectivos',
+    options:[
+      {v:0,t:'0 · Vincula con satisfacción'},
+      {v:1,t:'1 · Relaciona para no aislarse'},
+      {v:2,t:'2 · Dificultad con la gente'},
+      {v:3,t:'3 · No desea estar con gente'}
+    ]},
+  {id:'recreat', label:'C) Actividades recreativas', wordReport:'Actividades recreativas',
+    options:[
+      {v:0,t:'0 · Recrea con frecuencia'},
+      {v:1,t:'1 · Recrea si lo acompañan'},
+      {v:2,t:'2 · Errático en recreación'},
+      {v:3,t:'3 · No participa recreativamente'}
+    ]},
+  {id:'autono', label:'D) Autonomía e independencia', wordReport:'Autonomía e independencia',
+    options:[
+      {v:0,t:'0 · Autonomía general'},
+      {v:1,t:'1 · Ayuda o permisos eventuales'},
+      {v:2,t:'2 · Apoyo frecuente'},
+      {v:3,t:'3 · Depende de otros'}
+    ]},
+  {id:'planes', label:'E) Formula planes de futuro', wordReport:'Planes de futuro',
+    options:[
+      {v:0,t:'0 · Planea y actúa en consecuencia'},
+      {v:1,t:'1 · Planea, poca movilización'},
+      {v:2,t:'2 · Escasos planes'},
+      {v:3,t:'3 · Sin planes ni proyectos'}
+    ]},
+  {id:'responsab', label:'F) Responsabilidad y confianza', wordReport:'Responsabilidad y confianza',
+    options:[
+      {v:0,t:'0 · Muy responsable'},
+      {v:1,t:'1 · Responsable si controlan'},
+      {v:2,t:'2 · Poca responsabilidad'},
+      {v:3,t:'3 · No inspira confianza'}
+    ]},
+  {id:'opinion', label:'G) Expresión de opiniones comprometidas', wordReport:'Expresión de opiniones',
+    options:[
+      {v:0,t:'0 · Opina y discute bien'},
+      {v:1,t:'1 · Opina en ciertas circunstancias'},
+      {v:2,t:'2 · Dificultad para opinar'},
+      {v:3,t:'3 · No expresa opinión'}
+    ]},
+  {id:'aprende', label:'H) Aprende cosas nuevas', wordReport:'Aprende cosas nuevas',
+    options:[
+      {v:0,t:'0 · Aprende nuevas actividades'},
+      {v:1,t:'1 · Habilidades limitadas'},
+      {v:2,t:'2 · No intenta aprender'},
+      {v:3,t:'3 · Dificultad para aprender'}
+    ]}
 ];
+
+function famAvdItemSignificativo(v) {
+  if (v == null || v === '') return false;
+  var n = parseInt(v, 10);
+  return !isNaN(n) && n >= 2;
+}
+
+function famAvdHaySignificativo(obj, items) {
+  if (!obj || typeof obj !== 'object') return null;
+  var hayDato = false, alguno = false;
+  items.forEach(function(it) {
+    var v = obj[it.id];
+    if (v != null && v !== '') {
+      hayDato = true;
+      if (famAvdItemSignificativo(v)) alguno = true;
+    }
+  });
+  return hayDato ? alguno : null;
+}
 
 function famReporteSintomasAvd(obj, items) {
   if (!obj || typeof obj !== 'object') return '—';
   var partes = [];
   items.forEach(function(it) {
-    var v = obj[it.id];
-    if (v == null || v === 0 || v === 1 || v === 'independiente' || v === '') return;
-    partes.push(it.wordReport || it.label);
+    if (famAvdItemSignificativo(obj[it.id])) partes.push(it.wordReport || it.label);
   });
   return partes.length ? partes.join(' ; ') : '—';
 }
@@ -20944,10 +21070,11 @@ function _renderFamiliarGrids() {
   FAM_NPIQ.forEach(function(item) {
     var d = document.createElement('div');
     d.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;';
-    d.innerHTML = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;">'+item.label+'</div>'+
+    d.innerHTML = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">'+item.label+'</div>'+
+      (item.prompt ? '<div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;line-height:1.35;">'+item.prompt+'</div>' : '')+
       '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'+
       '<label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;cursor:pointer;">'+
-        '<input type="checkbox" id="npiq-'+item.id+'-pres" onchange="npiqChk(\''+item.id+'\')"> Presente'+
+        '<input type="checkbox" id="npiq-'+item.id+'-pres" onchange="npiqChk(\''+item.id+'\')"> Sí'+
       '</label>'+
       '<select id="npiq-'+item.id+'-grav" disabled style="font-size:0.78rem;padding:2px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);">'+
         '<option value="0">— gravedad —</option>'+
@@ -20955,6 +21082,7 @@ function _renderFamiliarGrids() {
         '<option value="2">2 · Moderado</option>'+
         '<option value="3">3 · Severo</option>'+
       '</select>'+
+      '<span style="font-size:0.75rem;color:var(--muted);">No = ausente</span>'+
       '</div>';
     npiqG.appendChild(d);
   });
@@ -20965,10 +21093,10 @@ function _renderFamiliarGrids() {
   FAM_AD8.forEach(function(item) {
     var d = document.createElement('div');
     d.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;';
-    d.innerHTML = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;">'+item.label+'</div>'+
-      '<div style="display:flex;gap:8px;">'+
+    d.innerHTML = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.35;">'+item.n+'. '+item.label+'</div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
       ['si','no','nose'].map(function(v,i){
-        var lbl = ['Sí','No','No sé'][i];
+        var lbl = ['Sí','No','No sabe'][i];
         return '<label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;cursor:pointer;">'+
           '<input type="radio" name="ad8-'+item.id+'" value="'+v+'" onchange="ad8Calc()"> '+lbl+'</label>';
       }).join('')+
@@ -20976,20 +21104,20 @@ function _renderFamiliarGrids() {
     ad8G.appendChild(d);
   });
 
-  // AVD grids
+  // AVD grids (escala 0–3 según protocolo)
   function renderAvd(items, containerId) {
     var g = document.getElementById(containerId);
     g.innerHTML = '';
     items.forEach(function(item) {
+      var opts = (item.options || []).map(function(o) {
+        return '<option value="'+o.v+'">'+o.t+'</option>';
+      }).join('');
       var d = document.createElement('div');
       d.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;';
       d.innerHTML = '<div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;">'+item.label+'</div>'+
-        '<div style="display:flex;gap:8px;">'+
-        [[1,'Independiente'],[2,'Necesita ayuda'],[3,'Dependiente']].map(function(pair){
-          return '<label style="display:flex;align-items:center;gap:4px;font-size:0.78rem;cursor:pointer;">'+
-            '<input type="radio" name="'+containerId+'-'+item.id+'" value="'+pair[0]+'"> '+pair[1]+'</label>';
-        }).join('')+
-        '</div>';
+        '<select name="'+containerId+'-'+item.id+'" style="width:100%;font-size:0.78rem;padding:5px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);">'+
+        '<option value="">— Seleccionar nivel —</option>'+opts+
+        '</select>';
       g.appendChild(d);
     });
   }
@@ -21050,9 +21178,9 @@ function _getFamData() {
   function getAvd(items, prefix) {
     var avd = {}, total = 0, hay = false;
     items.forEach(function(item){
-      var sel = document.querySelector('input[name="'+prefix+'-'+item.id+'"]:checked');
-      avd[item.id] = sel ? parseInt(sel.value) : null;
-      if (sel) { hay = true; total += parseInt(sel.value); }
+      var el = document.querySelector('select[name="'+prefix+'-'+item.id+'"]');
+      avd[item.id] = el && el.value !== '' ? parseInt(el.value, 10) : null;
+      if (el && el.value !== '') { hay = true; total += parseInt(el.value, 10); }
     });
     return {data: avd, total: total, hay: hay};
   }
