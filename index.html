@@ -2472,6 +2472,32 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
+    <div id="fcr-exactitud-tipo-card" class="card">
+      <div class="card-title">Exactitud y tipo (TEA)</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo: estrategia constructiva I–VII (manual TEA · Osterrieth).</p>
+      <p id="fcr-exact-man-nota" style="display:none;font-size:0.82rem;color:var(--muted);margin:0 0 12px;">En carga manual, la exactitud se toma de los totales ingresados arriba.</p>
+      <div id="fcr-exact-grid">
+        <div class="form-grid-3" style="margin-bottom:6px;font-size:0.72rem;font-weight:700;color:var(--muted);">
+          <div>Condición</div><div id="fcr-exact-hdr">Exactitud</div><div>Tipo</div>
+        </div>
+        <div class="form-grid-3" style="align-items:end;margin-bottom:8px;">
+          <div style="font-size:0.82rem;padding-top:8px;">Copia</div>
+          <div class="field" style="margin:0;"><input type="number" id="fcr-exact-copia" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
+          <div class="field" style="margin:0;"><select id="fcr-tipo-copia"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+        </div>
+        <div class="form-grid-3" style="align-items:end;margin-bottom:8px;">
+          <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 3 min</div>
+          <div class="field" style="margin:0;"><input type="number" id="fcr-exact-ri" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
+          <div class="field" style="margin:0;"><select id="fcr-tipo-ri"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+        </div>
+        <div class="form-grid-3" style="align-items:end;">
+          <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 30 min</div>
+          <div class="field" style="margin:0;"><input type="number" id="fcr-exact-rd" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
+          <div class="field" style="margin:0;"><select id="fcr-tipo-rd"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+        </div>
+      </div>
+    </div>
+
     <div id="fcr-live" style="margin-top:4px;padding:8px 14px;background:var(--bg);border-radius:8px;font-size:0.85rem;min-height:28px;"></div>
 
     <div class="btn-row">
@@ -8913,37 +8939,33 @@ function renderCuestionariosFam(d) {
           var notaF = teaLblF ? 'Fig. A · Grupo ' + teaLblF + ' años · Manual TEA' : 'Fig. A · Manual TEA';
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">Figura Compleja de Rey-Osterrieth · Figura A · ' + notaF + '</td></tr>';
           function fcrFilaPdf(lbl, pb, m, ds, z, interp) {
-            if (pb == null) return '';
+            if (pb === null || pb === undefined) return '';
             return filaTabla(lbl, pb, m, ds, z, r.fecha, interp || null, interp || null);
+          }
+          function fcrFilaPdfQual(lbl, val, desc) {
+            if (val == null || val === '') return '';
+            return filaTabla(lbl, val, null, null, null, r.fecha, desc || null, desc || null);
           }
           function fcrNormPdf(cond) {
             if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
             return { m: null, ds: null };
           }
-          if (d.copia != null) {
-            var nC = fcrNormPdf('copia');
-            var mC = d.mCopia != null ? d.mCopia : nC.m;
-            var dsC = d.dsCopia != null ? d.dsCopia : nC.ds;
-            var zC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
-            var iC = d.interpCopia || (zC != null && typeof fcrZLabel === 'function' ? fcrZLabel(zC) : null);
-            rows += fcrFilaPdf('Copia', d.copia, mC, dsC, zC, iC);
+          function fcrPdfCond(k, lblBase) {
+            var cap = typeof fcrCapKey === 'function' ? fcrCapKey(k) : k.charAt(0).toUpperCase() + k.slice(1);
+            var pb = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[k];
+            if (pb == null) return;
+            var n = fcrNormPdf(k);
+            var m = d['m' + cap] != null ? d['m' + cap] : n.m;
+            var ds = d['ds' + cap] != null ? d['ds' + cap] : n.ds;
+            var z = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
+            var i = typeof fcrInterpLabel === 'function' ? fcrInterpLabel(d['interp' + cap], z) : d['interp' + cap];
+            rows += fcrFilaPdf(lblBase + ' · Exactitud', pb, m, ds, z, i);
+            var tipo = d['tipo' + cap];
+            if (tipo) rows += fcrFilaPdfQual(lblBase + ' · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : ('Tipo ' + tipo));
           }
-          if (d.ri != null) {
-            var nR = fcrNormPdf('ri');
-            var mR = d.mRi != null ? d.mRi : nR.m;
-            var dsR = d.dsRi != null ? d.dsRi : nR.ds;
-            var zR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
-            var iR = d.interpRi || (zR != null && typeof fcrZLabel === 'function' ? fcrZLabel(zR) : null);
-            rows += fcrFilaPdf('Recuerdo 3 min', d.ri, mR, dsR, zR, iR);
-          }
-          if (d.rd != null) {
-            var nD = fcrNormPdf('rd');
-            var mD = d.mRd != null ? d.mRd : nD.m;
-            var dsD = d.dsRd != null ? d.dsRd : nD.ds;
-            var zD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
-            var iD = d.interpRd || (zD != null && typeof fcrZLabel === 'function' ? fcrZLabel(zD) : null);
-            rows += fcrFilaPdf('Recuerdo 30 min', d.rd, mD, dsD, zD, iD);
-          }
+          fcrPdfCond('copia', 'Copia');
+          fcrPdfCond('ri', 'Recuerdo 3 min');
+          fcrPdfCond('rd', 'Recuerdo 30 min');
           if (d.ir != null) rows += filaTabla('Índice de Retención (3 min/Copia)', d.ir+'%', null, null, null, r.fecha, d.ir+'%', d.ir+'%');
 
         } else if (testNombre === 'Stroop') {
@@ -10402,6 +10424,11 @@ function setModo(testId, modo) {
     btnMan.classList.remove('active'); btnAuto.classList.add('active');
     if (autoArea) autoArea.style.display = 'block';
     if (manArea)  manArea.style.display  = 'none';
+  }
+  if (testId === 'fcr') {
+    if (typeof fcrToggleExactitudGrid === 'function') fcrToggleExactitudGrid();
+    if (typeof fcrSyncExactitudFields === 'function') fcrSyncExactitudFields();
+    if (typeof fcrActualizar === 'function') fcrActualizar();
   }
 }
 
@@ -18719,6 +18746,79 @@ function fcrZLabel(z) {
   return 'Dificultad elevada';
 }
 
+function fcrInterpLabel(interp, z) {
+  if (interp && typeof interp === 'string') {
+    var idx = interp.indexOf(' (Z=');
+    if (idx !== -1) return interp.substring(0, idx);
+    if (interp.indexOf('(Z=') === -1) return interp;
+  }
+  return (z != null && typeof fcrZLabel === 'function') ? fcrZLabel(z) : (interp || '—');
+}
+
+var FCR_TIPOS = {
+  I: 'Construcción sobre el armazón',
+  II: 'Detalles englobados en un armazón',
+  III: 'Contorno general',
+  IV: 'Yuxtaposición de detalles',
+  V: 'Detalles sobre un fondo confuso',
+  VI: 'Reducción a un esquema familiar',
+  VII: 'Garabatos'
+};
+
+function fcrTipoLabel(tipo) {
+  if (!tipo) return '—';
+  return 'Tipo ' + tipo + (FCR_TIPOS[tipo] ? ' · ' + FCR_TIPOS[tipo] : '');
+}
+
+function fcrCapKey(k) { return k.charAt(0).toUpperCase() + k.slice(1); }
+
+function fcrReadExactitud(k) {
+  if (fcrIsManual()) {
+    var man = document.getElementById('fcr-man-' + k);
+    if (man && man.value !== '') return parseFloat(man.value);
+  }
+  var ex = document.getElementById('fcr-exact-' + k);
+  if (ex && ex.value !== '') return parseFloat(ex.value);
+  return fcrSumItems(k);
+}
+
+function fcrReadTipo(k) {
+  var el = document.getElementById('fcr-tipo-' + k);
+  return el && el.value ? el.value : null;
+}
+
+function fcrSyncExactitudFields() {
+  if (fcrIsManual()) {
+    FCR_COND_KEYS.forEach(function(k) {
+      var ex = document.getElementById('fcr-exact-' + k);
+      var man = document.getElementById('fcr-man-' + k);
+      if (ex) ex.value = man && man.value !== '' ? man.value : '';
+    });
+    return;
+  }
+  FCR_COND_KEYS.forEach(function(k) {
+    var ex = document.getElementById('fcr-exact-' + k);
+    if (!ex || ex.dataset.userEdit === '1') return;
+    var sum = fcrSumItems(k);
+    ex.value = sum !== null ? sum : '';
+  });
+}
+
+function fcrToggleExactitudGrid() {
+  var manual = fcrIsManual();
+  var nota = document.getElementById('fcr-exact-man-nota');
+  var hdr = document.getElementById('fcr-exact-hdr');
+  if (nota) nota.style.display = manual ? 'block' : 'none';
+  if (hdr) hdr.style.display = manual ? 'none' : '';
+  FCR_COND_KEYS.forEach(function(k) {
+    var ex = document.getElementById('fcr-exact-' + k);
+    if (ex) {
+      var cell = ex.closest('.field');
+      if (cell) cell.style.display = manual ? 'none' : '';
+    }
+  });
+}
+
 function fcrActualizarTeaGrupo() {
   var edad = fcrGetEdadAnios();
   var el = document.getElementById('fcr-tea-grupo');
@@ -18806,6 +18906,11 @@ function fcrSumCond(prefix) {
   var sum = fcrSumItems(prefix);
   var bar = document.getElementById('fcr-sum-' + prefix);
   if (bar) bar.innerHTML = 'Total ' + (FCR_COND_LBL[prefix] || prefix).toLowerCase() + ': <strong>' + (sum !== null ? sum : '—') + '</strong> / 36';
+  var ex = document.getElementById('fcr-exact-' + prefix);
+  if (ex && !fcrIsManual()) {
+    ex.dataset.userEdit = '0';
+    ex.value = sum !== null ? sum : '';
+  }
   fcrActualizar();
   return sum;
 }
@@ -18828,9 +18933,10 @@ function fcrGetScores() {
 }
 
 function fcrGetStoredOrCalcZ(d, cond) {
-  var zKey = 'z' + cond.charAt(0).toUpperCase() + cond.slice(1);
+  var cap = fcrCapKey(cond);
+  var zKey = 'z' + cap;
   if (d[zKey] != null) return d[zKey];
-  var pb = d[cond];
+  var pb = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[cond];
   if (pb == null || d.edad == null || typeof fcrCalcZ !== 'function') return null;
   return fcrCalcZ(pb, d.edad, cond).z;
 }
@@ -18845,15 +18951,22 @@ function fcrCollectItemScores(prefix) {
 }
 
 function fcrActualizar() {
-  var sc = fcrGetScores();
+  fcrSyncExactitudFields();
   var el = document.getElementById('fcr-live');
   if (!el) return;
   var parts = [];
-  if (sc.copia !== null) parts.push('Copia: <strong>' + sc.copia + '</strong>/36');
-  if (sc.ri !== null) parts.push('Rec. 3 min: <strong>' + sc.ri + '</strong>/36');
-  if (sc.rd !== null) parts.push('Rec. 30 min: <strong>' + sc.rd + '</strong>/36');
-  if (sc.copia !== null && sc.ri !== null && sc.copia > 0) {
-    var ir = parseFloat((sc.ri / sc.copia * 100).toFixed(1));
+  FCR_COND_KEYS.forEach(function(k) {
+    var ex = fcrReadExactitud(k);
+    if (ex === null) return;
+    var tp = fcrReadTipo(k);
+    var line = FCR_COND_LBL[k] + ' · exactitud <strong>' + ex + '</strong>/36';
+    if (tp) line += ' · tipo <strong>' + tp + '</strong>';
+    parts.push(line);
+  });
+  var copia = fcrReadExactitud('copia');
+  var ri = fcrReadExactitud('ri');
+  if (copia !== null && ri !== null && copia > 0) {
+    var ir = parseFloat((ri / copia * 100).toFixed(1));
     parts.push('Retención RI/Copia: <strong>' + ir + '%</strong>');
   }
   el.innerHTML = parts.length ? parts.join(' · ') : '';
@@ -18865,6 +18978,7 @@ function iniciarFCR() {
   document.getElementById('fcr-form').style.display = 'block';
   document.getElementById('fcr-resultado').style.display = 'none';
   if (typeof setModo === 'function') setModo('fcr', 'auto');
+  if (typeof fcrToggleExactitudGrid === 'function') fcrToggleExactitudGrid();
   if (typeof fcrActualizarTeaGrupo === 'function') fcrActualizarTeaGrupo();
   var guia = document.getElementById('fcr-guia-body');
   var tog = document.getElementById('fcr-guia-toggle');
@@ -18886,6 +19000,12 @@ function limpiarFCR() {
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
+  FCR_COND_KEYS.forEach(function(k) {
+    var ex = document.getElementById('fcr-exact-' + k);
+    if (ex) { ex.value = ''; ex.dataset.userEdit = '0'; }
+    var tp = document.getElementById('fcr-tipo-' + k);
+    if (tp) tp.value = '';
+  });
   var live = document.getElementById('fcr-live');
   if (live) live.innerHTML = '';
 }
@@ -18894,45 +19014,55 @@ function calcularFCR() {
   var edad = fcrGetEdadAnios();
   if (edad === null) { toast('El paciente necesita fecha de nacimiento para el baremo TEA.', 'error'); return; }
 
-  var sc = fcrGetScores();
-  if (sc.copia === null && sc.ri === null && sc.rd === null) {
-    toast('Ingresá al menos un puntaje.', 'error');
+  fcrSyncExactitudFields();
+  var hasScore = FCR_COND_KEYS.some(function(k) { return fcrReadExactitud(k) !== null; });
+  if (!hasScore) {
+    toast('Ingresá al menos un puntaje de exactitud.', 'error');
     return;
   }
 
+  var sc = fcrGetScores();
   var teaIdx = fcrTeaGrupoIdx(edad);
   var result = { edad: edad, teaGi: teaIdx, teaLbl: FCR_TEA_EDADES[teaIdx], modo: sc.modo, figura: 'A' };
   var detalleHtml = '';
 
   FCR_COND_KEYS.forEach(function(k) {
-    var pb = sc[k];
+    var pb = fcrReadExactitud(k);
     if (pb === null) return;
+    var tipo = fcrReadTipo(k);
     var cz = fcrCalcZ(pb, edad, k);
-    var cap = k.charAt(0).toUpperCase() + k.slice(1);
+    var cap = fcrCapKey(k);
     result[k] = pb;
+    result['exactitud' + cap] = pb;
+    if (tipo) result['tipo' + cap] = tipo;
     result['m' + cap] = cz.m;
     result['ds' + cap] = cz.ds;
     result['z' + cap] = cz.z;
-    result['interp' + cap] = fcrZLabel(cz.z) + (cz.z != null ? ' (Z=' + (cz.z >= 0 ? '+' : '') + cz.z + ')' : '');
+    result['interp' + cap] = fcrZLabel(cz.z);
     if (sc.modo === 'items') result['items' + cap] = fcrCollectItemScores(k);
-    detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + pb + '</div><div class="detalle-lbl">' + FCR_COND_LBL[k] +
-      '<br><small>Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds + '</small></div></div>';
+    var detLbl = FCR_COND_LBL[k] + '<br><small>Exactitud · Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds;
+    if (tipo) detLbl += ' · Tipo ' + tipo;
+    detLbl += '</small>';
+    detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + pb + '</div><div class="detalle-lbl">' + detLbl + '</div></div>';
   });
 
-  if (sc.copia !== null && sc.ri !== null && sc.copia > 0) {
-    result.ir = parseFloat((sc.ri / sc.copia * 100).toFixed(1));
+  var copia = result.copia != null ? result.copia : null;
+  var ri = result.ri != null ? result.ri : null;
+  if (copia !== null && ri !== null && copia > 0) {
+    result.ir = parseFloat((ri / copia * 100).toFixed(1));
     detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + result.ir + '%</div><div class="detalle-lbl">Índice<br>Retención</div></div>';
   }
 
   var interp = '<p><strong>Figura A</strong> · Manual TEA Ediciones · Grupo edad ' + FCR_TEA_EDADES[teaIdx] + ' años</p>';
   FCR_COND_KEYS.forEach(function(k) {
     if (result[k] === undefined) return;
-    var cap = k.charAt(0).toUpperCase() + k.slice(1);
+    var cap = fcrCapKey(k);
     var tbl = k === 'copia' ? 'Tabla 3' : 'Tabla 6';
     var nota30 = k === 'rd' ? ' <span style="font-size:0.85em;">(memoria TEA; extensión clínica 30 min)</span>' : '';
-    interp += '<p><strong>' + FCR_COND_LBL[k] + ' (' + result[k] + '/36):</strong> ' + tbl +
+    var tipoLine = result['tipo' + cap] ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
+    interp += '<p><strong>' + FCR_COND_LBL[k] + ' · Exactitud (' + result[k] + '/36):</strong> ' + tbl +
       ' · M=' + result['m' + cap] + ' · DS=' + result['ds' + cap] + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
-      ' — ' + result['interp' + cap] + nota30 + '</p>';
+      ' — ' + result['interp' + cap] + tipoLine + nota30 + '</p>';
   });
   if (result.ir !== undefined) {
     interp += '<p><strong>Índice de Retención (Rec. 3 min / Copia):</strong> ' + result.ir + '% — ' +
@@ -18989,7 +19119,7 @@ function fcrRestaurarEdicion(d) {
   } else {
     setModo('fcr', 'auto');
     FCR_COND_KEYS.forEach(function(k) {
-      var keyItems = 'items' + k.charAt(0).toUpperCase() + k.slice(1);
+      var keyItems = 'items' + fcrCapKey(k);
       var arr = d[keyItems];
       if (arr && arr.length) {
         for (var i = 0; i < 18; i++) {
@@ -18999,6 +19129,16 @@ function fcrRestaurarEdicion(d) {
       }
     });
   }
+  FCR_COND_KEYS.forEach(function(k) {
+    var cap = fcrCapKey(k);
+    var exVal = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[k];
+    if (exVal != null) {
+      var ex = document.getElementById('fcr-exact-' + k);
+      if (ex) { ex.value = exVal; ex.dataset.userEdit = '1'; }
+    }
+    if (d['tipo' + cap]) pacSetVal('fcr-tipo-' + k, d['tipo' + cap]);
+  });
+  if (typeof fcrToggleExactitudGrid === 'function') fcrToggleExactitudGrid();
   fcrActualizar();
 }
 
@@ -20013,30 +20153,34 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.zInt!=null)add('Stroop — Interferencia',d.interf,50,10,d.zInt,null);
         } else if(tn==='Figura Rey'){
           function fcrWordAdd(lbl, pb, m, ds, z, interp) {
-            if (pb == null) return;
-            rows.push(_zGrillaRows(lbl, pb, m, ds, z, null, rowCount % 2 === 0, false, interp ? { label: interp } : null));
+            if (pb === null || pb === undefined) return;
+            var il = typeof fcrInterpLabel === 'function' ? fcrInterpLabel(typeof interp === 'string' ? interp : null, z) : interp;
+            rows.push(_zGrillaRows(lbl, pb, m, ds, z, null, rowCount % 2 === 0, false, il ? { label: il } : null));
+            rowCount++;
+          }
+          function fcrWordAddQual(lbl, val, desc) {
+            if (val == null || val === '') return;
+            rows.push(_zGrillaRows(lbl, val, null, null, null, null, rowCount % 2 === 0, false, desc ? { label: desc } : null));
             rowCount++;
           }
           function fcrWN(cond) {
             if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
             return { m: null, ds: null };
           }
-          if (d.copia != null) {
-            var wnC = fcrWN('copia');
-            var zWC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
-            fcrWordAdd('Fig. Rey — Copia', d.copia, d.mCopia != null ? d.mCopia : wnC.m, d.dsCopia != null ? d.dsCopia : wnC.ds, zWC, d.interpCopia || (zWC != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWC) : null));
+          function fcrWordCond(k, lblShort) {
+            var cap = typeof fcrCapKey === 'function' ? fcrCapKey(k) : k.charAt(0).toUpperCase() + k.slice(1);
+            var pb = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[k];
+            if (pb == null) return;
+            var wn = fcrWN(k);
+            var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
+            fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, d['m' + cap] != null ? d['m' + cap] : wn.m, d['ds' + cap] != null ? d['ds' + cap] : wn.ds, zW, d['interp' + cap]);
+            var tipo = d['tipo' + cap];
+            if (tipo) fcrWordAddQual('Fig. Rey — ' + lblShort + ' · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : ('Tipo ' + tipo));
           }
-          if (d.ri != null) {
-            var wnR = fcrWN('ri');
-            var zWR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
-            fcrWordAdd('Fig. Rey — Rec. 3 min', d.ri, d.mRi != null ? d.mRi : wnR.m, d.dsRi != null ? d.dsRi : wnR.ds, zWR, d.interpRi || (zWR != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWR) : null));
-          }
-          if (d.rd != null) {
-            var wnD = fcrWN('rd');
-            var zWD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
-            fcrWordAdd('Fig. Rey — Rec. 30 min', d.rd, d.mRd != null ? d.mRd : wnD.m, d.dsRd != null ? d.dsRd : wnD.ds, zWD, d.interpRd || (zWD != null && typeof fcrZLabel === 'function' ? fcrZLabel(zWD) : null));
-          }
-          if (d.ir != null) fcrWordAdd('Fig. Rey — Retención %', d.ir + '%', null, null, null, d.ir + '%');
+          fcrWordCond('copia', 'Copia');
+          fcrWordCond('ri', 'Rec. 3 min');
+          fcrWordCond('rd', 'Rec. 30 min');
+          if (d.ir != null) fcrWordAddQual('Fig. Rey — Retención %', d.ir + '%', d.ir + '%');
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){
           var loesBrutoW=d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
