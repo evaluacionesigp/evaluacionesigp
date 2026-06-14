@@ -501,7 +501,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.6</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.12.7</div>
     </div>
   </aside>
 
@@ -20238,50 +20238,28 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     }
     famRows.push(_wRow([famCell('Inventario neuropsiquiátrico NPI-Q',COL_FAM[0],'F2F2F2'),famCell(npiqSig,COL_FAM[1],'F2F2F2',true),famCell(npiqSint,COL_FAM[2],'F2F2F2')]));
     
-    // AVD helper
-    function avdSintomas(obj, labels){
-      if(!obj||typeof obj!=='object') return '—';
-      var afect=[];
-      labels.forEach(function(it){
-        var v=obj[it.id];
-        if(v!=null&&v!=='independiente'&&v!=='0'&&v!==0&&v!==''){
-          afect.push(it.label+(typeof v==='string'&&v!=='dependiente'?' ('+v+')':''));
-        }
-      });
-      return afect.length?afect.join(' · '):'—';
-    }
-    var AVDB_LABELS=[{id:'identif',label:'Alimentación'},{id:'aseo',label:'Higiene'},{id:'vestirse',label:'Vestimenta'},{id:'continen',label:'Continencia'}];
-    var AVDI_LABELS=[{id:'telefono',label:'Teléfono'},{id:'compras',label:'Compras'},{id:'comida',label:'Comida'},{id:'transp',label:'Transporte'},{id:'medic',label:'Medicación'},{id:'dinero',label:'Dinero'}];
-    var AVDE_LABELS=[{id:'inform',label:'Información'},{id:'social',label:'Social'},{id:'recreat',label:'Recreación'},{id:'autono',label:'Autonomía'},{id:'planes',label:'Planes'},{id:'responsab',label:'Responsab.'},{id:'opinion',label:'Opinión'},{id:'aprende',label:'Aprendizaje'}];
-    
     // AVD Básicas
     var avdbVal = fam.avdbTotal!=null?fam.avdbTotal:(fam.avdb_total!=null?fam.avdb_total:null);
     var avdbSig = avdbVal!=null ? (avdbVal<4?'No significativo':'Significativo') : '—';
-    var avdbSint = avdSintomas(fam.avdb, AVDB_LABELS);
+    var avdbSint = famReporteSintomasAvd(fam.avdb, FAM_AVDB);
     famRows.push(_wRow([famCell('Escala de AVD Básicas',COL_FAM[0]),famCell(avdbSig,COL_FAM[1],'',true),famCell(avdbSint,COL_FAM[2])]));
     
     // AVD Instrumentales
     var avdiVal = fam.avdiTotal!=null?fam.avdiTotal:(fam.avdi_total!=null?fam.avdi_total:null);
     var avdiSig = avdiVal!=null ? (avdiVal<6?'No significativo':'Significativo') : '—';
-    var avdiSint = avdSintomas(fam.avdi, AVDI_LABELS);
+    var avdiSint = famReporteSintomasAvd(fam.avdi, FAM_AVDI);
     famRows.push(_wRow([famCell('Escala de AVD Instrumentales',COL_FAM[0],'F2F2F2'),famCell(avdiSig,COL_FAM[1],'F2F2F2',true),famCell(avdiSint,COL_FAM[2],'F2F2F2')]));
     
     // AVD Expansivas
     var avdeVal = fam.avdeTotal!=null?fam.avdeTotal:(fam.avde_total!=null?fam.avde_total:null);
     var avdeSig = avdeVal!=null ? (avdeVal<8?'No significativo':'Significativo') : '—';
-    var avdeSint = avdSintomas(fam.avde, AVDE_LABELS);
+    var avdeSint = famReporteSintomasAvd(fam.avde, FAM_AVDE);
     famRows.push(_wRow([famCell('Escala de AVD Expansivas',COL_FAM[0]),famCell(avdeSig,COL_FAM[1],'',true),famCell(avdeSint,COL_FAM[2])]));
     
     // AD8-ARG
-    var AD8_LABELS=[{id:'ad8_1',label:'Cambios en juicio'},{id:'ad8_2',label:'Menor interés en hobbies'},{id:'ad8_3',label:'Repite preguntas'},{id:'ad8_4',label:'Dificultad con dispositivos'},{id:'ad8_5',label:'Olvida mes o año'},{id:'ad8_6',label:'Dificultad con finanzas'},{id:'ad8_7',label:'Olvida citas'},{id:'ad8_8',label:'Problemas de memoria'}];
     var ad8Val = fam.ad8Total!=null?fam.ad8Total:(fam.ad8_total!=null?fam.ad8_total:null);
     var ad8Sig = ad8Val!=null ? (ad8Val>=2?'Significativo ('+ad8Val+'/8)':'No significativo ('+ad8Val+'/8)') : '—';
-    var ad8Sint = '—';
-    if(fam.ad8&&typeof fam.ad8==='object'){
-      var ad8Afect=[];
-      AD8_LABELS.forEach(function(it){if(fam.ad8[it.id]==='si')ad8Afect.push(it.label);});
-      ad8Sint = ad8Afect.length?ad8Afect.join(' · '):'—';
-    }
+    var ad8Sint = famReporteSintomasAd8(fam.ad8);
     famRows.push(_wRow([famCell('Cuestionario del Informante AD8-ARG',COL_FAM[0],'F2F2F2'),famCell(ad8Sig,COL_FAM[1],'F2F2F2',true),famCell(ad8Sint,COL_FAM[2],'F2F2F2')]));
     
     body+=_wTable(famRows,COL_FAM);
@@ -20899,39 +20877,59 @@ var FAM_NPIQ = [
   {id:'apetito',  label:'Cambios en el Apetito'}
 ];
 var FAM_AD8 = [
-  {id:'ad8_1', label:'Cambios en el juicio o decisiones'},
-  {id:'ad8_2', label:'Menor interés en hobbies o actividades'},
-  {id:'ad8_3', label:'Repite preguntas, historias o frases'},
-  {id:'ad8_4', label:'Dificultad con aparatos o dispositivos'},
-  {id:'ad8_5', label:'Olvida el mes o el año'},
-  {id:'ad8_6', label:'Dificultad para finanzas complejas'},
-  {id:'ad8_7', label:'Olvida citas o compromisos'},
-  {id:'ad8_8', label:'Problemas de memoria o razonamiento'},
+  {id:'ad8_1', label:'Cambios en el juicio o decisiones', wordReport:'Dificultad para emitir juicios o tomar decisiones correctas'},
+  {id:'ad8_2', label:'Menor interés en hobbies o actividades', wordReport:'Menor interés en hobbies y pasatiempos'},
+  {id:'ad8_3', label:'Repite preguntas, historias o frases', wordReport:'Repite las preguntas, los comentarios o las cosas que cuenta'},
+  {id:'ad8_4', label:'Dificultad con aparatos o dispositivos', wordReport:'Dificultad para usar aparatos o dispositivos habituales'},
+  {id:'ad8_5', label:'Olvida el mes o el año', wordReport:'Olvida con frecuencia el mes o el año en curso'},
+  {id:'ad8_6', label:'Dificultad para finanzas complejas', wordReport:'Dificultad para llevar finanzas o trámites complejos'},
+  {id:'ad8_7', label:'Olvida citas o compromisos', wordReport:'Olvida citas o compromisos habitualmente'},
+  {id:'ad8_8', label:'Problemas de memoria o razonamiento', wordReport:'Problemas de memoria o dificultades de razonamiento'},
 ];
 var FAM_AVDB = [
-  {id:'identif',  label:'Alimentación'},
-  {id:'aseo',     label:'Higiene personal'},
-  {id:'vestirse', label:'Vestirse / Desvestirse'},
-  {id:'continen', label:'Continencia esfínteres'},
+  {id:'identif',  label:'Alimentación', wordReport:'Con frecuencia duda o equivoca sus datos de identificación y vivienda'},
+  {id:'aseo',     label:'Higiene personal', wordReport:'Recibe ayuda frecuentemente para bañarse o asearse'},
+  {id:'vestirse', label:'Vestirse / Desvestirse', wordReport:'Necesita que le elijan la ropa o que le ayuden a vestirse casi completamente'},
+  {id:'continen', label:'Continencia esfínteres', wordReport:'Presenta dificultades con el control de esfínteres y necesita ayuda para la continencia'},
 ];
 var FAM_AVDI = [
-  {id:'telefono', label:'Uso del teléfono'},
-  {id:'compras',  label:'Compras'},
-  {id:'comida',   label:'Preparar comida'},
-  {id:'transp',   label:'Transporte / movilidad'},
-  {id:'medic',    label:'Medicación'},
-  {id:'dinero',   label:'Manejo del dinero'},
+  {id:'telefono', label:'Uso del teléfono', wordReport:'Necesita ayuda para usar el teléfono o realizar llamadas'},
+  {id:'compras',  label:'Compras', wordReport:'Ya no puede realizar las compras de manera autónoma'},
+  {id:'comida',   label:'Preparar comida', wordReport:'Necesita ayuda para preparar sus comidas'},
+  {id:'transp',   label:'Transporte / movilidad', wordReport:'Depende de ayuda para trasladarse o utilizar medios de transporte'},
+  {id:'medic',    label:'Medicación', wordReport:'Necesita que le administren o supervisen la medicación'},
+  {id:'dinero',   label:'Manejo del dinero', wordReport:'Ya no puede manejar dinero ni realizar operaciones financieras cotidianas'},
 ];
 var FAM_AVDE = [
-  {id:'inform',    label:'Acceso a información'},
-  {id:'social',    label:'Contacto social'},
-  {id:'recreat',   label:'Actividades recreativas'},
-  {id:'autono',    label:'Autonomía'},
-  {id:'planes',    label:'Planes de futuro'},
-  {id:'responsab', label:'Responsabilidades'},
-  {id:'opinion',   label:'Expresión de opinión'},
-  {id:'aprende',   label:'Aprendizaje de cosas nuevas'},
+  {id:'inform',    label:'Acceso a información', wordReport:'Tiene dificultad para acceder o procesar información de interés personal'},
+  {id:'social',    label:'Contacto social', wordReport:'Ha disminuido o perdido el contacto social habitual'},
+  {id:'recreat',   label:'Actividades recreativas', wordReport:'Ya no participa en actividades recreativas o de ocio de forma autónoma'},
+  {id:'autono',    label:'Autonomía', wordReport:'Presenta limitaciones en su autonomía personal y en la toma de decisiones cotidianas'},
+  {id:'planes',    label:'Planes de futuro', wordReport:'Ya no planifica ni organiza actividades de futuro'},
+  {id:'responsab', label:'Responsabilidades', wordReport:'Ha dejado de cumplir con responsabilidades habituales'},
+  {id:'opinion',   label:'Expresión de opinión', wordReport:'Tiene dificultad para expresar opiniones o preferencias personales'},
+  {id:'aprende',   label:'Aprendizaje de cosas nuevas', wordReport:'Presenta dificultad para aprender o incorporar cosas nuevas'},
 ];
+
+function famReporteSintomasAvd(obj, items) {
+  if (!obj || typeof obj !== 'object') return '—';
+  var partes = [];
+  items.forEach(function(it) {
+    var v = obj[it.id];
+    if (v == null || v === 0 || v === 1 || v === 'independiente' || v === '') return;
+    partes.push(it.wordReport || it.label);
+  });
+  return partes.length ? partes.join(' ; ') : '—';
+}
+
+function famReporteSintomasAd8(ad8Obj) {
+  if (!ad8Obj || typeof ad8Obj !== 'object') return '—';
+  var partes = [];
+  FAM_AD8.forEach(function(it) {
+    if (ad8Obj[it.id] === 'si') partes.push(it.wordReport || it.label);
+  });
+  return partes.length ? partes.join(' ; ') : '—';
+}
 
 function iniciarFamiliar() {
   document.getElementById('familiar-fecha').value = new Date().toISOString().split('T')[0];
