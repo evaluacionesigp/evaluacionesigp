@@ -559,6 +559,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <span class="sector-tag">TMT A/B</span>
             <span class="sector-tag">Fluencia</span>
             <span class="sector-tag">MoCA</span>
+            <span class="sector-tag">MMP</span>
             <span class="sector-tag">IFS</span>
             <span class="sector-tag">WAIS-IV</span>
             <span class="sector-tag">WAIS Perfil</span>
@@ -1797,6 +1798,58 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <button class="btn-secondary" onclick="document.getElementById('moca-resultado').style.display='none';document.getElementById('moca-form').style.display='block';">← Modificar</button>
           <button class="btn-secondary" onclick="window.print()">🖨 Imprimir</button>
           <button class="btn-primary" onclick="guardarResultadoMoCA()">💾 Guardar resultado</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TEST Mini Mental Parkinson ── -->
+    <div class="vista" id="vista-mmp">
+      <div class="back-btn" onclick="volverSector()">← Volver</div>
+      <div class="vista-header"><div class="vista-titulo">MMP · Mini Mental Parkinson</div></div>
+      <div id="mmp-form">
+        <div class="card">
+          <div class="card-title">Datos de la evaluación</div>
+          <div class="form-grid-3">
+            <div class="field"><label>Paciente *</label><select id="mmp-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+            <div class="field"><label>Fecha</label><input type="date" id="mmp-fecha"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Puntajes por dominio</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">Ingresá el puntaje bruto de cada subsección según el protocolo MMP (Fernández et al.). Puntaje total máximo: 32. Punto de corte: &lt;24 sugiere deterioro cognitivo.</p>
+          <div class="form-grid">
+            <div class="field"><label>Orientación temporal y espacial (0–10)</label><input type="number" id="mmp-orient" min="0" max="10" placeholder="0–10"></div>
+            <div class="field"><label>Memoria inmediata — tarjetas ABC (0–3)</label><input type="number" id="mmp-mem" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Atención — restas 100−7 (0–5)</label><input type="number" id="mmp-aten" min="0" max="5" placeholder="0–5"></div>
+            <div class="field"><label>Control mental — MUNDO al revés (0–3)</label><input type="number" id="mmp-control" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Fluencia verbal — animales letra L (0–3)</label><input type="number" id="mmp-fluencia" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Memoria de asociación — tarjetas DEF (0–3)</label><input type="number" id="mmp-mem-asoc" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Reconocimiento — tarjeta G (0–4)</label><input type="number" id="mmp-recon" min="0" max="4" placeholder="0–4"></div>
+            <div class="field"><label>Procesamiento de conceptos (0–3)</label><input type="number" id="mmp-conceptos" min="0" max="3" placeholder="0–3"></div>
+          </div>
+          <div class="btn-row" style="margin-top:20px;">
+            <button class="btn-secondary" onclick="limpiarMMP()">🗑 Limpiar</button>
+            <button class="btn-primary" onclick="calcularMMP()">Calcular resultado →</button>
+          </div>
+        </div>
+      </div>
+      <div id="mmp-resultado" style="display:none;">
+        <div class="resultado-box">
+          <div class="resultado-puntaje">
+            <div class="puntaje-grande" id="mmp-pts-total">0</div>
+            <div class="puntaje-info">
+              <div class="puntaje-label">Puntaje total MMP</div>
+              <div class="puntaje-categoria" id="mmp-cat">—</div>
+              <span class="badge-grande" id="mmp-badge">—</span>
+            </div>
+          </div>
+          <div class="resultado-detalle" id="mmp-dominios"></div>
+          <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="mmp-interp"></div></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn-secondary" onclick="document.getElementById('mmp-resultado').style.display='none';document.getElementById('mmp-form').style.display='block';">← Modificar</button>
+          <button class="btn-secondary" onclick="window.print()">🖨 Imprimir</button>
+          <button class="btn-primary" onclick="guardarResultadoMMP()">💾 Guardar resultado</button>
         </div>
       </div>
     </div>
@@ -6450,7 +6503,7 @@ function llenarSelectPacientes() {
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
     PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
-   'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
+   'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','mmp-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
    'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','loes-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
    'pcs-paciente','csq-paciente','pbq-paciente','bpi-paciente','stroop-paciente','csi-paciente','fcr-paciente','sdmt-paciente','bta-paciente','hotel-paciente','d2-paciente','fab-paciente','llaves-paciente','juicio-paciente','zoo-paciente','tavec-paciente','familiar-paciente'].forEach(function(id){
     var el = document.getElementById(id);
@@ -6763,6 +6816,21 @@ var GLOSARIO_TESTS = {
       limite: ['¿El rendimiento es consistente con la queja subjetiva del paciente?', '¿Qué dominios específicos del MoCA están más afectados?', '¿El nivel educativo puede estar influyendo en el resultado?'],
       normal: ['¿La preservación del MoCA es consistente con el resto del perfil?', '¿El paciente tiene queja subjetiva a pesar del rendimiento normal?'],
       alto: ['¿El rendimiento elevado es consistente con el nivel educativo?', '¿La reserva cognitiva puede estar enmascarando dificultades sutiles?']
+    }
+  },
+  'Mini Mental Parkinson': {
+    mide: 'Cribado cognitivo breve específico para enfermedad de Parkinson. Evalúa orientación, memoria, atención, control mental, fluencia verbal, memoria visuoespacial y procesamiento de conceptos (máx. 32).',
+    interpretacion: {
+      bajo: 'Puntaje por debajo del corte (&lt;24). Compatible con deterioro cognitivo en el contexto de EP. Requiere evaluación neuropsicológica completa.',
+      limite: 'Rendimiento en límite del corte. Valorar seguimiento y batería complementaria.',
+      normal: 'Puntaje ≥24. No se evidencia deterioro cognitivo significativo en el cribado MMP.',
+      alto: 'Rendimiento preservado en el cribado cognitivo para Parkinson.'
+    },
+    preguntas: {
+      bajo: ['¿Qué dominios del MMP están más comprometidos?', '¿El perfil es consistente con demencia asociada a EP?', '¿Hay síntomas no motores que correlacionen con el bajo rendimiento?'],
+      limite: ['¿El rendimiento es consistente con la queja cognitiva del paciente?', '¿Qué dominios específicos del MMP están más afectados?'],
+      normal: ['¿La preservación en MMP es consistente con MoCA/ACE-R y el resto del perfil?', '¿Hay queja subjetiva discordante con el cribado?'],
+      alto: ['¿El rendimiento elevado es consistente con el nivel educativo y la reserva cognitiva?']
     }
   },
   'TMT A-B': {
@@ -7817,7 +7885,7 @@ var HISTORIAL_PAC_SEL = null;
 var HISTORIAL_ENTRADA_AUTO = false;
 
 var HISTORIAL_DOMINIOS = [
-  { label: '1. Cognitivo global', tests: ['MoCA', 'ACE-R', 'Test del Reloj (Cacho)'] },
+  { label: '1. Cognitivo global', tests: ['MoCA', 'Mini Mental Parkinson', 'ACE-R', 'Test del Reloj (Cacho)'] },
   { label: '2. Memoria', tests: ['TAVEC', 'Rey Verbal', 'BEM 144 Signoret', 'Figura Rey'] },
   { label: '3. Atención y velocidad', tests: ['TMT A-B', 'SDMT-escrita', 'SDMT-oral', 'BTA', 'D2'] },
   { label: '4. Funciones ejecutivas', tests: ['FAB', 'IFS', 'WCST-64', 'Stroop', 'WMS-III LoEs', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'Test del Hotel'] },
@@ -8273,7 +8341,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   }
 
   // ── Clasificación de tests ──
-  var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
+  var NP = ['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','Mini Mental Parkinson','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
   var CL = ['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI'];
   var TD = ['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ'];
   var DO = ['PCS','PBQ','CSQ','BPI'];
@@ -8446,6 +8514,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
     var ORDEN = [
       { dom: 'COGNITIVO GLOBAL', tests: [
         { t:'MoCA',               fn: function(r){ addPunto('MoCA', r.puntaje_z, 'COG. GLOBAL', 'MoCA'); } },
+        { t:'Mini Mental Parkinson', fn: function(r){ addPunto('MMP', r.puntaje_total, 'COG. GLOBAL', 'Mini Mental Parkinson'); } },
         { t:'ACE-R',              fn: function(r){ addPunto('ACE-R', r.puntaje_z, 'COG. GLOBAL', 'ACE-R'); } },
         { t:'WAIS-IV Perfil', fn: function(r){ var idx=(r.datos||{}).indices||{}; ['icv','irp','imt','ivp','cit'].forEach(function(k){ var wi=idx[k]; if(wi&&wi.z!=null) addPunto(wi.corto||k.toUpperCase(),wi.z,'COG. GLOBAL','WAIS-IV Perfil'); }); } },
         { t:'Test del Reloj (Cacho)', fn: function(r){ addPunto('Reloj', r.puntaje_z, 'COG. GLOBAL', 'Test del Reloj (Cacho)'); } },
@@ -8653,7 +8722,7 @@ function renderCuestionariosFam(d) {
 
     // Agrupar por dominio
     var dominios = {
-      'COGNITIVO GLOBAL':    ['MoCA','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':    ['MoCA','Mini Mental Parkinson','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
       'MEMORIA':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
       'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
@@ -9607,6 +9676,7 @@ var TEST_NOMBRE_A_VISTA = {
   'Fluencia Verbal': 'flv', 'PHQ-9': 'phq', 'GAD-7': 'gad', 'CRC': 'crc',
   'PSS-10': 'pss', 'Holmes-Rahe': 'holmes', 'GDS-30': 'yesavage',
   'Birleson': 'birleson', 'AAA': 'aaa', 'SPAI-B': 'spaib', 'MoCA': 'moca',
+  'Mini Mental Parkinson': 'mmp',
   'WCST-64': 'wcst', 'FAB': 'fab', 'IFS': 'ifs', 'WAIS-IV': 'waisiv',
   'WAIS-IV Perfil': 'waisperfil', 'EAVA': 'eava', 'ASRS-V1.1': 'asrs',
   'BADS-Llaves': 'llaves', 'BADS-Juicio': 'juicio', 'BADS-Zoo': 'zoo',
@@ -9808,6 +9878,16 @@ function aplicarEdicionResultado(vistaId, r) {
         calcularMoCA();
       }
       break;
+    case 'mmp':
+      if (d.dominios) {
+        Object.keys(d.dominios).forEach(function(id) { pacSetVal(id, d.dominios[id]); });
+        calcularMMP();
+      } else if (d.total != null) {
+        MMP_CAMPOS.forEach(function(c) { pacSetVal(c.id, 0); });
+        pacSetVal('mmp-orient', d.total);
+        calcularMMP();
+      }
+      break;
     case 'sdmt':
       if (r.test.indexOf('oral') !== -1) sdmtSetVersion('oral');
       else sdmtSetVersion('escrita');
@@ -9945,6 +10025,7 @@ function irVista(v) {
 var NP_TESTS = [
   // Cognitivo global
   {id:'moca',     n:'MoCA',              d:'Montreal Cognitive Assessment',               t:'Cognitivo global',   dom:'global'},
+  {id:'mmp',      n:'Mini Mental Parkinson', d:'Cribado cognitivo en enfermedad de Parkinson', t:'Cognitivo global', dom:'global'},
   {id:'acer',     n:'ACE-R',             d:"Addenbrooke's Cognitive Examination",         t:'Cognitivo global',   dom:'global'},
   {id:'reloj',    n:'Test del Reloj',    d:'Cribado cognitivo · Cacho et al. 1999',       t:'Cognitivo global',   dom:'global'},
   // Atención
@@ -10266,6 +10347,7 @@ function irTest(t) {
   if (t === 'spaib') iniciarSPAIB();
   if (t === 'csi') iniciarCSI();
   if (t === 'moca') iniciarMoCA();
+  if (t === 'mmp') iniciarMMP();
   if (t === 'ifs') iniciarIFS();
   if (t === 'fab') iniciarFAB();
   if (t === 'pcs') iniciarPCS();
@@ -12603,6 +12685,89 @@ function guardarResultadoMoCA(){
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
+}
+
+// ══ Mini Mental Parkinson (MMP) ═════════════════════════════════════════════
+var MMP_CAMPOS = [
+  { id: 'mmp-orient', max: 10, label: 'Orientación' },
+  { id: 'mmp-mem', max: 3, label: 'Memoria inmediata' },
+  { id: 'mmp-aten', max: 5, label: 'Atención 100−7' },
+  { id: 'mmp-control', max: 3, label: 'Control mental' },
+  { id: 'mmp-fluencia', max: 3, label: 'Fluencia verbal' },
+  { id: 'mmp-mem-asoc', max: 3, label: 'Memoria asociación' },
+  { id: 'mmp-recon', max: 4, label: 'Reconocimiento' },
+  { id: 'mmp-conceptos', max: 3, label: 'Proces. conceptos' }
+];
+var MMP_TOTAL_MAX = 32;
+var MMP_CORTE = 24;
+
+function iniciarMMP() {
+  document.getElementById('mmp-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mmp-form').style.display = 'block';
+  document.getElementById('mmp-resultado').style.display = 'none';
+}
+function limpiarMMP() {
+  MMP_CAMPOS.forEach(function(c) { var el = document.getElementById(c.id); if (el) el.value = ''; });
+}
+function calcularMMP() {
+  var total = 0, vals = {}, todos = true;
+  MMP_CAMPOS.forEach(function(c) {
+    var v = document.getElementById(c.id).value;
+    if (v === '') { todos = false; return; }
+    var n = parseInt(v, 10);
+    if (isNaN(n) || n < 0 || n > c.max) { alert('Puntaje inválido en ' + c.label + ' (0–' + c.max + ').'); todos = false; return; }
+    vals[c.id] = n;
+    total += n;
+  });
+  if (!todos) { alert('Completá todos los dominios.'); return; }
+  var normal = total >= MMP_CORTE;
+  var cat = normal ? 'Normal' : 'Por debajo del punto de corte';
+  var badge = normal ? 'bg-minima' : 'bg-grave';
+  var dominiosHtml = MMP_CAMPOS.map(function(c) {
+    var v = vals[c.id];
+    var pct = Math.round((v / c.max) * 100);
+    var col = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return '<div class="detalle-item"><div class="detalle-num" style="color:' + col + '">' + v + '/' + c.max + '</div><div class="detalle-lbl">' + c.label + '</div></div>';
+  }).join('');
+  var interp = '<p>Puntaje total MMP: <strong>' + total + '/' + MMP_TOTAL_MAX + '</strong>.</p>';
+  interp += '<p>Punto de corte: ≥' + MMP_CORTE + ' (por debajo sugiere deterioro cognitivo en EP).</p>';
+  if (normal) interp += '<p>El puntaje se encuentra <strong>dentro del rango esperado</strong> en el cribado cognitivo para Parkinson.</p>';
+  else interp += '<p>El puntaje se encuentra <strong>por debajo del punto de corte</strong>. Se recomienda evaluación neuropsicológica complementaria.</p>';
+  var domBajos = MMP_CAMPOS.filter(function(c) { return vals[c.id] < Math.floor(c.max * 0.5); }).map(function(c) { return c.label; });
+  if (domBajos.length) interp += '<p>Dominios con desempeño reducido (&lt; 50%): ' + domBajos.join(', ') + '.</p>';
+  interp += '<p><em>Fuente: Fernández et al. · Mini Mental Parkinson. Interpretación orientativa.</em></p>';
+  document.getElementById('mmp-pts-total').textContent = total;
+  document.getElementById('mmp-cat').textContent = cat;
+  document.getElementById('mmp-badge').textContent = normal ? 'Normal' : 'Alterado';
+  document.getElementById('mmp-badge').className = 'badge-grande ' + badge;
+  document.getElementById('mmp-dominios').innerHTML = dominiosHtml;
+  document.getElementById('mmp-interp').innerHTML = interp;
+  document.getElementById('mmp-form').style.display = 'none';
+  document.getElementById('mmp-resultado').style.display = 'block';
+}
+function guardarResultadoMMP() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('mmp-paciente').value;
+  var pts = parseInt(document.getElementById('mmp-pts-total').textContent, 10);
+  var cat = document.getElementById('mmp-cat').textContent;
+  var fecha = document.getElementById('mmp-fecha').value;
+  if (!pacId) { toast('Seleccioná un paciente primero'); return; }
+  var mmpVals = {};
+  MMP_CAMPOS.forEach(function(c) {
+    var v = document.getElementById(c.id).value;
+    if (v !== '') mmpVals[c.id] = parseInt(v, 10);
+  });
+  supaFetch('/rest/v1/psico_resultados', 'POST', {
+    user_id: SESSION.user.id, paciente_id: pacId, test: 'Mini Mental Parkinson', fecha: fecha,
+    puntaje_total: pts, categoria: cat,
+    datos: { total: pts, corte: MMP_CORTE, dominios: mmpVals }
+  }, SESSION.access_token).then(function() {
+    cargarResultados();
+    toast('✓ Resultado guardado', 'success');
+    var btnAll = document.querySelectorAll('.vista.active .btn-primary');
+    var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
+    if (btn) { btn.classList.add('btn-saved'); setTimeout(function() { btn.classList.remove('btn-saved'); }, 1500); }
+  });
 }
 
 // ══ IFS ══════════════════════════════════════════════════════════════════════
@@ -17038,6 +17203,7 @@ function buildApendiceAInformeHtml() {
 function buildPruebasRealizadasHtml(datos) {
   var NOMBRES = {
     'MoCA': 'Montreal Cognitive Assessment (MoCA)',
+    'Mini Mental Parkinson': 'Mini Mental Parkinson (MMP)',
     'ACE-R': "Addenbrooke's Cognitive Examination — Revisado (ACE-R)",
     'WAIS-IV': 'Retención de Dígitos, Claves y Secuencia Número-Letra — WAIS-IV',
     'WAIS-IV Perfil': 'Escala de Inteligencia para Adultos de Wechsler — Perfil de Índices (WAIS-IV)',
@@ -17098,7 +17264,7 @@ function buildPruebasRealizadasHtml(datos) {
     'BPI': 'Inventario Breve de Dolor (BPI)'
   };
   var DOMINIOS = [
-    { label: 'Screening cognitivo global', tests: ['MoCA', 'ACE-R', 'WAIS-IV Perfil', 'Test del Reloj (Cacho)'] },
+    { label: 'Screening cognitivo global', tests: ['MoCA', 'Mini Mental Parkinson', 'ACE-R', 'WAIS-IV Perfil', 'Test del Reloj (Cacho)'] },
     { label: 'Atención y velocidad de procesamiento', tests: ['WAIS-IV', 'TMT A-B', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'] },
     { label: 'Lenguaje', tests: ['Fluencia Verbal', 'BNT-60', 'BNT-12', 'Token Test'] },
     { label: 'Memoria', tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
@@ -19756,6 +19922,19 @@ var SCREENING_SUBESCALAS_CFG = {
     ],
     total: { label: 'MoCA Total', max: 30 }
   },
+  'Mini Mental Parkinson': {
+    dominios: [
+      { label: 'MMP - Orientación', key: 'mmp-orient', max: 10 },
+      { label: 'MMP - Memoria inmediata', key: 'mmp-mem', max: 3 },
+      { label: 'MMP - Atención 100−7', key: 'mmp-aten', max: 5 },
+      { label: 'MMP - Control mental', key: 'mmp-control', max: 3 },
+      { label: 'MMP - Fluencia verbal', key: 'mmp-fluencia', max: 3 },
+      { label: 'MMP - Memoria asociación', key: 'mmp-mem-asoc', max: 3 },
+      { label: 'MMP - Reconocimiento', key: 'mmp-recon', max: 4 },
+      { label: 'MMP - Proces. conceptos', key: 'mmp-conceptos', max: 3 }
+    ],
+    total: { label: 'MMP Total', max: 32 }
+  },
   'ACE-R': {
     dominios: [
       { label: 'ACE - Orientación', key: 'acer-orient', max: 10 },
@@ -19835,7 +20014,7 @@ function generarTablaSubescalas(test, datos) {
   return _wSubescalaTable(rows, COL_SUB);
 }
 
-var SCREENING_SUBESCALA_ORDER = ['MoCA', 'ACE-R'];
+var SCREENING_SUBESCALA_ORDER = ['MoCA', 'Mini Mental Parkinson', 'ACE-R'];
 
 function buildScreeningSubescalasWord(testsNP) {
   var byTest = {};
@@ -20071,7 +20250,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   inf = inf || {};
   var infCfgPack = infExtraerConfig(inf);
   // ── Clasificar tests (igual que PDF) ──
-  var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
+  var NP_LIST=['WAIS-IV Perfil','WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12','TMT A-B','Fluencia Verbal','MoCA','Mini Mental Parkinson','IFS','ACE-R','WCST-64','BEM 144 Signoret','Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral','BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
   var CL_LIST=['BDI-II','STAI','PHQ-9','GAD-7','Birleson','AAA','SPAI-B','SCL-90-R','MBI-HSS','CSI','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var TD_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA','AQ','AQ-10','EQ','EA','SCQ','Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
   var DO_LIST=['PCS','PBQ','CSQ','BPI'];
@@ -20094,6 +20273,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // ── Nombres completos de tests (igual que PDF) ──
   var NOMBRES_TEST={
     'MoCA':'Montreal Cognitive Assessment (MoCA)',
+    'Mini Mental Parkinson':'Mini Mental Parkinson (MMP)',
     'ACE-R':'Addenbrooke\'s Cognitive Examination — Revisado (ACE-R)',
     'WAIS-IV':'Retención de Dígitos, Claves y Sec. Número-Letra — WAIS-IV',
     'WAIS-IV Perfil':'Escala de Inteligencia para Adultos de Wechsler — Perfil de Índices (WAIS-IV)',
@@ -20145,7 +20325,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BPI':'Inventario Breve de Dolor (BPI)'
   };
   var DOMINIOS_PRUEBAS=[
-    {label:'Screening cognitivo global',           tests:['MoCA','ACE-R','WAIS-IV Perfil']},
+    {label:'Screening cognitivo global',           tests:['MoCA','Mini Mental Parkinson','ACE-R','WAIS-IV Perfil']},
     {label:'Atención y velocidad de procesamiento',tests:['WAIS-IV','TMT A-B','D2','SDMT-escrita','SDMT-oral','BTA']},
     {label:'Lenguaje',                              tests:['Fluencia Verbal','BNT-60','BNT-12','Token Test']},
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
@@ -20164,7 +20344,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var byTest={};
     list.forEach(function(r){byTest[r.test]=r;});
     var DOMS={
-      'COGNITIVO GLOBAL':   ['MoCA','ACE-R','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':   ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
       'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
       'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
@@ -21190,12 +21370,12 @@ function renderPerfilZ() {
 
   // Filtrar solo tests NP con Z
   var NP_LIST = ['WAIS-IV','Rey Verbal','TAVEC','Token Test','BNT-60','BNT-12',
-    'TMT A-B','Fluencia Verbal','MoCA','IFS','ACE-R','WCST-64','BEM 144 Signoret',
+    'TMT A-B','Fluencia Verbal','MoCA','Mini Mental Parkinson','IFS','ACE-R','WCST-64','BEM 144 Signoret',
     'Test del Reloj (Cacho)','Stroop','Figura Rey','SDMT-escrita','SDMT-oral',
     'BTA','D2','FAB','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo','WMS-III LoEs'];
 
   var DOMINIOS = {
-    'Cognitivo global':    ['MoCA','ACE-R','Test del Reloj (Cacho)'],
+    'Cognitivo global':    ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
     'Atención':            ['TMT A-B','WAIS-IV','D2','SDMT-escrita','SDMT-oral','BTA'],
     'Memoria':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
     'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio'],
