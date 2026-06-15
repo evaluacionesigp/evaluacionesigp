@@ -2405,9 +2405,9 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="field"><label>Paciente *</label><select id="fcr-paciente"><option value="">— Seleccionar paciente —</option></select></div>
         <div class="field"><label>Fecha</label><input type="date" id="fcr-fecha"></div>
         <div class="field"><label>Edad (paciente)</label><input type="text" id="fcr-edad-display" disabled placeholder="Seleccioná paciente"></div>
-        <div class="field"><label>Grupo baremo · manual TEA</label><input type="text" id="fcr-tea-grupo" disabled placeholder="Según edad"></div>
+        <div class="field"><label>Grupo baremo · edad</label><input type="text" id="fcr-tea-grupo" disabled placeholder="Según edad"></div>
       </div>
-      <p style="font-size:0.8rem;color:var(--muted);margin:10px 0 0;">Baremos <strong>Manual TEA Ediciones · Figura A</strong>: Tabla 3 (Copia) y Tabla 6 (Reproducción de memoria). Z = (PB − M) / Dt. Recuerdo 30 min: mismo baremo Tabla 6 (extensión clínica; el manual TEA solo norma la memoria ~3 min).</p>
+      <p style="font-size:0.8rem;color:var(--muted);margin:10px 0 0;">Baremos por grupo de edad: <strong>&lt;45</strong>, <strong>46–59</strong>, <strong>60–69</strong>, <strong>70–89</strong>. Copia (exactitud), Recuerdo 3 min y Recuerdo 30 min con M y Dt propios. Z = (PB − M) / Dt.</p>
     </div>
 
     <div class="card" style="border-left:3px solid var(--accent);">
@@ -2473,8 +2473,8 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     </div>
 
     <div id="fcr-exactitud-tipo-card" class="card">
-      <div class="card-title">Exactitud y tipo (TEA)</div>
-      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo: estrategia constructiva I–VII (manual TEA · Osterrieth).</p>
+      <div class="card-title">Exactitud y tipo</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo: estrategia constructiva I–VII (Osterrieth).</p>
       <p id="fcr-exact-man-nota" style="display:none;font-size:0.82rem;color:var(--muted);margin:0 0 12px;">En carga manual, la exactitud se toma de los totales ingresados arriba.</p>
       <div id="fcr-exact-grid">
         <div class="form-grid-3" style="margin-bottom:6px;font-size:0.72rem;font-weight:700;color:var(--muted);">
@@ -8936,7 +8936,7 @@ function renderCuestionariosFam(d) {
 
         } else if (testNombre === 'Figura Rey') {
           var teaLblF = d.teaLbl || (d.teaGi != null ? FCR_TEA_EDADES[d.teaGi] : null);
-          var notaF = teaLblF ? 'Fig. A · Grupo ' + teaLblF + ' años · Manual TEA' : 'Fig. A · Manual TEA';
+          var notaF = teaLblF ? 'Fig. A · Grupo edad ' + teaLblF : 'Fig. A';
           rows += '<tr><td colspan="8" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">Figura Compleja de Rey-Osterrieth · Figura A · ' + notaF + '</td></tr>';
           function fcrFilaPdf(lbl, pb, m, ds, z, interp) {
             if (pb === null || pb === undefined) return '';
@@ -18676,7 +18676,7 @@ function guardarCSI() {
 }
 
 // ══ FIGURA COMPLEJA DE REY · FIGURA A ════════════════════════════════════════
-// Manual TEA Ediciones (Rey/Osterrieth) — Tabla 3 Copia · Tabla 6 Memoria
+// Figura Compleja de Rey-Osterrieth — baremos por grupo de edad adulto
 // 18 ítems · 0 / 0,5 / 1 / 2 · máx. 36 · Z = (PB − M) / Dt
 
 var FCR_ITEMS = [
@@ -18703,32 +18703,39 @@ var FCR_ITEMS = [
 var FCR_COND_LBL = { copia: 'Copia', ri: 'Recuerdo 3 min', rd: 'Recuerdo 30 min' };
 var FCR_COND_KEYS = ['copia', 'ri', 'rd'];
 
-// Tabla 3 — exactitud y riqueza de la Copia (datos españoles)
-// Tabla 6 — exactitud y riqueza de la Reproducción de Memoria
-var FCR_TEA_EDADES = ['5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15+'];
-var FCR_TEA_COPIA  = { M: [11.76, 13.55, 17.25, 19.63, 21.67, 24.38, 25.73, 26.58, 27.91, 29.06, 30.48], DS: [3.85, 5.13, 3.95, 5.26, 5.17, 6.63, 3.79, 9.50, 3.70, 3.50, 3.45] };
-var FCR_TEA_MEMORIA = { M: [5.63, 6.38, 8.70, 8.45, 16.11, 16.50, 17.69, 18.08, 20.09, 20.57, 21.48], DS: [2.93, 3.30, 5.18, 2.89, 6.95, 4.52, 2.15, 4.91, 4.23, 2.00, 5.54] };
+// Grupos: <45 · 46–59 · 60–69 · 70–89
+var FCR_TEA_EDADES = ['<45', '46–59', '60–69', '70–89'];
+var FCR_NORM_COPIA = { M: [32.00, 34.18, 33.76, 31.25], DS: [1.80, 1.80, 2.80, 4.70] };
+var FCR_NORM_RI    = { M: [null, 18.88, 17.33, 13.77], DS: [null, 6.1, 5.2, 5] };
+var FCR_NORM_RD    = { M: [null, 16.56, 14.88, 11.74], DS: [null, 6.6, 6.9, 6.1] };
+
+function fcrNormTable(cond) {
+  if (cond === 'copia') return FCR_NORM_COPIA;
+  if (cond === 'rd') return FCR_NORM_RD;
+  return FCR_NORM_RI;
+}
 
 function fcrTeaGrupoIdx(edad) {
   if (edad == null) return null;
-  if (edad >= 15) return 10;
-  if (edad >= 5) return edad - 5;
+  if (edad >= 70) return 3;
+  if (edad >= 60) return 2;
+  if (edad >= 46) return 1;
   return 0;
 }
 
 function fcrTeaNorm(edad, cond) {
   var idx = fcrTeaGrupoIdx(edad);
   if (idx === null) return { m: null, ds: null, teaGi: null, teaLbl: null, tabla: null };
-  var tbl = cond === 'copia' ? FCR_TEA_COPIA : FCR_TEA_MEMORIA;
+  var tbl = fcrNormTable(cond);
+  var lbl = { copia: 'Copia (exactitud)', ri: 'Recuerdo 3 min', rd: 'Recuerdo 30 min' };
   return {
     m: tbl.M[idx], ds: tbl.DS[idx], teaGi: idx, teaLbl: FCR_TEA_EDADES[idx],
-    tabla: cond === 'copia' ? 'Tabla 3' : 'Tabla 6'
+    tabla: lbl[cond] || cond
   };
 }
 
 function fcrCalcZ(pb, edad, cond) {
-  var normCond = cond === 'copia' ? 'copia' : 'memoria';
-  var n = fcrTeaNorm(edad, normCond === 'memoria' ? 'ri' : 'copia');
+  var n = fcrTeaNorm(edad, cond);
   if (pb == null || n.m == null || n.ds == null) return Object.assign({ z: null, pb: pb }, n);
   var z = parseFloat(((pb - n.m) / n.ds).toFixed(2));
   return Object.assign({ z: z, pb: pb }, n);
@@ -18825,17 +18832,17 @@ function fcrActualizarTeaGrupo() {
   if (!el) return;
   if (edad == null) { el.value = ''; return; }
   var idx = fcrTeaGrupoIdx(edad);
-  el.value = FCR_TEA_EDADES[idx] + ' años · Tabla 3 / Tabla 6';
+  el.value = FCR_TEA_EDADES[idx];
 }
 
 function fcrResolveNorms(d, cond) {
   var edad = d.edad;
   if (edad == null && d.teaGi != null) {
     var gi = d.teaGi;
-    var tbl = cond === 'copia' ? FCR_TEA_COPIA : FCR_TEA_MEMORIA;
+    var tbl = fcrNormTable(cond);
     return { m: tbl.M[gi], ds: tbl.DS[gi], teaGi: gi, teaLbl: FCR_TEA_EDADES[gi] };
   }
-  return fcrTeaNorm(edad, cond === 'copia' ? 'copia' : 'ri');
+  return fcrTeaNorm(edad, cond);
 }
 
 function fcrToggleGuia() {
@@ -19012,7 +19019,7 @@ function limpiarFCR() {
 
 function calcularFCR() {
   var edad = fcrGetEdadAnios();
-  if (edad === null) { toast('El paciente necesita fecha de nacimiento para el baremo TEA.', 'error'); return; }
+  if (edad === null) { toast('El paciente necesita fecha de nacimiento para el baremo por edad.', 'error'); return; }
 
   fcrSyncExactitudFields();
   var hasScore = FCR_COND_KEYS.some(function(k) { return fcrReadExactitud(k) !== null; });
@@ -19053,22 +19060,21 @@ function calcularFCR() {
     detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + result.ir + '%</div><div class="detalle-lbl">Índice<br>Retención</div></div>';
   }
 
-  var interp = '<p><strong>Figura A</strong> · Manual TEA Ediciones · Grupo edad ' + FCR_TEA_EDADES[teaIdx] + ' años</p>';
+  var interp = '<p><strong>Figura A</strong> · Grupo edad <strong>' + FCR_TEA_EDADES[teaIdx] + '</strong></p>';
   FCR_COND_KEYS.forEach(function(k) {
     if (result[k] === undefined) return;
     var cap = fcrCapKey(k);
-    var tbl = k === 'copia' ? 'Tabla 3' : 'Tabla 6';
-    var nota30 = k === 'rd' ? ' <span style="font-size:0.85em;">(memoria TEA; extensión clínica 30 min)</span>' : '';
+    var normLbl = (fcrNormTable(k).M[teaIdx] != null) ? FCR_COND_LBL[k] : FCR_COND_LBL[k] + ' (sin baremo para este grupo de edad)';
     var tipoLine = result['tipo' + cap] ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
-    interp += '<p><strong>' + FCR_COND_LBL[k] + ' · Exactitud (' + result[k] + '/36):</strong> ' + tbl +
-      ' · M=' + result['m' + cap] + ' · DS=' + result['ds' + cap] + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
-      ' — ' + result['interp' + cap] + tipoLine + nota30 + '</p>';
+    interp += '<p><strong>' + normLbl + ' · Exactitud (' + result[k] + '/36):</strong> M=' + (result['m' + cap] != null ? result['m' + cap] : '—') +
+      ' · DS=' + (result['ds' + cap] != null ? result['ds' + cap] : '—') + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
+      ' — ' + result['interp' + cap] + tipoLine + '</p>';
   });
   if (result.ir !== undefined) {
     interp += '<p><strong>Índice de Retención (Rec. 3 min / Copia):</strong> ' + result.ir + '% — ' +
       (result.ir >= 70 ? 'Retención adecuada' : result.ir >= 50 ? 'Retención parcial' : 'Dificultad en retención visuoespacial') + '</p>';
   }
-  interp += '<p style="font-size:0.8rem;color:var(--muted);">Baremos: Manual TEA Ediciones (Figura Compleja de Rey, 8ª ed.) — Tabla 3 Copia · Tabla 6 Reproducción de memoria. Z = (PB − M) / Dt.</p>';
+  interp += '<p style="font-size:0.8rem;color:var(--muted);">Baremos por edad (&lt;45 · 46–59 · 60–69 · 70–89). Z = (PB − M) / Dt.</p>';
 
   window._fcrData = result;
 
