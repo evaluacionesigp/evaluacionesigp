@@ -20285,22 +20285,66 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     if(!list.length)return[];
     var byTest={};
     list.forEach(function(r){byTest[r.test]=r;});
+    var DOMS_ORDER = ['COGNITIVO GLOBAL','ATENCIÓN','LENGUAJE','VISOCONSTRUCTIVO','MEMORIA','FUNC. EJECUTIVAS'];
     var DOMS={
       'COGNITIVO GLOBAL':   ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
-      'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
-      'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
       'LENGUAJE':           ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO':   ['Figura Rey'],
+      'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret','Figura Rey'],
+      'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
     };
+    function fcrDHasCopia(d) {
+      return d.copia != null || d.exactitudCopia != null;
+    }
+    function fcrDHasMemoria(d) {
+      return d.ri != null || d.rd != null || d.exactitudRi != null || d.exactitudRd != null || d.ir != null;
+    }
+    function fcrTestInDom(tn, dom) {
+      if (!byTest[tn]) return false;
+      if (tn !== 'Figura Rey') return true;
+      var d = byTest[tn].datos || {};
+      if (dom === 'VISOCONSTRUCTIVO') return fcrDHasCopia(d);
+      if (dom === 'MEMORIA') return fcrDHasMemoria(d);
+      return true;
+    }
+    function fcrWordEmitRows(d) {
+      function fcrWordAdd(lbl, pb, m, ds, z, interp) {
+        if (pb === null || pb === undefined) return;
+        var il = typeof fcrInterpLabel === 'function' ? fcrInterpLabel(typeof interp === 'string' ? interp : null, z) : interp;
+        rows.push(_zGrillaRows(lbl, pb, m, ds, z, null, rowCount % 2 === 0, false, il ? { label: il } : null));
+        rowCount++;
+      }
+      function fcrWordAddQual(lbl, val, desc, descSz) {
+        if (val == null || val === '') return;
+        var ic = desc != null && desc !== '' ? { label: desc, labelSz: descSz || 20 } : null;
+        rows.push(_zGrillaRows(lbl, val, null, null, null, null, rowCount % 2 === 0, false, ic));
+        rowCount++;
+      }
+      function fcrWN(cond) {
+        if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
+        return { m: null, ds: null };
+      }
+      function fcrWordCond(k, lblShort) {
+        var cap = typeof fcrCapKey === 'function' ? fcrCapKey(k) : k.charAt(0).toUpperCase() + k.slice(1);
+        var pb = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[k];
+        if (pb == null) return;
+        var wn = fcrWN(k);
+        var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
+        fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, d['m' + cap] != null ? d['m' + cap] : wn.m, d['ds' + cap] != null ? d['ds' + cap] : wn.ds, zW, d['interp' + cap]);
+        var tipo = d['tipo' + cap];
+        if (tipo) fcrWordAddQual('Fig. Rey — ' + lblShort + ' · Tipo', tipo, tipo, 16);
+      }
+      return { fcrWordCond: fcrWordCond, fcrWordAddQual: fcrWordAddQual };
+    }
     var rows=[],rowCount=0;
     function add(label,pb,m,ds,z,nota){
       rows.push(_zGrillaRows(label,pb,m,ds,z,nota||null,rowCount%2===0,false));
       rowCount++;
     }
     function domHdr(txt){rows.push(_zGrillaRows(txt,null,null,null,null,null,false,true));}
-    Object.keys(DOMS).forEach(function(dom){
-      var tests=DOMS[dom].filter(function(t){return byTest[t];});
+    DOMS_ORDER.forEach(function(dom){
+      var tests=(DOMS[dom]||[]).filter(function(t){return fcrTestInDom(t,dom);});
       var testsZ=tests.filter(function(t){return !SCREENING_SUBESCALAS_CFG[t];});
       if(!testsZ.length)return;
       domHdr(dom);
@@ -20352,35 +20396,14 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.zPC!=null)add('Stroop — Palabra/Color',d.pc!=null?d.pc:d.pcCorr,50,10,d.zPC,null);
           if(d.zInt!=null)add('Stroop — Interferencia',d.interf,50,10,d.zInt,null);
         } else if(tn==='Figura Rey'){
-          function fcrWordAdd(lbl, pb, m, ds, z, interp) {
-            if (pb === null || pb === undefined) return;
-            var il = typeof fcrInterpLabel === 'function' ? fcrInterpLabel(typeof interp === 'string' ? interp : null, z) : interp;
-            rows.push(_zGrillaRows(lbl, pb, m, ds, z, null, rowCount % 2 === 0, false, il ? { label: il } : null));
-            rowCount++;
+          var fcrW = fcrWordEmitRows(d);
+          if (dom === 'VISOCONSTRUCTIVO') {
+            fcrW.fcrWordCond('copia', 'Copia');
+          } else if (dom === 'MEMORIA') {
+            fcrW.fcrWordCond('ri', 'Rec. 3 min');
+            fcrW.fcrWordCond('rd', 'Rec. 30 min');
+            if (d.ir != null) fcrW.fcrWordAddQual('Fig. Rey — Retención %', d.ir + '%', d.ir + '%');
           }
-          function fcrWordAddQual(lbl, val, desc) {
-            if (val == null || val === '') return;
-            rows.push(_zGrillaRows(lbl, val, null, null, null, null, rowCount % 2 === 0, false, desc ? { label: desc } : null));
-            rowCount++;
-          }
-          function fcrWN(cond) {
-            if (typeof fcrResolveNorms === 'function') return fcrResolveNorms(d, cond);
-            return { m: null, ds: null };
-          }
-          function fcrWordCond(k, lblShort) {
-            var cap = typeof fcrCapKey === 'function' ? fcrCapKey(k) : k.charAt(0).toUpperCase() + k.slice(1);
-            var pb = d['exactitud' + cap] != null ? d['exactitud' + cap] : d[k];
-            if (pb == null) return;
-            var wn = fcrWN(k);
-            var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
-            fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, d['m' + cap] != null ? d['m' + cap] : wn.m, d['ds' + cap] != null ? d['ds' + cap] : wn.ds, zW, d['interp' + cap]);
-            var tipo = d['tipo' + cap];
-            if (tipo) fcrWordAddQual('Fig. Rey — ' + lblShort + ' · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : ('Tipo ' + tipo));
-          }
-          fcrWordCond('copia', 'Copia');
-          fcrWordCond('ri', 'Rec. 3 min');
-          fcrWordCond('rd', 'Rec. 30 min');
-          if (d.ir != null) fcrWordAddQual('Fig. Rey — Retención %', d.ir + '%', d.ir + '%');
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){
           var loesBrutoW=d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
