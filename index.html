@@ -4447,13 +4447,13 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               <label>Grupo de edad *</label>
               <select id="tavec-edad">
                 <option value="">— Seleccionar —</option>
-                <option value="1">Grupo 1 · 16–24 años</option>
-                <option value="2">Grupo 2 · 25–34 años</option>
-                <option value="3">Grupo 3 · 35–44 años</option>
-                <option value="4">Grupo 4 · 45–54 años</option>
-                <option value="5">Grupo 5 · 55–64 años</option>
-                <option value="6">Grupo 6 · 65–74 años</option>
-                <option value="7">Grupo 7 · &gt;74 años</option>
+                <option value="1">16–24 años</option>
+                <option value="2">25–34 años</option>
+                <option value="3">35–44 años</option>
+                <option value="4">45–54 años</option>
+                <option value="5">55–64 años</option>
+                <option value="6">65–74 años</option>
+                <option value="7">&gt;74 años</option>
               </select>
             </div>
             <div class="field"><label>Fecha</label><input type="date" id="tavec-fecha"></div>
@@ -21041,8 +21041,8 @@ var TAVEC_BAR = {
   v3:  [{m:58.19,d:9.04},{m:58.20,d:8.53},{m:55.82,d:9.17},{m:51.53,d:11.42},{m:50.76,d:9.44},{m:43.99,d:8.54},{m:38.26,d:12.11}],
   v4:  [{m:7.03,d:2.04},{m:7.07,d:2.12},{m:6.64,d:2.06},{m:6.28,d:2.02},{m:5.78,d:2.21},{m:5.73,d:2.16},{m:5.06,d:2.10}],
   v8:  [{m:12.96,d:2.41},{m:12.72,d:2.59},{m:12.16,d:2.95},{m:11.02,d:2.98},{m:10.57,d:2.79},{m:9.27,d:2.81},{m:7.17,d:3.80}],
-  v9:  [{m:13.45,d:2.16},{m:13.12,d:2.48},{m:12.57,d:2.75},{m:11.52,d:2.64},{m:11.21,d:2.83},{m:9.60,d:2.78},{m:7.47,d:3.91}],
-  v10: [{m:13.41,d:2.14},{m:13.38,d:2.17},{m:12.80,d:2.48},{m:11.91,d:2.55},{m:11.82,d:2.63},{m:10.64,d:2.77},{m:8.76,d:3.31}],
+  v9:  [{m:13.41,d:2.14},{m:13.38,d:2.17},{m:12.80,d:2.48},{m:11.91,d:2.55},{m:11.82,d:2.63},{m:10.64,d:2.77},{m:8.76,d:3.31}],
+  v10: [{m:13.45,d:2.16},{m:13.12,d:2.48},{m:12.57,d:2.75},{m:11.52,d:2.64},{m:11.21,d:2.83},{m:9.60,d:2.78},{m:7.47,d:3.91}],
   v11: [{m:13.76,d:2.16},{m:13.66,d:2.12},{m:13.24,d:2.50},{m:12.12,d:2.49},{m:12.05,d:2.67},{m:10.66,d:2.59},{m:8.68,d:3.50}],
   v20: [{m:4.55,d:4.62},{m:5.76,d:5.00},{m:5.54,d:4.45},{m:7.04,d:5.26},{m:6.60,d:5.44},{m:5.71,d:4.91},{m:6.57,d:9.26}],
   v21: [{m:2.50,d:3.13},{m:2.69,d:3.09},{m:2.97,d:3.81},{m:3.53,d:4.49},{m:3.88,d:4.43},{m:4.95,d:5.71},{m:7.11,d:6.41}],
@@ -21130,6 +21130,25 @@ function iniciarTavec() {
   document.getElementById('tavec-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('tavec-form').style.display = 'block';
   document.getElementById('tavec-resultado').style.display = 'none';
+  tavecSyncFormLabels();
+}
+
+function tavecSyncFormLabels() {
+  TAVEC_VARS.forEach(function(v) {
+    var inp = document.getElementById('tavec-' + v.k);
+    if (!inp) return;
+    var field = inp.closest('.field');
+    var lbl = field && field.querySelector('label');
+    if (!lbl) return;
+    var suf = v.max != null ? ' (0–' + v.max + ')' : '';
+    lbl.textContent = tavecTablaLabel(v.k) + suf;
+  });
+  var v25 = document.getElementById('tavec-v25');
+  if (v25) {
+    var f25 = v25.closest('.field');
+    var l25 = f25 && f25.querySelector('label');
+    if (l25) l25.textContent = tavecTablaLabel('v25') + ' (calculado)';
+  }
 }
 
 function tavecDiscrim() {
@@ -21202,7 +21221,7 @@ function calcularTavec() {
     '<th style="text-align:left;padding:8px 12px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Variable</th>' +
     '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">PB</th>' +
     '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">M</th>' +
-    '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">DS</th>' +
+    '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Dt</th>' +
     '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Z</th>' +
     '<th style="text-align:center;padding:8px;font-size:0.71rem;color:var(--muted);text-transform:uppercase;">Clasificación</th>' +
     '</tr></thead><tbody>';
@@ -21218,7 +21237,7 @@ function calcularTavec() {
     var col   = zColor(z, esErr);
     var lbl   = zLbl(z, esErr);
     html += '<tr style="border-bottom:1px solid var(--border);">' +
-      '<td style="padding:8px 12px;">' + v.lbl + '</td>' +
+      '<td style="padding:8px 12px;font-size:0.8rem;">' + tavecTablaLabel(v.k) + '</td>' +
       '<td style="text-align:center;padding:8px;font-family:monospace;">' + (bruto !== null ? bruto : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.m.toFixed(2) : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.d.toFixed(2) : '—') + '</td>' +
