@@ -506,7 +506,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.2</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.3</div>
     </div>
   </aside>
 
@@ -8294,6 +8294,33 @@ function _fmtTabNum(val) {
   return (Math.round(n * 10) / 10).toFixed(1);
 }
 
+function _parseResultDatos(raw) {
+  if (!raw) return {};
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch (e) { return {}; }
+  }
+  return raw;
+}
+
+function zInterpNormativo(z) {
+  if (z === null || z === undefined || isNaN(parseFloat(z))) return '—';
+  z = parseFloat(z);
+  if (z >= 2.0) return 'Muy superior';
+  if (z >= 1.5) return 'Superior';
+  if (z >= 1.0) return 'Lím. superior norm.';
+  if (z >= -0.49) return 'Normal';
+  if (z >= -1.0) return 'Lím. inf. normativo';
+  if (z >= -1.5) return 'Dificultad leve';
+  if (z >= -2.0) return 'Dificultad moderada';
+  return 'Dificultad elevada';
+}
+
+function fmtZInforme(z) {
+  if (z === null || z === undefined || isNaN(parseFloat(z))) return null;
+  z = parseFloat(z);
+  return (z >= 0 ? '+' : '') + z.toFixed(2);
+}
+
 function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacSexo, pacEscol, inf) {
   inf = inf || {};
   var infCfgPack = infExtraerConfig(inf);
@@ -8696,10 +8723,10 @@ function renderCuestionariosFam(d) {
 
     // Agrupar por dominio
     var dominios = {
-      'COGNITIVO GLOBAL':    ['MoCA','Mini Mental Parkinson','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':    ['MoCA','Mini Mental Parkinson','ACE-R','IFS','WAIS-IV Perfil','Test del Reloj (Cacho)'],
       'MEMORIA':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA','TMT A-B'],
-      'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
+      'FUNC. EJECUTIVAS':    ['FAB','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
       'LENGUAJE':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO / MEMORIA VISUAL': ['Figura Rey'],
     };
@@ -8724,7 +8751,7 @@ function renderCuestionariosFam(d) {
       testsDelDominio.forEach(function(testNombre) {
         if (testNombre !== 'TMT A-B') procesados[testNombre] = true;
         var r = byTest[testNombre];
-        var d = r.datos || {};
+        var d = _parseResultDatos(r.datos);
 
         if (testNombre === 'Rey Verbal' && d.variables && d.variables.length) {
           // Múltiples subvariables con sus propios M, DS, Z
@@ -8793,8 +8820,8 @@ function renderCuestionariosFam(d) {
             'Olabarrieta-Landa et al. 2015 · Ajuste por educación' :
             'Serrano/Allegri 2001 · Corte ≥9/12';
           var bntLabel = testNombre + (d.educ_label?' ('+d.educ_label+')':'');
-          var bntM = testNombre==='BNT-12' ? 11 : null;
-          var bntDS = testNombre==='BNT-12' ? 1.16 : null;
+          var bntM = testNombre==='BNT-12' ? (d.m != null && d.m !== '' ? d.m : 11) : null;
+          var bntDS = testNombre==='BNT-12' ? (d.ds != null && d.ds !== '' ? d.ds : 1.16) : null;
           rows += filaTabla(bntLabel, d.pb||r.puntaje_total, bntM, bntDS, r.puntaje_z, r.fecha);
 
         } else if (testNombre === 'Fluencia Verbal') {
@@ -9012,6 +9039,10 @@ function renderCuestionariosFam(d) {
           }
           fcrPdfCond('copia', 'Copia');
           if (d.ir != null) rows += filaTabla('Índice de Retención (3 min/Copia)', d.ir+'%', null, null, null, r.fecha, d.ir+'%', d.ir+'%');
+
+        } else if (testNombre === 'IFS') {
+          var ifsPb = r.puntaje_total != null ? r.puntaje_total + '/30' : null;
+          rows += filaTabla('IFS — Total', ifsPb, d.m != null ? d.m : null, d.ds != null ? d.ds : null, r.puntaje_z, r.fecha);
 
         } else if (testNombre === 'Stroop') {
           var escolLabelsS = ['Baja','Media','Alta'];
@@ -9514,6 +9545,25 @@ function renderCuestionariosFam(d) {
           '<td style="'+tdRI+'">'+informeWursResultado(wTot,r.categoria)+'</td></tr>';
         html += '</tbody></table>';
         html += '<div style="font-size:8px;color:#666;margin-bottom:6px;">Cortes: &lt;36 sin síntomas · 36–45 probable · ≥46 compatible · Scandar (2021)</div>';
+        return;
+      }
+
+      // ── TECLE ──
+      if (r.test === 'TECLE') {
+        var tecleZ = r.puntaje_z != null ? parseFloat(r.puntaje_z) : null;
+        var tecleZStr = fmtZInforme(tecleZ);
+        var tecleInterp = tecleZ != null ? zInterpNormativo(tecleZ) : (r.categoria || '—');
+        html += clHeader('TECLE · Test de Competencia Lectora');
+        html += '<table style="width:100%;border-collapse:collapse;margin-bottom:6px;"><thead><tr>'+
+          '<th style="'+thDark+'min-width:200px;">Variable</th>'+
+          '<th style="'+thDarkC+'">Puntaje</th>'+
+          '<th style="'+thDarkC+'">Z</th>'+
+          '<th style="'+thDark+'">Interpretación</th></tr></thead><tbody>'+
+          '<tr style="background:#fff;"><td style="'+tdR+'">TECLE</td>'+
+          '<td style="'+tdRC+'">'+(r.puntaje_total!=null?r.puntaje_total:'—')+'</td>'+
+          '<td style="'+tdRC+'">'+(tecleZStr||'—')+'</td>'+
+          '<td style="'+tdRI+'">'+(tecleZStr ? (tecleZStr + ' · ' + tecleInterp) : tecleInterp)+'</td></tr>'+
+          '</tbody></table>';
         return;
       }
 
@@ -16974,7 +17024,7 @@ function bntActualizar() {
     var z = parseFloat(((pb - 11) / 1.16).toFixed(2));
     var normal = pb >= 9;
     var col = normal?'#1D9E75':'#c0392b';
-    resEl.innerHTML = 'Z: <strong style="color:'+col+'">'+(z>=0?'+':'')+z+'</strong> · '+(normal?'Normal (≥9)':'<strong style="color:#c0392b;">Por debajo del corte (&lt;9)</strong>');
+    resEl.innerHTML = 'M=11 · DS=1.16 · Z: <strong style="color:'+col+'">'+(z>=0?'+':'')+z+'</strong> · '+(normal?'Normal (≥9)':'<strong style="color:#c0392b;">Por debajo del corte (&lt;9)</strong>');
   }
 }
 function guardarBNT() {
@@ -19978,6 +20028,52 @@ function buildScreeningSubescalasWord(testsNP) {
   return xml;
 }
 
+var IFS_WORD_LABELS = {
+  'ifs-motor': 'IFS - Series Motoras',
+  'ifs-conflicto': 'IFS - I. Conflictivas',
+  'ifs-gonogo': 'IFS - Go-No Go',
+  'ifs-digitos': 'IFS - Dígitos atrás',
+  'ifs-meses': 'IFS - Meses atrás',
+  'ifs-corsi': 'IFS - Corsi',
+  'ifs-refranes': 'IFS - Refranes',
+  'ifs-hayling': 'IFS - Hayling Test'
+};
+
+function buildIfsSubescalasWord(testsNP) {
+  var r = null;
+  (testsNP || []).forEach(function(x) { if (x.test === 'IFS') r = x; });
+  if (!r) return '';
+  var d = _parseResultDatos(r.datos);
+  var sub = d.subtests || {};
+  var SUB_W = Math.round(WORD_CONTENT_W * 0.58);
+  var COL_SUB = _wordScaleCols([4200, 1400], SUB_W);
+  var rows = [];
+
+  function subCell(txt, w, bg, center, bold) {
+    return _wCell(_wPar(_wRun(String(txt != null ? txt : '—'), { sz: 20, bold: !!bold, font: 'Arial', color: '000000' }), { align: center ? 'center' : 'left', before: 14, after: 14 }), { w: w, fill: bg || 'FFFFFF', compact: true });
+  }
+
+  IFS_SUBTESTS.forEach(function(s) {
+    var v = sub[s.id];
+    if (v === null || v === undefined || v === '') return;
+    rows.push(_wRow([
+      subCell(IFS_WORD_LABELS[s.id] || ('IFS - ' + s.label), COL_SUB[0], 'FFFFFF', false, false),
+      subCell(v + '/' + s.max, COL_SUB[1], 'FFFFFF', true, false)
+    ]));
+  });
+
+  if (sub['ifs-digitos'] !== undefined && sub['ifs-corsi'] !== undefined) {
+    var imt = parseInt(sub['ifs-digitos'], 10) + parseInt(sub['ifs-corsi'], 10);
+    rows.push(_wRow([
+      subCell('Memoria de Trabajo', COL_SUB[0], 'F2F2F2', false, true),
+      subCell(imt + '/10', COL_SUB[1], 'F2F2F2', true, true)
+    ]));
+  }
+
+  if (!rows.length) return '';
+  return _wSubescalaTable(rows, COL_SUB) + _wPar('', { before: 0, after: 80 });
+}
+
 function _wordPageField(instr, sz) {
   return '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'+
     '<w:r><w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
@@ -20290,12 +20386,12 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     list.forEach(function(r){byTest[r.test]=r;});
     var DOMS_ORDER = ['COGNITIVO GLOBAL','ATENCIÓN','LENGUAJE','VISOCONSTRUCTIVO','MEMORIA','FUNC. EJECUTIVAS'];
     var DOMS={
-      'COGNITIVO GLOBAL':   ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
+      'COGNITIVO GLOBAL':   ['MoCA','Mini Mental Parkinson','ACE-R','IFS','Test del Reloj (Cacho)'],
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA','TMT A-B'],
       'LENGUAJE':           ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO':   ['Figura Rey'],
       'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
-      'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
+      'FUNC. EJECUTIVAS':   ['FAB','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
     };
     function fcrDHasCopia(d) {
       return d.copia != null || d.exactitudCopia != null;
@@ -20362,7 +20458,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       domHdr(dom);
       tests.forEach(function(tn){
         if(SCREENING_SUBESCALAS_CFG[tn])return;
-        var r=byTest[tn];var d=r.datos||{};
+        var r=byTest[tn];var d=_parseResultDatos(r.datos);
         if(tn==='Rey Verbal'&&d.variables&&d.variables.length){
           d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});
         } else if(tn==='TAVEC'){
@@ -20431,9 +20527,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         } else if(tn==='DEX'){
           var dv2=d.version==='hetero'?'Heteroadm.':'Autoadm.';
           add('DEX Total ('+dv2+')',d.total,d.version==='hetero'?20.68:22.25,d.version==='hetero'?14.77:10.10,d.zTotal,'Pje /80');
-        } else if(tn==='BNT-60'||tn==='BNT-12'){var bM=tn==='BNT-12'?11:(d.m!=null?d.m:null);var bDS=tn==='BNT-12'?1.16:(d.ds!=null?d.ds:null);add(tn+(d.educ_label?' ('+d.educ_label+')':''),d.pb||r.puntaje_total,bM,bDS,r.puntaje_z,null);}
+        } else if(tn==='BNT-60'||tn==='BNT-12'){var bM=tn==='BNT-12'?(d.m!=null&&d.m!==''?d.m:11):(d.m!=null?d.m:null);var bDS=tn==='BNT-12'?(d.ds!=null&&d.ds!==''?d.ds:1.16):(d.ds!=null?d.ds:null);add(tn+(d.educ_label?' ('+d.educ_label+')':''),d.pb!=null&&d.pb!==''?d.pb:r.puntaje_total,bM,bDS,r.puntaje_z,null);}
         else if(tn==='Token Test'){add('Token Test',r.puntaje_total,null,null,r.puntaje_z,null);}
-        else if(tn==='IFS'){add('IFS — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
+        else if(tn==='IFS'){add('IFS — Total',r.puntaje_total!=null?r.puntaje_total+'/30':null,d.m!=null?d.m:null,d.ds!=null?d.ds:null,r.puntaje_z,null);}
         else if(tn==='FAB'){add('FAB — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='Test del Reloj (Cacho)'){add('Test del Reloj (Cacho)',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='BTA'){add('BTA',d.puntaje,d.m,d.ds,d.z,d.pc?'Pc '+d.pc:null);}
@@ -20448,14 +20544,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return rows;
   }
 
-  // ── Normalizar campo datos (jsonb o string) ──
-  function _parseResultDatos(raw) {
-    if (!raw) return {};
-    if (typeof raw === 'string') {
-      try { return JSON.parse(raw); } catch (e) { return {}; }
-    }
-    return raw;
-  }
+  // ── Normalizar campo datos (jsonb o string) — ver _parseResultDatos global ──
 
   // ── Tabla WAIS-IV Perfil (PE · PC · Percentil · Descripción) ──
   function buildWaisPerfilWordTable(list) {
@@ -20760,20 +20849,22 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   // Evaluación Neuropsicológica — subescalas screenings + grilla Z
   var waisPerfilTbl = buildWaisPerfilWordTable(datos);
   var screeningXml = buildScreeningSubescalasWord(testsNP);
+  var ifsXml = buildIfsSubescalasWord(testsNP);
   var npRows = buildNPRows(testsNP);
-  if (screeningXml || npRows.length) {
+  if (screeningXml || ifsXml || npRows.length) {
     body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
     if (screeningXml) body += screeningXml;
+    if (ifsXml) body += ifsXml;
     if (npRows.length) body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
     body += _wPar('', { before: 0, after: 80 });
   }
 
   // WAIS-IV Perfil (tabla índices) — al final de neuro, antes de Cuest. Neurodesarrollo
   if (waisPerfilTbl) {
-    if (!npRows.length && !screeningXml) {
+    if (!npRows.length && !screeningXml && !ifsXml) {
       body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
     }
-    body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: (npRows.length || screeningXml) ? 80 : 0, after: 40 });
+    body += _wPar(_wRun('ESCALA DE INTELIGENCIA PARA ADULTOS DE WECHSLER (WAIS IV)', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: (npRows.length || screeningXml || ifsXml) ? 80 : 0, after: 40 });
     body += _wTable(waisPerfilTbl.rows, waisPerfilTbl.cols);
     body += _wPar('', { before: 0, after: 80 });
   }
@@ -20812,8 +20903,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       res='—';
     } else if(r.test==='TECLE'){
       pb=r.puntaje_total!=null?r.puntaje_total:'—';
-      var zv=r.puntaje_z!=null?parseFloat(r.puntaje_z).toFixed(2):null;
-      res=(r.categoria||'—')+(zv?' (Z='+zv+')':'');
+      var tecleZ=r.puntaje_z!=null?parseFloat(r.puntaje_z):null;
+      var tecleZStr=fmtZInforme(tecleZ);
+      var tecleInterp=tecleZ!=null?zInterpNormativo(tecleZ):(r.categoria||'—');
+      res=tecleZStr?(tecleZStr+' · '+tecleInterp):tecleInterp;
     } else if(r.test==='Lectura Palabras y Pseudopalabras'){
       var pp=d.palabras||{},ppp=d.pseudopalabras||{};
       var ts=[pp.col1,pp.col3,pp.col5,ppp.col2,ppp.col4,ppp.col6].filter(function(v){return v!=null;});
