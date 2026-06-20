@@ -506,7 +506,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.1</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.2</div>
     </div>
   </aside>
 
@@ -2500,7 +2500,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
     <div id="fcr-exactitud-tipo-card" class="card">
       <div class="card-title">Exactitud y tipo</div>
-      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo: estrategia constructiva I–VII (Osterrieth).</p>
+      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo (estrategia constructiva I–VII): solo en la condición Copia.</p>
       <p id="fcr-exact-man-nota" style="display:none;font-size:0.82rem;color:var(--muted);margin:0 0 12px;">En carga manual, la exactitud se toma de los totales ingresados arriba.</p>
       <div id="fcr-exact-grid">
         <div class="form-grid-3" style="margin-bottom:6px;font-size:0.72rem;font-weight:700;color:var(--muted);">
@@ -2514,12 +2514,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         <div class="form-grid-3" style="align-items:end;margin-bottom:8px;">
           <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 3 min</div>
           <div class="field" style="margin:0;"><input type="number" id="fcr-exact-ri" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
-          <div class="field" style="margin:0;"><select id="fcr-tipo-ri"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+          <div class="field" style="margin:0;display:none;" aria-hidden="true"><select id="fcr-tipo-ri" disabled><option value="">—</option></select></div>
         </div>
         <div class="form-grid-3" style="align-items:end;">
           <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 30 min</div>
           <div class="field" style="margin:0;"><input type="number" id="fcr-exact-rd" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
-          <div class="field" style="margin:0;"><select id="fcr-tipo-rd"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+          <div class="field" style="margin:0;display:none;" aria-hidden="true"><select id="fcr-tipo-rd" disabled><option value="">—</option></select></div>
         </div>
       </div>
     </div>
@@ -4586,7 +4586,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <!-- ── WMS-III · LOCALIZACIÓN ESPACIAL (LoEs) ── -->
     <div class="vista" id="vista-loes">
       <div class="back-btn" onclick="volverSector()">← Volver</div>
-      <div class="vista-header"><div class="vista-titulo">WMS-III · Localización Espacial (LoEs)</div></div>
+      <div class="vista-header"><div class="vista-titulo">WMS III - Memoria de trabajo</div></div>
       <div id="loes-form">
         <div class="card">
           <div class="card-title">Datos de la evaluación</div>
@@ -7859,7 +7859,7 @@ var HISTORIAL_ENTRADA_AUTO = false;
 
 var HISTORIAL_DOMINIOS = [
   { label: '1. Cognitivo global', tests: ['MoCA', 'Mini Mental Parkinson', 'ACE-R', 'Test del Reloj (Cacho)'] },
-  { label: '2. Memoria', tests: ['TAVEC', 'Rey Verbal', 'BEM 144 Signoret', 'Figura Rey'] },
+  { label: '2. Memoria', tests: ['TAVEC', 'Rey Verbal', 'BEM 144 Signoret'] },
   { label: '3. Atención y velocidad', tests: ['TMT A-B', 'SDMT-escrita', 'SDMT-oral', 'BTA', 'D2'] },
   { label: '4. Funciones ejecutivas', tests: ['FAB', 'IFS', 'WCST-64', 'Stroop', 'WMS-III LoEs', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'Test del Hotel'] },
   { label: '5. Lenguaje', tests: ['BNT-60', 'BNT-12', 'Fluencia Verbal', 'Token Test'] },
@@ -8503,11 +8503,12 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
         { t:'SDMT-escrita', fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Esc.)',d.z,'ATENCIÓN','SDMT-escrita'); } },
         { t:'SDMT-oral',    fn: function(r){ var d=r.datos||{}; addPunto('SDMT (Oral)',d.z,'ATENCIÓN','SDMT-oral'); } },
         { t:'BTA',          fn: function(r){ var d=r.datos||{}; addPunto('BTA',d.z,'ATENCIÓN','BTA'); } },
+        { t:'TMT A-B',      fn: function(r){ var d=r.datos||{}; if(d.tmt_a_z!=null) addPunto('TMT-A',d.tmt_a_z,'ATENCIÓN','TMT·A'); } },
       ]},
       { dom: 'FUNC. EJEC.', tests: [
         { t:'FAB',         fn: function(r){ addPunto('FAB', r.puntaje_z, 'FUNC. EJEC.', 'FAB'); } },
         { t:'IFS',         fn: function(r){ addPunto('IFS', r.puntaje_z, 'FUNC. EJEC.', 'IFS'); } },
-        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; addPunto('TMT-A',d.tmt_a_z||r.puntaje_z,'FUNC. EJEC.','TMT·A'); addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.','TMT·B'); } },
+        { t:'TMT A-B',     fn: function(r){ var d=r.datos||{}; if(d.tmt_b_z!=null) addPunto('TMT-B',d.tmt_b_z,'FUNC. EJEC.','TMT·B'); } },
         { t:'Stroop',      fn: function(r){ var d=r.datos||{}; addPunto('Stroop P',d.zP,'FUNC. EJEC.','Stroop·P'); addPunto('Stroop C',d.zC,'FUNC. EJEC.','Stroop·C'); addPunto('Stroop PC',d.zPC,'FUNC. EJEC.','Stroop·PC'); addPunto('Stroop Int.',d.zInt,'FUNC. EJEC.','Stroop·Int'); } },
         { t:'BADS-Zoo',    fn: function(r){ var d=r.datos||{}; addPunto('Zoo',d.z,'FUNC. EJEC.','BADS-Zoo'); } },
         { t:'BADS-Llaves', fn: function(r){ var d=r.datos||{}; addPunto('Llaves',d.z,'FUNC. EJEC.','BADS-Llaves'); } },
@@ -8522,7 +8523,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
         { t:'Fluencia Verbal',fn: function(r){ var d=r.datos||{}; if(d.variables&&d.variables.length){d.variables.forEach(function(v){addPunto(v.label.replace('Fluencia ','Fl. '),v.z,'LENGUAJE','Fluencia Verbal');});}else{addPunto('Fluencia',r.puntaje_z,'LENGUAJE','Fluencia Verbal');} } },
       ]},
       { dom: 'VISOC.', tests: [
-        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; var zC=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'copia'):d.zCopia; var zR=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'ri'):d.zRi; var zD=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'rd'):d.zRd; if(zC!=null) addPunto('Fig.Rey Copia',zC,'VISOC.','Figura Rey'); if(zR!=null) addPunto('Fig.Rey RI',zR,'VISOC.','Figura Rey'); if(zD!=null) addPunto('Fig.Rey RD',zD,'VISOC.','Figura Rey'); } },
+        { t:'Figura Rey', fn: function(r){ var d=r.datos||{}; var zC=typeof fcrGetStoredOrCalcZ==='function'?fcrGetStoredOrCalcZ(d,'copia'):d.zCopia; if(zC!=null) addPunto('Fig.Rey Copia',zC,'VISOC.','Figura Rey'); } },
       ]},
     ];
 
@@ -8697,7 +8698,7 @@ function renderCuestionariosFam(d) {
     var dominios = {
       'COGNITIVO GLOBAL':    ['MoCA','Mini Mental Parkinson','ACE-R','WAIS-IV Perfil','Test del Reloj (Cacho)'],
       'MEMORIA':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
-      'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
+      'ATENCIÓN':            ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA','TMT A-B'],
       'FUNC. EJECUTIVAS':    ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
       'LENGUAJE':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO / MEMORIA VISUAL': ['Figura Rey'],
@@ -8712,7 +8713,7 @@ function renderCuestionariosFam(d) {
 
     Object.keys(dominios).forEach(function(dominio) {
       var testsDelDominio = dominios[dominio].filter(function(t){
-        // TMT A-B aparece solo en FUNC. EJECUTIVAS
+        // TMT A-B: Parte A en ATENCIÓN, Parte B en FUNC. EJECUTIVAS
         if (t === 'TMT A-B') return byTest[t] != null;
         return byTest[t] && !procesados[t];
       });
@@ -8777,11 +8778,13 @@ function renderCuestionariosFam(d) {
           }
 
         } else if (testNombre === 'TMT A-B') {
-          var pb_a = d.tmt_a_seg != null ? d.tmt_a_seg : null;
-          var pb_b = d.tmt_b_seg != null ? d.tmt_b_seg : null;
-          // Mostrar ambos partes juntas en FUNC. EJECUTIVAS
-          rows += filaTabla('TMT A (segundos)', pb_a, d.tmt_a_m||null, d.tmt_a_ds||null, d.tmt_a_z||r.puntaje_z, r.fecha);
-          if (pb_b !== null) rows += filaTabla('TMT B (segundos)', pb_b, d.tmt_b_m||null, d.tmt_b_ds||null, d.tmt_b_z||null, r.fecha);
+          if (dominio === 'ATENCIÓN') {
+            var pb_a = d.tmt_a_seg != null ? d.tmt_a_seg : null;
+            if (pb_a != null) rows += filaTabla('TMT A (segundos)', pb_a, d.tmt_a_m||null, d.tmt_a_ds||null, d.tmt_a_z||r.puntaje_z, r.fecha);
+          } else if (dominio === 'FUNC. EJECUTIVAS') {
+            var pb_b = d.tmt_b_seg != null ? d.tmt_b_seg : null;
+            if (pb_b !== null) rows += filaTabla('TMT B (segundos)', pb_b, d.tmt_b_m||null, d.tmt_b_ds||null, d.tmt_b_z||null, r.fecha);
+          }
 
         } else if (testNombre === 'BNT-60' || testNombre === 'BNT-12') {
           var bntMax = testNombre==='BNT-60' ? 60 : 12;
@@ -8835,10 +8838,10 @@ function renderCuestionariosFam(d) {
           rows += filaTabla('Búsqueda de Llaves', d.pb!=null?d.pb:null, d.m||null, d.ds||null, d.z, r.fecha, 'Pje conv. '+(d.conv!=null?d.conv:'—'));
 
         } else if (testNombre === 'WMS-III LoEs') {
-          rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WMS-III · Localización Espacial (LoEs) · Memoria de trabajo visual</td></tr>';
+          rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WMS III - Memoria de trabajo</td></tr>';
           var loesBruto = d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
           var loesNota = (d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')+(d.pe!=null?' · Pe '+d.pe:'')):null;
-          rows += filaTabla('LoEs · Localización Espacial', loesBruto, d.m||null, d.ds||null, d.z!=null?d.z:r.puntaje_z, r.fecha, loesNota);
+          rows += filaTabla('WMS III - Memoria de trabajo', loesBruto, d.m||null, d.ds||null, d.z!=null?d.z:r.puntaje_z, r.fecha, loesNota);
 
         } else if (testNombre === 'BADS-Juicio') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">BADS · Juicio Temporal (Farías Sarquís et al., 2021)</td></tr>';
@@ -9002,12 +9005,12 @@ function renderCuestionariosFam(d) {
             var z = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
             var i = typeof fcrInterpLabel === 'function' ? fcrInterpLabel(d['interp' + cap], z) : d['interp' + cap];
             rows += fcrFilaPdf(lblBase + ' · Exactitud', pb, m, ds, z, i);
-            var tipo = d['tipo' + cap];
-            if (tipo) rows += fcrFilaPdfQual(lblBase + ' · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : ('Tipo ' + tipo));
+            if (k === 'copia') {
+              var tipo = d['tipo' + cap];
+              if (tipo) rows += fcrFilaPdfQual('Copia · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : ('Tipo ' + tipo));
+            }
           }
           fcrPdfCond('copia', 'Copia');
-          fcrPdfCond('ri', 'Recuerdo 3 min');
-          fcrPdfCond('rd', 'Recuerdo 30 min');
           if (d.ir != null) rows += filaTabla('Índice de Retención (3 min/Copia)', d.ir+'%', null, null, null, r.fecha, d.ir+'%', d.ir+'%');
 
         } else if (testNombre === 'Stroop') {
@@ -10024,7 +10027,7 @@ var NP_TESTS = [
   {id:'ifs',      n:'IFS',               d:'INECO Frontal Screening',                    t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'tmt',      n:'TMT A y B',         d:'Trail Making Test · también en Atención',    t:'Ejecutivas / Atención', dom:'ejecutivas'},
   {id:'wcst',     n:'WCST-64',           d:'Wisconsin Card Sorting Test · 64 cartas',    t:'Ejecutivas',         dom:'ejecutivas'},
-  {id:'loes',     n:'WMS-III LoEs',      d:'Localización Espacial · mem. trabajo visual', t:'Ejecutivas',      dom:'ejecutivas'},
+  {id:'loes',     n:'WMS III - Memoria de trabajo', d:'Localización Espacial · mem. de trabajo', t:'Ejecutivas', dom:'ejecutivas'},
   {id:'hotel',    n:'Test del Hotel',    d:'Multitasking y memoria prospectiva',         t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'llaves',   n:'BADS — Llaves',     d:'Búsqueda de Llaves · BADS',                 t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'juicio',   n:'BADS — Juicio',     d:'Juicio Temporal · BADS',                    t:'Ejecutivas',         dom:'ejecutivas'},
@@ -17196,7 +17199,7 @@ function buildPruebasRealizadasHtml(datos) {
     'BADS-Llaves': 'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
     'BADS-Juicio': 'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
     'BADS-Zoo': 'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
-    'WMS-III LoEs': 'WMS-III · Localización Espacial (LoEs)',
+    'WMS-III LoEs': 'WMS III - Memoria de trabajo',
     'SDMT-escrita': 'Symbol Digit Modalities Test — Escrita (SDMT)',
     'SDMT-oral': 'Symbol Digit Modalities Test — Oral (SDMT)',
     'IFS': 'INECO Frontal Screening (IFS)',
@@ -19151,7 +19154,7 @@ function fcrActualizar() {
     if (ex === null) return;
     var tp = fcrReadTipo(k);
     var line = FCR_COND_LBL[k] + ' · exactitud <strong>' + ex + '</strong>/36';
-    if (tp) line += ' · tipo <strong>' + tp + '</strong>';
+    if (k === 'copia' && tp) line += ' · tipo <strong>' + tp + '</strong>';
     parts.push(line);
   });
   var copia = fcrReadExactitud('copia');
@@ -19221,14 +19224,14 @@ function calcularFCR() {
     var cap = fcrCapKey(k);
     result[k] = pb;
     result['exactitud' + cap] = pb;
-    if (tipo) result['tipo' + cap] = tipo;
+    if (tipo && k === 'copia') result['tipo' + cap] = tipo;
     result['m' + cap] = cz.m;
     result['ds' + cap] = cz.ds;
     result['z' + cap] = cz.z;
     result['interp' + cap] = fcrZLabel(cz.z);
     if (sc.modo === 'items') result['items' + cap] = fcrCollectItemScores(k);
     var detLbl = FCR_COND_LBL[k] + '<br><small>Exactitud · Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds;
-    if (tipo) detLbl += ' · Tipo ' + tipo;
+    if (k === 'copia' && tipo) detLbl += ' · Tipo ' + tipo;
     detLbl += '</small>';
     detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + pb + '</div><div class="detalle-lbl">' + detLbl + '</div></div>';
   });
@@ -19245,7 +19248,7 @@ function calcularFCR() {
     if (result[k] === undefined) return;
     var cap = fcrCapKey(k);
     var normLbl = (fcrNormTable(k).M[teaIdx] != null) ? FCR_COND_LBL[k] : FCR_COND_LBL[k] + ' (sin baremo para este grupo de edad)';
-    var tipoLine = result['tipo' + cap] ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
+    var tipoLine = (k === 'copia' && result['tipo' + cap]) ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
     interp += '<p><strong>' + normLbl + ' · Exactitud (' + result[k] + '/36):</strong> M=' + (result['m' + cap] != null ? result['m' + cap] : '—') +
       ' · DS=' + (result['ds' + cap] != null ? result['ds' + cap] : '—') + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
       ' — ' + result['interp' + cap] + tipoLine + '</p>';
@@ -20235,7 +20238,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BADS-Llaves':'BADS · Búsqueda de Llaves (Farías Sarquís et al., 2021)',
     'BADS-Juicio':'BADS · Juicio Temporal (Farías Sarquís et al., 2021)',
     'BADS-Zoo':'BADS · Mapa del Zoo (Farías Sarquís et al., 2021)',
-    'WMS-III LoEs':'Wechsler Memory Scale — III · Localización Espacial (LoEs)',
+    'WMS-III LoEs':'WMS III - Memoria de trabajo',
     'SDMT-escrita':'Symbol Digit Modalities Test — Escrita (SDMT)',
     'SDMT-oral':'Symbol Digit Modalities Test — Oral (SDMT)',
     'IFS':'INECO Frontal Screening (IFS)',
@@ -20271,7 +20274,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     {label:'Atención y velocidad de procesamiento',tests:['WAIS-IV','TMT A-B','D2','SDMT-escrita','SDMT-oral','BTA']},
     {label:'Lenguaje',                              tests:['Fluencia Verbal','BNT-60','BNT-12','Token Test']},
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
-    {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','WMS-III LoEs','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
+    {label:'Funciones ejecutivas',                  tests:['WCST-64','IFS','FAB','Stroop','TMT A-B','WMS-III LoEs','Test del Hotel','BADS-Llaves','BADS-Juicio','BADS-Zoo']},
     {label:'Habilidades visoconstructivas',         tests:['Figura Rey','Test del Reloj (Cacho)']},
     {label:'Cuest. Neurodesarrollo · TDAH',         tests:['ASRS-V1.1','WURS-25','DEX','EAVA']},
     {label:'Cuest. Neurodesarrollo · TEA',          tests:['AQ','AQ-10','EQ','EA','SCQ']},
@@ -20288,25 +20291,28 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var DOMS_ORDER = ['COGNITIVO GLOBAL','ATENCIÓN','LENGUAJE','VISOCONSTRUCTIVO','MEMORIA','FUNC. EJECUTIVAS'];
     var DOMS={
       'COGNITIVO GLOBAL':   ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
-      'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA'],
+      'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA','TMT A-B'],
       'LENGUAJE':           ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO':   ['Figura Rey'],
-      'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret','Figura Rey'],
+      'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
       'FUNC. EJECUTIVAS':   ['FAB','IFS','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
     };
     function fcrDHasCopia(d) {
       return d.copia != null || d.exactitudCopia != null;
     }
-    function fcrDHasMemoria(d) {
-      return d.ri != null || d.rd != null || d.exactitudRi != null || d.exactitudRd != null || d.ir != null;
+    function tmtTestInDom(tn, dom) {
+      if (tn !== 'TMT A-B' || !byTest[tn]) return false;
+      var td = byTest[tn].datos || {};
+      if (dom === 'ATENCIÓN') return td.tmt_a_seg != null || td.tmt_a_z != null;
+      if (dom === 'FUNC. EJECUTIVAS') return td.tmt_b_seg != null || td.tmt_b_z != null;
+      return false;
     }
     function fcrTestInDom(tn, dom) {
       if (!byTest[tn]) return false;
       if (tn !== 'Figura Rey') return true;
       var d = byTest[tn].datos || {};
       if (dom === 'VISOCONSTRUCTIVO') return fcrDHasCopia(d);
-      if (dom === 'MEMORIA') return fcrDHasMemoria(d);
-      return true;
+      return false;
     }
     function fcrWordEmitRows(d) {
       function fcrWordAdd(lbl, pb, m, ds, z, interp) {
@@ -20332,8 +20338,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         var wn = fcrWN(k);
         var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
         fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, d['m' + cap] != null ? d['m' + cap] : wn.m, d['ds' + cap] != null ? d['ds' + cap] : wn.ds, zW, d['interp' + cap]);
-        var tipo = d['tipo' + cap];
-        if (tipo) fcrWordAddQual('Fig. Rey — ' + lblShort + ' · Tipo', tipo, tipo, 16);
+        if (k === 'copia') {
+          var tipo = d['tipo' + cap];
+          if (tipo) fcrWordAddQual('Fig. Rey — Copia · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : tipo, 16);
+        }
       }
       return { fcrWordCond: fcrWordCond, fcrWordAddQual: fcrWordAddQual };
     }
@@ -20344,7 +20352,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     }
     function domHdr(txt){rows.push(_zGrillaRows(txt,null,null,null,null,null,false,true));}
     DOMS_ORDER.forEach(function(dom){
-      var tests=(DOMS[dom]||[]).filter(function(t){return fcrTestInDom(t,dom);});
+      var tests=(DOMS[dom]||[]).filter(function(t){
+        if (t === 'Figura Rey') return fcrTestInDom(t, dom);
+        if (t === 'TMT A-B') return tmtTestInDom(t, dom);
+        return byTest[t];
+      });
       var testsZ=tests.filter(function(t){return !SCREENING_SUBESCALAS_CFG[t];});
       if(!testsZ.length)return;
       domHdr(dom);
@@ -20381,8 +20393,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
             add(SIG[k].label,pb,gi!==null?SIG[k].M[gi]:null,gi!==null?SIG[k].DS[gi]:null,z,null);
           });
         } else if(tn==='TMT A-B'){
-          add('TMT A (segundos)',d.tmt_a_seg,d.tmt_a_m,d.tmt_a_ds,d.tmt_a_z||r.puntaje_z,null);
-          if(d.tmt_b_seg!=null)add('TMT B (segundos)',d.tmt_b_seg,d.tmt_b_m,d.tmt_b_ds,d.tmt_b_z,null);
+          if (dom === 'ATENCIÓN') add('TMT A (segundos)',d.tmt_a_seg,d.tmt_a_m,d.tmt_a_ds,d.tmt_a_z||r.puntaje_z,null);
+          else if (dom === 'FUNC. EJECUTIVAS' && d.tmt_b_seg!=null) add('TMT B (segundos)',d.tmt_b_seg,d.tmt_b_m,d.tmt_b_ds,d.tmt_b_z,null);
         } else if(tn==='Fluencia Verbal'){
           if(d.variables&&d.variables.length){d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});}
           else add('Fluencia Verbal',r.puntaje_total,null,null,r.puntaje_z,null);
@@ -20399,16 +20411,13 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           var fcrW = fcrWordEmitRows(d);
           if (dom === 'VISOCONSTRUCTIVO') {
             fcrW.fcrWordCond('copia', 'Copia');
-          } else if (dom === 'MEMORIA') {
-            fcrW.fcrWordCond('ri', 'Rec. 3 min');
-            fcrW.fcrWordCond('rd', 'Rec. 30 min');
             if (d.ir != null) fcrW.fcrWordAddQual('Fig. Rey — Retención %', d.ir + '%', d.ir + '%');
           }
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){
           var loesBrutoW=d.total_bruto!=null?d.total_bruto:(d.total!=null?d.total:r.puntaje_total);
           var loesNotaW=(d.parte_a!=null||d.parte_b!=null)?('Dir. '+(d.parte_a!=null?d.parte_a:'—')+' · Inv. '+(d.parte_b!=null?d.parte_b:'—')+(d.pe!=null?' · Pe '+d.pe:'')):null;
-          add('WMS-III · LoEs · Localización Espacial',loesBrutoW,d.m,d.ds,d.z!=null?d.z:r.puntaje_z,loesNotaW);
+          add('WMS III - Memoria de trabajo',loesBrutoW,d.m,d.ds,d.z!=null?d.z:r.puntaje_z,loesNotaW);
         }
         else if(tn==='BADS-Juicio'){add('BADS — Juicio Temporal',d.conv,d.m,d.ds,d.z,null);}
         else if(tn==='BADS-Zoo'){if(d.z_bruto!=null)add('BADS — Mapa del Zoo',d.bruto,null,null,d.z_bruto,null);}
@@ -21362,7 +21371,7 @@ function renderPerfilZ() {
     'Cognitivo global':    ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
     'Atención':            ['TMT A-B','WAIS-IV','D2','SDMT-escrita','SDMT-oral','BTA'],
     'Memoria':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
-    'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio'],
+    'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio','TMT A-B'],
     'Lenguaje':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
     'Visoconstructivo':    ['Figura Rey'],
   };
@@ -21404,11 +21413,11 @@ function renderPerfilZ() {
 
       // Extraer variables con Z según test
       if (tn === 'TMT A-B') {
-        TMT_VARS_ORDER.forEach(function(td) {
-          var z = d[td[1]];
-          if (z === null || z === undefined) return;
-          filas.push({ lbl: td[0], z: z, glosario: td[2], invertirZ: td[3] });
-        });
+        if (dom === 'Atención') {
+          if (d.tmt_a_z != null) filas.push({lbl:'TMT A · tiempo (seg)', z: d.tmt_a_z, glosario: 'TMT·A', invertirZ: true});
+        } else if (dom === 'Funciones ejecutivas') {
+          if (d.tmt_b_z != null) filas.push({lbl:'TMT B · tiempo (seg)', z: d.tmt_b_z, glosario: 'TMT·B', invertirZ: true});
+        }
       } else if (tn === 'Stroop') {
         STROOP_VARS_ORDER.forEach(function(td) {
           var z = d[td[1]];
@@ -21420,7 +21429,7 @@ function renderPerfilZ() {
         if (d.cla_z != null) filas.push({lbl:'WAIS · Claves', z: d.cla_z});
         if (d.sln_z != null) filas.push({lbl:'WAIS · Nro-Letra', z: d.sln_z});
       } else if (tn === 'WMS-III LoEs') {
-        if (d.z != null || r.puntaje_z != null) filas.push({lbl:'WMS-III · LoEs', z: d.z != null ? d.z : r.puntaje_z, glosario: 'WMS-III LoEs'});
+        if (d.z != null || r.puntaje_z != null) filas.push({lbl:'WMS III - Memoria de trabajo', z: d.z != null ? d.z : r.puntaje_z, glosario: 'WMS-III LoEs'});
       } else if (tn === 'WAIS-IV Perfil') {
         var wIdx = d.indices || {};
         WAIS_PERFIL_INDICES.forEach(function(idx) {
@@ -21448,11 +21457,7 @@ function renderPerfilZ() {
         if (idx.TOT && idx.TOT.z != null) filas.push({lbl:'D2 TOT', z: idx.TOT.z});
       } else if (tn === 'Figura Rey') {
         var zFC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
-        var zFR = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
-        var zFD = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
         if (zFC != null) filas.push({lbl:'Fig.Rey Copia', z: zFC});
-        if (zFR != null) filas.push({lbl:'Fig.Rey RI', z: zFR});
-        if (zFD != null) filas.push({lbl:'Fig.Rey RD', z: zFD});
       } else if (tn === 'BEM 144 Signoret') {
         ['rli','rld','as','rs','rc','reco'].forEach(function(k){
           var lbs = {rli:'BEM Rec.Lóg.Inm',rld:'BEM Rec.Lóg.Dif',as:'BEM Aprendizaje',rs:'BEM Rec.Serial',rc:'BEM Rec.Claves',reco:'BEM Reconocimiento'};
