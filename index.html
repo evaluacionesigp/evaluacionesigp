@@ -8276,7 +8276,7 @@ function generarPDFHistorial() {
   // Cargar informe narrativo si hay paciente seleccionado
   var infPromise = (pacId && SESSION) ?
     supaFetch('/rest/v1/psico_informes?paciente_id=eq.'+pacId+'&user_id=eq.'+SESSION.user.id+'&select=*','GET',null,SESSION.access_token)
-      .then(function(r){return r.json();}).then(function(d){return (d&&d.length)?d[0]:null;}) :
+      .then(function(r){return r.json();}).then(function(d){return (d&&d.length)?infMergeRecord(d[0]):null;}) :
     Promise.resolve(null);
 
   infPromise.then(function(inf) {
@@ -17109,6 +17109,104 @@ function infDefaultCfg() {
   };
 }
 
+var INF_DRAFT_LS_PREFIX = 'igp_inf_draft_';
+var _informeLoadSeq = 0;
+
+function infMergeRecord(inf) {
+  inf = inf || {};
+  var d = (inf.datos && typeof inf.datos === 'object' && !Array.isArray(inf.datos)) ? inf.datos : {};
+  var out = Object.assign({}, inf);
+  ['motivo_consulta', 'descripcion_conducta', 'perfil_cognitivo', 'conclusiones',
+    'ant_clinicos', 'ant_psiquiatricos', 'ant_familiares', 'habitos_toxicos'].forEach(function(k) {
+    if (!(out[k] || '').trim() && (d[k] || '').trim()) out[k] = d[k];
+  });
+  return out;
+}
+
+function infBuildDatosFromForm() {
+  var cfg = infGetConfigFromForm();
+  var extraEl = document.getElementById('inf-sugerencias-extra');
+  function gv(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  return {
+    sugerencias: cfg.sugerencias,
+    incluir_conclusiones: cfg.incluir_conclusiones,
+    incluir_apendice_a: cfg.incluir_apendice_a,
+    incluir_apendice_b: cfg.incluir_apendice_b,
+    firmas_seleccionadas: cfg.firmas_seleccionadas,
+    sugerencias_personalizadas: extraEl ? extraEl.value : '',
+    motivo_consulta: gv('inf-motivo'),
+    descripcion_conducta: gv('inf-conducta'),
+    perfil_cognitivo: gv('inf-perfil-cog'),
+    conclusiones: gv('inf-conclusiones'),
+    ant_clinicos: gv('inf-ant-clinicos'),
+    ant_psiquiatricos: gv('inf-ant-psiq'),
+    ant_familiares: gv('inf-ant-fam'),
+    habitos_toxicos: gv('inf-habitos')
+  };
+}
+
+function infSaveLocalDraft(pacId, datos) {
+  if (!pacId) return;
+  try {
+    localStorage.setItem(INF_DRAFT_LS_PREFIX + pacId, JSON.stringify({ datos: datos, ts: Date.now() }));
+  } catch (e) {}
+}
+
+function infLoadLocalDraft(pacId) {
+  if (!pacId) return null;
+  try {
+    var raw = localStorage.getItem(INF_DRAFT_LS_PREFIX + pacId);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function infPersistDraftFromForm(pacId) {
+  if (!pacId) return;
+  infSaveLocalDraft(pacId, infBuildDatosFromForm());
+}
+
+function infApplyLocalDraftToForm(pacId) {
+  var draft = infLoadLocalDraft(pacId);
+  if (!draft || !draft.datos) return;
+  var d = draft.datos;
+  var map = {
+    'inf-motivo': d.motivo_consulta,
+    'inf-conducta': d.descripcion_conducta,
+    'inf-perfil-cog': d.perfil_cognitivo,
+    'inf-conclusiones': d.conclusiones,
+    'inf-ant-clinicos': d.ant_clinicos,
+    'inf-ant-psiq': d.ant_psiquiatricos,
+    'inf-ant-fam': d.ant_familiares,
+    'inf-habitos': d.habitos_toxicos,
+    'inf-sugerencias-extra': d.sugerencias_personalizadas
+  };
+  Object.keys(map).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && !el.value.trim() && map[id]) el.value = map[id];
+  });
+  if (d.sugerencias || d.incluir_conclusiones != null || d.firmas_seleccionadas) {
+    infApplyConfigToForm(Object.assign(infDefaultCfg(), {
+      sugerencias: d.sugerencias || infDefaultCfg().sugerencias,
+      incluir_conclusiones: d.incluir_conclusiones,
+      incluir_apendice_a: d.incluir_apendice_a,
+      incluir_apendice_b: d.incluir_apendice_b,
+      firmas_seleccionadas: Object.assign({}, infDefaultCfg().firmas_seleccionadas, d.firmas_seleccionadas || {})
+    }));
+  }
+}
+
+function infBindDraftAutosave() {
+  if (window._infDraftBound) return;
+  window._infDraftBound = true;
+  var vista = document.getElementById('vista-informe');
+  if (!vista) return;
+  vista.addEventListener('input', function(e) {
+    if (!INFORME_PAC_ID || !e.target || !e.target.id || e.target.id.indexOf('inf-') !== 0) return;
+    clearTimeout(window._infDraftTimer);
+    window._infDraftTimer = setTimeout(function() { infPersistDraftFromForm(INFORME_PAC_ID); }, 600);
+  });
+}
+
 function infParseRecomendaciones(str) {
   str = str || '';
   if (str.indexOf(INF_CFG_PREFIX) === 0) {
@@ -17128,7 +17226,7 @@ function infSerializeRecomendaciones(cfg, text) {
 }
 
 function infExtraerConfig(inf) {
-  inf = inf || {};
+  inf = infMergeRecord(inf || {});
   var parsed = infParseRecomendaciones(inf.recomendaciones);
   var cfg = parsed.cfg;
   var sugerenciasPersonalizadas = parsed.text;
@@ -17440,6 +17538,8 @@ function abrirInforme() {
   infApplyConfigToForm(infDefaultCfg());
   initFirmasUI();
   cargarLogosUI();
+  infBindDraftAutosave();
+  _informeLoadSeq++;
   // Cargar datos existentes
   cargarInforme(pacId);
   var ctrlInf = document.getElementById('inf-estado-informe-control');
@@ -17452,11 +17552,16 @@ function abrirInforme() {
 
 function cargarInforme(pacId) {
   if (!SESSION) return;
+  var loadSeq = _informeLoadSeq;
   supaFetch('/rest/v1/psico_informes?paciente_id=eq.'+pacId+'&user_id=eq.'+SESSION.user.id+'&select=*', 'GET', null, SESSION.access_token)
     .then(function(r){ return r.json(); })
     .then(function(data) {
-      if (!data || !data.length) return;
-      var inf = data[0];
+      if (loadSeq !== _informeLoadSeq || pacId !== INFORME_PAC_ID) return;
+      if (!data || !data.length) {
+        infApplyLocalDraftToForm(pacId);
+        return;
+      }
+      var inf = infMergeRecord(data[0]);
       var map = {
         'inf-fecha-eval':   inf.fecha_evaluacion||'',
         'inf-evaluado-por': inf.evaluado_por||'',
@@ -17478,20 +17583,33 @@ function cargarInforme(pacId) {
       };
       Object.keys(map).forEach(function(id){
         var el = document.getElementById(id);
-        if(el) el.value = map[id];
+        if (!el) return;
+        var serverVal = map[id] || '';
+        if (el.value.trim() && !serverVal.trim()) return;
+        el.value = serverVal;
       });
       infRenderSugerenciasChecks();
       var infPack = infExtraerConfig(inf);
       infApplyConfigToForm(infPack.cfg);
       saveFirmasSeleccionadasLS(infPack.cfg.firmas_seleccionadas);
       var extraEl = document.getElementById('inf-sugerencias-extra');
-      if (extraEl) extraEl.value = infPack.sugerenciasPersonalizadas || '';
+      if (extraEl && !extraEl.value.trim()) extraEl.value = infPack.sugerenciasPersonalizadas || '';
       initFirmasUI(infPack.cfg.firmas_seleccionadas);
+      infApplyLocalDraftToForm(pacId);
+    })
+    .catch(function() {
+      if (loadSeq !== _informeLoadSeq || pacId !== INFORME_PAC_ID) return;
+      infApplyLocalDraftToForm(pacId);
     });
 }
 
 function guardarInforme() {
   if (!SESSION || !INFORME_PAC_ID) return;
+  var datos = infBuildDatosFromForm();
+  saveFirmasSeleccionadasLS(datos.firmas_seleccionadas);
+  infSaveLocalDraft(INFORME_PAC_ID, datos);
+  var cfg = infGetConfigFromForm();
+  var extraEl = document.getElementById('inf-sugerencias-extra');
   var body = {
     user_id:          SESSION.user.id,
     paciente_id:      INFORME_PAC_ID,
@@ -17507,20 +17625,41 @@ function guardarInforme() {
     ant_psiquiatricos:document.getElementById('inf-ant-psiq').value || null,
     ant_familiares:   document.getElementById('inf-ant-fam').value || null,
     habitos_toxicos:  document.getElementById('inf-habitos').value || null,
-    motivo_consulta:  document.getElementById('inf-motivo').value || null,
-    descripcion_conducta: document.getElementById('inf-conducta').value || null,
-    perfil_cognitivo: document.getElementById('inf-perfil-cog').value || null,
-    conclusiones:     document.getElementById('inf-conclusiones').value || null,
-    recomendaciones:  (function(){ var cfg=infGetConfigFromForm(); var ex=document.getElementById('inf-sugerencias-extra'); saveFirmasSeleccionadasLS(cfg.firmas_seleccionadas); return infSerializeRecomendaciones(cfg, ex?ex.value:''); })(),
+    motivo_consulta:  datos.motivo_consulta || null,
+    descripcion_conducta: datos.descripcion_conducta || null,
+    perfil_cognitivo: datos.perfil_cognitivo || null,
+    conclusiones:     datos.conclusiones || null,
+    recomendaciones:  infSerializeRecomendaciones(cfg, extraEl ? extraEl.value : ''),
+    datos:            datos,
     firma_imagen:     null,
     actualizado:      new Date().toISOString()
   };
-  // UPSERT — si ya existe lo actualiza, si no lo crea
-  supaFetch('/rest/v1/psico_informes?on_conflict=user_id,paciente_id', 'POST', body, SESSION.access_token, {'Prefer':'resolution=merge-duplicates'})
-    .then(function(){
+  var filter = '?paciente_id=eq.' + INFORME_PAC_ID + '&user_id=eq.' + SESSION.user.id;
+  supaFetch('/rest/v1/psico_informes' + filter + '&select=id', 'GET', null, SESSION.access_token)
+    .then(function(res) {
+      if (!res.ok) throw new Error('No se pudo leer el informe (' + res.status + ')');
+      return res.json();
+    })
+    .then(function(rows) {
+      if (rows && rows.length) {
+        return supaFetch('/rest/v1/psico_informes' + filter, 'PATCH', body, SESSION.access_token);
+      }
+      return supaFetch('/rest/v1/psico_informes', 'POST', body, SESSION.access_token);
+    })
+    .then(function(res) {
+      if (!res.ok) {
+        return res.text().then(function(t) {
+          var msg = t || ('HTTP ' + res.status);
+          try { var j = JSON.parse(t); if (j.message) msg = j.message; else if (j.error) msg = j.error; } catch (e) {}
+          throw new Error(msg);
+        });
+      }
       toast('✓ Informe guardado', 'success');
     })
-    .catch(function(){ toast('Error al guardar informe', 'error'); });
+    .catch(function(err) {
+      var detail = err && err.message ? err.message : '';
+      toast('Error al guardar informe' + (detail ? ': ' + detail.substring(0, 140) : ''), 'error');
+    });
 }
 
 
@@ -20261,7 +20400,7 @@ function generarWordHistorial() {
 
   var infPromise = (pacId&&SESSION) ?
     supaFetch('/rest/v1/psico_informes?paciente_id=eq.'+pacId+'&user_id=eq.'+SESSION.user.id+'&select=*','GET',null,SESSION.access_token)
-      .then(function(r){return r.json();}).then(function(d){return(d&&d.length)?d[0]:null;}) :
+      .then(function(r){return r.json();}).then(function(d){return (d&&d.length)?infMergeRecord(d[0]):null;}) :
     Promise.resolve(null);
 
   infPromise.then(function(inf){
