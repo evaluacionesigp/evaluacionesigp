@@ -506,7 +506,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.4</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.5</div>
     </div>
   </aside>
 
@@ -4397,14 +4397,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           </div>
         </div>
 
-        <!-- AD8-ARG -->
-        <div class="card">
-          <div class="card-title">AD8-ARG · Cuestionario del Informante (versión argentina)</div>
-          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">En los últimos años, indique si notó el cambio en cada área (<strong>Sí / No / No sabe</strong>). Puntaje ≥ 2 es clínicamente significativo.</p>
-          <div id="ad8-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
-          <div id="ad8-total-box" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;"></div>
-        </div>
-
         <!-- AVD Básicas -->
         <div class="card">
           <div class="card-title">Actividades Básicas de la Vida Diaria</div>
@@ -4424,6 +4416,14 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Actividades Expansivas de la Vida Diaria</div>
           <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">Escala <strong>0 a 3</strong>: 0 = independencia total · 3 = necesita completa asistencia.</p>
           <div id="avde-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
+        </div>
+
+        <!-- AD8-ARG -->
+        <div class="card">
+          <div class="card-title">AD8-ARG · Cuestionario del Informante (versión argentina)</div>
+          <p style="font-size:0.79rem;color:var(--muted);margin-bottom:14px;">En los últimos años, indique si notó el cambio en cada área (<strong>Sí / No / No sabe</strong>). Puntaje ≥ 2 es clínicamente significativo.</p>
+          <div id="ad8-grid" style="display:grid;grid-template-columns:1fr;gap:10px;"></div>
+          <div id="ad8-total-box" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;"></div>
         </div>
 
         <div class="btn-row" style="margin-top:8px;">
@@ -10083,7 +10083,7 @@ var NP_TESTS = [
   {id:'juicio',   n:'BADS — Juicio',     d:'Juicio Temporal · BADS',                    t:'Ejecutivas',         dom:'ejecutivas'},
   {id:'zoo',      n:'BADS — Zoo',        d:'Mapa del Zoo · V1 y V2',                    t:'Ejecutivas',         dom:'ejecutivas'},
   // Cuestionarios del acompañante
-  {id:'familiar', n:'Cuest. Familiares', d:'NPI-Q · AD8-ARG · AVD Básicas · Instrumentales · Expansivas', t:'Familiar/Acompañante', dom:'familiar'},
+  {id:'familiar', n:'Cuest. Familiares', d:'NPI-Q · AVD Básicas · Instrumentales · Expansivas · AD8-ARG', t:'Familiar/Acompañante', dom:'familiar'},
 ];
 
 // Íconos SVG por dominio
