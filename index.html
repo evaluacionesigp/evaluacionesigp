@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.0</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.1</div>
     </div>
   </aside>
 
@@ -11683,9 +11683,9 @@ var FLV_BAR = {
 };
 
 var FLV_VARS = [
-  {key:'animales', id:'flv-animales', label:'Animales', tipo:'Semántica'},
+  {key:'animales', id:'flv-animales', label:'Fluencia verbal semántica (animales)', tipo:'Semántica'},
   {key:'frutas',   id:'flv-frutas',   label:'Frutas',   tipo:'Semántica'},
-  {key:'letraP',   id:'flv-p',        label:'Letra P',  tipo:'Fonológica'},
+  {key:'letraP',   id:'flv-p',        label:'Fluencia fonológica (letra P)',  tipo:'Fonológica'},
   {key:'letraF',   id:'flv-f',        label:'Letra F',  tipo:'Fonológica'}
 ];
 
@@ -20196,7 +20196,7 @@ function _wordPageField(instr, sz) {
 }
 
 function _wordFooterPageNumXml() {
-  var sz = _wordSz(13);
+  var sz = _wordSz(11);
   var rPr = '<w:rPr><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="444444"/></w:rPr>';
   return '<w:p>'+
     '<w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="0"/></w:pPr>'+
