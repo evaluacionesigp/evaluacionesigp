@@ -843,7 +843,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="pcs-paciente"><option value="">— Seleccionar —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="pcs-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="pcs-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -878,7 +878,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="csq-paciente"><option value="">— Seleccionar —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="csq-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="csq-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -920,7 +920,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="pbq-paciente"><option value="">— Seleccionar —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="pbq-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="pbq-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -955,7 +955,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="bpi-paciente"><option value="">— Seleccionar —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="bpi-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="bpi-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -1022,7 +1022,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               <label>Paciente *</label>
               <select id="bdi-paciente"><option value="">— Seleccionar paciente —</option></select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="bdi-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="bdi-fecha"></div>
           </div>
 <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-bdi" onclick="setModo('bdi','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-bdi" onclick="setModo('bdi','manual')">✏ Carga manual</button></div>
         <div id="man-area-bdi" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes brutos. El sistema calcula Z, Pc e interpretación automáticamente.</p><div class="form-grid-3"><div class="field"><label>Puntaje total (0–63)</label><input type="number" id="man-bdi-total" min="0" max="63" placeholder="0–63"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularManual('bdi')">Calcular resultado →</button></div></div>
@@ -1092,7 +1092,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="m">Mujer</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="stai-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="stai-fecha"></div>
           </div>
         </div>
 
@@ -1178,7 +1178,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             </div>
           </div>
           <div class="field" style="max-width:200px;">
-            <label>Fecha</label>
+            <label>Fecha de evaluación</label>
             <input type="date" id="rey-fecha">
           </div>
         </div>
@@ -1253,7 +1253,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               <label>Paciente *</label>
               <select id="tmt-paciente"><option value="">— Seleccionar paciente —</option></select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="tmt-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="tmt-fecha"></div>
           </div>
           <div class="form-grid-3">
             <div class="field">
@@ -1336,7 +1336,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-titulo">Datos del paciente</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="token-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="token-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="token-fecha"></div>
             <div class="field"><label>Edad del paciente *</label><input type="number" id="token-edad" min="18" max="110" placeholder="Ej: 65" oninput="tokenLive()"></div>
             <div class="field"><label>Años de escolaridad *</label><input type="number" id="token-escol" min="0" max="25" placeholder="Ej: 13" oninput="tokenLive()"></div>
           </div>
@@ -1387,7 +1387,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               <label>Paciente *</label>
               <select id="flv-paciente"><option value="">— Seleccionar paciente —</option></select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="flv-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="flv-fecha"></div>
           </div>
           <div class="form-grid-3">
             <div class="field">
@@ -1485,7 +1485,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="phq-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="phq-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="phq-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-phq" onclick="setModo('phq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-phq" onclick="setModo('phq','manual')">✏ Carga manual</button></div>
@@ -1536,7 +1536,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="gad-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="gad-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="gad-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-gad" onclick="setModo('gad','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-gad" onclick="setModo('gad','manual')">✏ Carga manual</button></div>
@@ -1588,7 +1588,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="birleson-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="birleson-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="birleson-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-birleson" onclick="setModo('birleson','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-birleson" onclick="setModo('birleson','manual')">✏ Carga manual</button></div>
@@ -1639,7 +1639,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="aaa-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="aaa-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="aaa-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-aaa" onclick="setModo('aaa','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-aaa" onclick="setModo('aaa','manual')">✏ Carga manual</button></div>
@@ -1705,7 +1705,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               </select>
             </div>
           </div>
-          <div class="field"><label>Fecha</label><input type="date" id="spaib-fecha"></div>
+          <div class="field"><label>Fecha de evaluación</label><input type="date" id="spaib-fecha"></div>
         </div>
 <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-spaib" onclick="setModo('spaib','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-spaib" onclick="setModo('spaib','manual')">✏ Carga manual</button></div>
                 <div id="man-area-spaib" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los puntajes brutos. El sistema calcula Z, Pc e interpretación automáticamente.</p><div class="form-grid-3"><div class="field"><label>Puntaje total (0–90)</label><input type="number" id="man-spaib-total" min="0" max="90" placeholder="0–90"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularManual('spaib')">Calcular resultado →</button></div></div>
@@ -1760,7 +1760,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="alta">Secundaria completa o más (>12 años)</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="moca-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="moca-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -1811,7 +1811,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="mmp-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="mmp-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="mmp-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -1863,7 +1863,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-titulo">Datos del paciente</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="fab-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="fab-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="fab-fecha"></div>
             <div class="field"><label>Sexo *</label>
               <select id="fab-sexo">
                 <option value="">— Seleccionar —</option>
@@ -2005,7 +2005,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               </select>
             </div>
           </div>
-          <div class="field"><label>Fecha</label><input type="date" id="ifs-fecha"></div>
+          <div class="field"><label>Fecha de evaluación</label><input type="date" id="ifs-fecha"></div>
         </div>
         <div class="card">
           <div class="card-title">Puntajes por subtest</div>
@@ -2064,7 +2064,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="alta">&gt;6 años de escolaridad</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="acer-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="acer-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -2134,7 +2134,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               </select>
             </div>
           </div>
-          <div class="field"><label>Fecha</label><input type="date" id="wcst-fecha"></div>
+          <div class="field"><label>Fecha de evaluación</label><input type="date" id="wcst-fecha"></div>
         </div>
         <div class="card">
           <div class="card-title">Variables del WCST-64</div>
@@ -2180,7 +2180,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="2">65–80 años (P+14, C+11, PC+15)</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="stroop-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="stroop-fecha"></div>
       </div>
     </div>
     <div class="card">
@@ -2229,7 +2229,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="csi-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="csi-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="csi-fecha"></div>
       </div>
     </div>
 <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-csi" onclick="setModo('csi','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-csi" onclick="setModo('csi','manual')">✏ Carga manual</button></div>
@@ -2268,7 +2268,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="crc-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="crc-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="crc-fecha"></div>
       </div>
     </div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-crc" onclick="setModo('crc','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-crc" onclick="setModo('crc','manual')">✏ Carga manual</button></div>
@@ -2314,7 +2314,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="pss-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="pss-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="pss-fecha"></div>
       </div>
     </div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-pss" onclick="setModo('pss','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-pss" onclick="setModo('pss','manual')">✏ Carga manual</button></div>
@@ -2360,7 +2360,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="holmes-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="holmes-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="holmes-fecha"></div>
       </div>
     </div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-holmes" onclick="setModo('holmes','auto')">📋 Marcar eventos</button><button class="modo-btn" id="modo-man-holmes" onclick="setModo('holmes','manual')">✏ Carga manual</button></div>
@@ -2411,7 +2411,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="yesavage-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="yesavage-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="yesavage-fecha"></div>
       </div>
     </div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-yesavage" onclick="setModo('yesavage','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-yesavage" onclick="setModo('yesavage','manual')">✏ Carga manual</button></div>
@@ -2456,7 +2456,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="fcr-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="fcr-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="fcr-fecha"></div>
         <div class="field"><label>Edad (paciente)</label><input type="text" id="fcr-edad-display" disabled placeholder="Seleccioná paciente"></div>
         <div class="field"><label>Grupo baremo · edad</label><input type="text" id="fcr-tea-grupo" disabled placeholder="Según edad"></div>
       </div>
@@ -2578,7 +2578,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="4">Postgrado</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="llaves-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="llaves-fecha"></div>
       </div>
     </div>
     <div class="card">
@@ -2657,7 +2657,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="4">Postgrado</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="juicio-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="juicio-fecha"></div>
       </div>
     </div>
     <div class="card">
@@ -2729,7 +2729,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="ambas">Ambas versiones</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="zoo-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="zoo-fecha"></div>
       </div>
     </div>
 
@@ -2828,7 +2828,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="3">50–59 años</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="hotel-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="hotel-fecha"></div>
       </div>
     </div>
 
@@ -2958,7 +2958,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <option value="1">1–12 años de educación</option>
           </select>
         </div>
-        <div class="field"><label>Fecha</label><input type="date" id="bta-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="bta-fecha"></div>
       </div>
     </div>
     <div class="card">
@@ -2998,7 +2998,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="bta-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="bta-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="bta-fecha"></div>
         <div class="field"><label>Grupo de edad *</label>
           <select id="bta-gi">
             <option value="">— Seleccionar —</option>
@@ -3058,7 +3058,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-titulo">Datos del paciente</div>
       <div class="form-grid">
         <div class="field"><label>Paciente *</label><select id="d2-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="d2-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="d2-fecha"></div>
         <div class="field"><label>Edad (años) *</label><input type="number" id="d2-edad" min="15" max="99" placeholder="Ej: 34"></div>
       </div>
     </div>
@@ -3194,7 +3194,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           </select>
         </div>
 
-        <div class="field"><label>Fecha</label><input type="date" id="sdmt-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="sdmt-fecha"></div>
       </div>
     </div>
 
@@ -3266,7 +3266,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               </select>
             </div>
           </div>
-          <div class="field"><label>Fecha</label><input type="date" id="scl90-fecha"></div>
+          <div class="field"><label>Fecha de evaluación</label><input type="date" id="scl90-fecha"></div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-scl90" onclick="setModo('scl90','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-scl90" onclick="setModo('scl90','manual')">✏ Carga manual</button></div>
         <div id="man-area-scl90" style="display:none;"><div class="card"><div class="card-title">Carga manual de puntajes</div><p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Ingresá los promedios brutos por dimensión y los índices globales.</p><div class="form-grid-3"><div class="field"><label>IGS (promedio 0–4)</label><input type="number" id="man-scl90-igs" min="0" max="4" step="0.01" placeholder="0.00–4.00"></div><div class="field"><label>TSP (síntomas positivos 0–90)</label><input type="number" id="man-scl90-tsp" min="0" max="90" placeholder="0–90"></div><div class="field"><label>IMSP (promedio 0–4)</label><input type="number" id="man-scl90-imsp" min="0" max="4" step="0.01" placeholder="0.00–4.00"></div></div></div><div class="btn-row" style="margin-top:8px;"><button class="btn-primary" onclick="calcularSCL90Manual()">Calcular resultado →</button></div></div>
@@ -4335,7 +4335,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="5">≥ 86 años</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="signoret-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="signoret-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -4385,7 +4385,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="familiar-paciente"><option value="">— Seleccionar —</option></select></div>
             <div class="field"><label>Informante</label><input type="text" id="familiar-informante" placeholder="Nombre y relación con el paciente"></div>
-            <div class="field"><label>Fecha</label><input type="date" id="familiar-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="familiar-fecha"></div>
           </div>
         </div>
 
@@ -4456,7 +4456,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="7">&gt;74 años</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="tavec-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="tavec-fecha"></div>
           </div>
         </div>
 
@@ -4541,7 +4541,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="12">85–90 años</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="waisiv-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="waisiv-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -4604,7 +4604,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="5">74 años o más</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="loes-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="loes-fecha"></div>
           </div>
         </div>
         <div class="card">
@@ -4643,7 +4643,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="waisperfil-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="waisperfil-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="waisperfil-fecha"></div>
           </div>
         </div>
 
@@ -4695,7 +4695,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="bnt-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="bnt-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="bnt-fecha"></div>
             <div class="field">
               <label>Versión *</label>
               <select id="bnt-version" onchange="bntActualizar()">
@@ -4778,7 +4778,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div class="card-title">Datos de la evaluación</div>
       <div class="form-grid-3">
         <div class="field"><label>Paciente *</label><select id="eava-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha</label><input type="date" id="eava-fecha"></div>
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="eava-fecha"></div>
       </div>
     </div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);">
@@ -4854,7 +4854,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="aq-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="aq-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="aq-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="aq-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;"><strong>Instrucciones:</strong> Totalmente de acuerdo · Bastante de acuerdo · Un poco de acuerdo · Nada de acuerdo. Baremo adaptación hispanoamericana (Baron-Cohen et al.).</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-aq" onclick="setModo('aq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-aq" onclick="setModo('aq','manual')">✏ Carga manual</button></div>
@@ -4870,7 +4870,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="aq10-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="aq10-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="aq10-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="aq10-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Versión en español (Neuropsicología Latinoamericana, 2020). Corte de referencia: <strong>6–10</strong> sugiere derivación a evaluación especializada.</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-aq10" onclick="setModo('aq10','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-aq10" onclick="setModo('aq10','manual')">✏ Carga manual</button></div>
@@ -4886,7 +4886,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="eq-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="eq-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="eq-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="eq-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Acuerdo absoluto · Acuerdo leve · Desacuerdo leve · Desacuerdo absoluto. <em>Nota:</em> puntajes más bajos indican mayor relevancia clínica en TEA.</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-eq" onclick="setModo('eq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-eq" onclick="setModo('eq','manual')">✏ Carga manual</button></div>
@@ -4903,7 +4903,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="card"><div class="card-title">Datos · Informante / acompañante</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="ea-paciente"><option value="">— Seleccionar —</option></select></div>
       <div class="field"><label>Informante</label><input type="text" id="ea-informante" placeholder="Nombre y relación"></div>
-      <div class="field"><label>Fecha</label><input type="date" id="ea-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="ea-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Nunca (1) · Algunas veces (2) · Frecuentemente (3) · Siempre (4) · No observado. Corte: <strong>≥36</strong> suma directa o <strong>≥2,0</strong> promedio.</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-ea" onclick="setModo('ea','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-ea" onclick="setModo('ea','manual')">✏ Carga manual</button></div>
@@ -4920,7 +4920,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="card"><div class="card-title">Datos · Informante</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="scq-paciente"><option value="">— Seleccionar —</option></select></div>
       <div class="field"><label>Informante</label><input type="text" id="scq-informante" placeholder="Nombre y relación"></div>
-      <div class="field"><label>Fecha</label><input type="date" id="scq-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="scq-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Forma A · Sí/No. Corte total: <strong>≥15</strong> · Escala total elevada: <strong>≥24</strong>. Subescalas: DC (comunicación), IS (interacción social), CRR (conductas repetitivas).</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-scq" onclick="setModo('scq','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-scq" onclick="setModo('scq','manual')">✏ Carga manual</button></div>
@@ -4944,7 +4944,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="dislex1-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="dislex1-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="dislex1-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="dislex1-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Marque cada afirmación que aplique al paciente. Corte: <strong>0–4 ítems = No significativo · 5–10 ítems = Significativo</strong>.</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-dislex1" onclick="setModo('dislex1','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-dislex1" onclick="setModo('dislex1','manual')">✏ Carga manual</button></div>
@@ -4970,7 +4970,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="dislex2-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="dislex2-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="dislex2-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="dislex2-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Respuesta <strong>Sí / No</strong>. Los ítems con <strong style="color:#c0392b;">*</strong> son indicadores importantes. Corte: <strong>0–8 Sí = No significativo · 9–20 Sí = Significativo</strong>.</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-dislex2" onclick="setModo('dislex2','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-dislex2" onclick="setModo('dislex2','manual')">✏ Carga manual</button></div>
@@ -4996,7 +4996,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="dislex3-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="dislex3-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="dislex3-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="dislex3-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Registre el puntaje bruto de palabras con sentido correctamente seleccionadas (máx. 52) y los falsos positivos (selección de ítems sin sentido).</p></div>
     <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-dislex3" onclick="setModo('dislex3','auto')">📋 Carga de puntajes</button><button class="modo-btn" id="modo-man-dislex3" onclick="setModo('dislex3','manual')">✏ Solo total PB</button></div>
@@ -5020,7 +5020,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="tecle-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="tecle-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="tecle-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="tecle-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Baremo según <strong>escolaridad</strong> y <strong>grupo de edad</strong> del paciente (18–34, 35–49, 50–64, 65+). La edad se toma del paciente seleccionado.</p></div>
     <div class="card"><div class="card-title">Puntaje y baremo</div><div class="form-grid-3">
@@ -5048,7 +5048,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   <div id="dislex5-form">
     <div class="card"><div class="card-title">Datos</div><div class="form-grid-3">
       <div class="field"><label>Paciente *</label><select id="dislex5-paciente"><option value="">— Seleccionar —</option></select></div>
-      <div class="field"><label>Fecha</label><input type="date" id="dislex5-fecha"></div>
+      <div class="field"><label>Fecha de evaluación</label><input type="date" id="dislex5-fecha"></div>
     </div></div>
     <div class="card" style="background:var(--surface2);border-left:3px solid var(--accent);"><p style="font-size:0.82rem;color:var(--muted);margin:0;">Registre los <strong>tiempos en segundos</strong> por columna (palabras y pseudopalabras). Incluya observaciones sobre errores y palabras con dificultad.</p></div>
     <div class="card"><div class="card-title">Palabras — tiempos (seg)</div><div class="form-grid-3">
@@ -5100,7 +5100,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value=">50">&gt;50 años</option>
               </select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="asrs-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="asrs-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-asrs" onclick="setModo('asrs','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-asrs" onclick="setModo('asrs','manual')">✏ Carga manual</button></div>
@@ -5147,7 +5147,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-titulo">Datos del paciente</div>
           <div class="form-grid">
             <div class="field"><label>Paciente *</label><select id="dex-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="dex-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="dex-fecha"></div>
             <div class="field"><label>Versión</label>
               <select id="dex-version">
                 <option value="auto">Autoadministrado (paciente)</option>
@@ -5465,7 +5465,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div class="card-title">Datos de la evaluación</div>
           <div class="form-grid-3">
             <div class="field"><label>Paciente *</label><select id="wurs-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-            <div class="field"><label>Fecha</label><input type="date" id="wurs-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="wurs-fecha"></div>
           </div>
         </div>
         <div class="modo-toggle"><button class="modo-btn active" id="modo-auto-wurs" onclick="setModo('wurs','auto')">📋 Ítem por ítem</button><button class="modo-btn" id="modo-man-wurs" onclick="setModo('wurs','manual')">✏ Carga manual</button></div>
@@ -5519,7 +5519,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <div class="field"><label>Paciente *</label>
               <select id="mbi-paciente"><option value="">— Seleccionar paciente —</option></select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="mbi-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="mbi-fecha"></div>
           </div>
           <div class="form-grid-3" style="margin-top:10px;">
             <div class="field"><label>Área de trabajo</label><input type="text" id="mbi-area" placeholder="Ej: Salud mental, pediatría..."></div>
@@ -5764,7 +5764,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             <div class="field"><label>Paciente *</label>
               <select id="reloj-paciente"><option value="">— Seleccionar paciente —</option></select>
             </div>
-            <div class="field"><label>Fecha</label><input type="date" id="reloj-fecha"></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="reloj-fecha"></div>
           </div>
         </div>
 
