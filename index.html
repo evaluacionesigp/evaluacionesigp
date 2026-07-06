@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.9</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.0</div>
     </div>
   </aside>
 
@@ -763,14 +763,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
           <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;margin-bottom:14px;">
             <div style="font-size:0.72rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Criterios de interpretación (puntuación Z)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:6px;font-size:0.75rem;">
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#1a6e3a;background:#d4f0e2;border-radius:4px;padding:1px 4px;">+2 a +3</span><span style="color:var(--text);">Muy superior</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#1a6e3a;background:#d4f0e2;border-radius:4px;padding:1px 4px;">+1.5</span><span style="color:var(--text);">Superior</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#1565c0;background:#d8f0fa;border-radius:4px;padding:1px 4px;">+1</span><span style="color:var(--text);">Límite superior normativo</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#3a8f8f;background:#e8f4e0;border-radius:4px;padding:1px 4px;">−0.5 a +0.5</span><span style="color:var(--text);">Normal</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#7a5c00;background:#fdf0c4;border-radius:4px;padding:1px 4px;">−1</span><span style="color:var(--text);">Límite inferior normativo</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#a04000;background:#fde8d0;border-radius:4px;padding:1px 4px;">−1.5</span><span style="color:var(--text);">Dificultad leve</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#a00000;background:#fad8d8;border-radius:4px;padding:1px 4px;">−2</span><span style="color:var(--text);">Dificultad moderada</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><span style="width:36px;text-align:center;font-weight:700;color:#7b0000;background:#f5c0c0;border-radius:4px;padding:1px 4px;">−2.5 a −3</span><span style="color:var(--text);">Dificultad elevada</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#1565c0;background:#d8f0fa;border-radius:4px;padding:1px 4px;">≥ +1.5</span><span style="color:var(--text);">Superior</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#2e7a4f;background:#e8f4e0;border-radius:4px;padding:1px 4px;">−0.5 a +1.49</span><span style="color:var(--text);">Normal</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#6f6f69;background:#ece9e2;border-radius:4px;padding:1px 4px;">−0.99 a −0.5</span><span style="color:var(--text);">Límite inferior normativo</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#7a5c00;background:#fdf0c4;border-radius:4px;padding:1px 4px;">−1.49 a −1.0</span><span style="color:var(--text);">Dificultad leve</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#a04000;background:#fde8d0;border-radius:4px;padding:1px 4px;">−1.99 a −1.5</span><span style="color:var(--text);">Dificultad moderada</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><span style="width:72px;text-align:center;font-weight:700;color:#a00000;background:#fad8d8;border-radius:4px;padding:1px 4px;">≤ −2.0</span><span style="color:var(--text);">Dificultad elevada</span></div>
             </div>
           </div>
 
@@ -781,7 +779,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
           <!-- Nota para residentes -->
           <div style="background:#f0f7e8;border:1px solid #b8ddb0;border-radius:6px;padding:10px 14px;margin-top:12px;font-size:0.75rem;color:#3a8f8f;line-height:1.6;">
-            <strong>Nota para residentes:</strong> Los puntajes Z indican cuántas desviaciones estándar se aleja el rendimiento del paciente respecto a la media de su grupo normativo. Un Z entre −1 y +1 abarca el 68% de la población normal. Resultados entre −1 y −1.5 son "límite inferior normativo" — no necesariamente patológicos, pero merecen descripción. Por debajo de −1.5 se habla de "dificultad" con gradación clínica. Siempre integrar con la historia clínica y el contexto.
+            <strong>Nota para residentes:</strong> Los puntajes Z indican cuántas desviaciones estándar se aleja el rendimiento del paciente respecto a la media de su grupo normativo. Con esta escala, `Normal` corresponde a Z entre −0.5 y +1.49, `Límite inferior normativo` a Z entre −0.99 y −0.5, y por debajo de −1.0 se describe `dificultad` con gradación clínica. Siempre integrar con la historia clínica y el contexto.
           </div>
         </div>
       </div>
@@ -8128,14 +8126,20 @@ function renderFiltroHistorial() {
   });
 }
 
+function zNormMeta(z, invertirZ) {
+  if (z === null || z === undefined || isNaN(parseFloat(z))) return { label: '—', color: '#888780' };
+  var zf = parseFloat(z);
+  if (invertirZ) zf = -zf;
+  if (zf >= 1.5)   return { label: 'Superior', color: '#1565c0' };
+  if (zf >= -0.49) return { label: 'Normal', color: '#2e7a4f' };
+  if (zf >= -0.99) return { label: 'Límite inferior normativo', color: '#6f6f69' };
+  if (zf >= -1.49) return { label: 'Dificultad leve', color: '#7a5c00' };
+  if (zf >= -1.99) return { label: 'Dificultad moderada', color: '#a04000' };
+  return { label: 'Dificultad elevada', color: '#a00000' };
+}
+
 function zInterpPDF(z) {
-  if (z === null || z === undefined) return { label: '—', color: '#888780' };
-  if (z >= 1.0)   return { label: 'Superior',            color: '#1D9E75' };
-  if (z >= 0)     return { label: 'Normal alto',          color: '#639922' };
-  if (z >= -0.99) return { label: 'Normal bajo',          color: '#888780' };
-  if (z >= -1.49) return { label: 'Dificultad leve',      color: '#BA7517' };
-  if (z >= -1.99) return { label: 'Dificultad moderada',  color: '#D85A30' };
-  return           { label: 'Dificultad severa',          color: '#E24B4A' };
+  return zNormMeta(z, false);
 }
 
 function zBarHTML(z) {
@@ -8318,15 +8322,7 @@ function _parseResultDatos(raw) {
 
 function zInterpNormativo(z) {
   if (z === null || z === undefined || isNaN(parseFloat(z))) return '—';
-  z = parseFloat(z);
-  if (z >= 2.0) return 'Muy superior';
-  if (z >= 1.5) return 'Superior';
-  if (z >= 1.0) return 'Lím. superior norm.';
-  if (z >= -0.49) return 'Normal';
-  if (z >= -1.0) return 'Lím. inf. normativo';
-  if (z >= -1.5) return 'Dificultad leve';
-  if (z >= -2.0) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function fmtZInforme(z) {
@@ -8383,24 +8379,10 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
 
   // ── Helpers ──
   function zColor(z) {
-    if (z===null||z===undefined) return '#888780';
-    if (z>=1.0)   return '#1D9E75';
-    if (z>=0)     return '#639922';
-    if (z>=-0.99) return '#888780';
-    if (z>=-1.49) return '#BA7517';
-    if (z>=-1.99) return '#D85A30';
-    return '#E24B4A';
+    return zNormMeta(z, false).color;
   }
   function zLabel(z) {
-    if (z===null||z===undefined) return '—';
-    if (z>=2.0)   return 'Muy superior';
-    if (z>=1.5)   return 'Superior';
-    if (z>=1.0)   return 'Límite superior normativo';
-    if (z>=-0.49) return 'Normal';
-    if (z>=-1.0)  return 'Límite inferior normativo';
-    if (z>=-1.5)  return 'Dificultad leve';
-    if (z>=-2.0)  return 'Dificultad moderada';
-    return 'Dificultad elevada';
+    return zNormMeta(z, false).label;
   }
   function zToT(z)  { return z!==null ? Math.round(50+10*z) : null; }
   function zToPct(z){
@@ -8461,15 +8443,7 @@ function _generarPDFConInforme(datos, pacInfo, pacNombre, pacEdad, pacFnac, pacS
   // ── Fila de tabla neuropsicológica ──
   // cols: Variable | PB | PT | M | DT | Z | -3..+3 grilla | Interpretación
   function zLabel(z) {
-    if (z === null || z === undefined) return '—';
-    if (z >= 2.0)   return 'Muy superior';
-    if (z >= 1.5)   return 'Superior';
-    if (z >= 1.0)   return 'Límite superior normativo';
-    if (z >= -0.49) return 'Normal';
-    if (z >= -1.0)  return 'Límite inferior normativo';
-    if (z >= -1.5)  return 'Dificultad leve';
-    if (z >= -2.0)  return 'Dificultad moderada';
-    return 'Dificultad elevada';
+    return zNormMeta(z, false).label;
   }
 
   function filaTabla(label, pb, m, ds, z, fecha, nota, interpOverride) {
@@ -12917,13 +12891,7 @@ function calcularWCST() {
   var edadLabels = ['18–29','30–39','40–49','50–59','60–69','70–79','80–89'];
 
   function zLab(z) {
-    if (z===null) return '—';
-    if (z >= 1.5)   return 'Superior';
-    if (z >= -0.5)  return 'Normal';
-    if (z >= -0.99) return 'Límite inferior normativo';
-    if (z >= -1.49) return 'Dificultad leve';
-    if (z >= -1.99) return 'Dificultad moderada';
-    return 'Dificultad elevada';
+    return zNormMeta(z, false).label;
   }
 
   var detalleHtml = '';
@@ -12970,7 +12938,7 @@ function guardarResultadoWCST() {
     test: 'WCST-64', fecha: fecha,
     puntaje_total: d.categorias,
     puntaje_z: d.cat_z,
-    categoria: d.cat_z !== null ? (d.cat_z >= -0.5 ? 'Normal' : d.cat_z >= -1.49 ? 'Dificultad leve' : 'Dificultad moderada/elevada') : null,
+    categoria: d.cat_z !== null ? zNormMeta(d.cat_z, false).label : null,
     datos: d
   }, SESSION.access_token).then(function(){
     cargarResultados();
@@ -13062,15 +13030,8 @@ function calcularFAB() {
 
   var z = parseFloat(((total - bar.M) / bar.DS).toFixed(2));
 
-  var interp;
-  if (z >= 1.0)        interp = 'Superior';
-  else if (z >= -0.5)  interp = 'Normal';
-  else if (z >= -1.0)  interp = 'Límite inferior normativo';
-  else if (z >= -1.5)  interp = 'Dificultad leve';
-  else if (z >= -2.0)  interp = 'Dificultad moderada';
-  else                 interp = 'Dificultad severa';
-
-  var color = z >= -0.5 ? '#639922' : z >= -1.0 ? '#888780' : z >= -1.5 ? '#BA7517' : z >= -2.0 ? '#D85A30' : '#E24B4A';
+  var interp = zNormMeta(z, false).label;
+  var color = zNormMeta(z, false).color;
 
   // Tabla de subtests
   var html = '<table style="width:100%;border-collapse:collapse;font-size:0.84rem;margin-bottom:12px;">' +
@@ -15086,13 +15047,7 @@ var LLAVES_BAR = {
 };
 
 function badsZLabel(z) {
-  if (z === null) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function badsGetBar(tabla, sexo, gi, ei) {
@@ -15746,13 +15701,7 @@ function hotelUpdateBotonesTotal() {
 }
 
 function hotelZLabel(z) {
-  if (z === null) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function iniciarHotel() {
@@ -15937,13 +15886,7 @@ function btaBuscarPc(pb, gi, ei) {
 }
 
 function btaZLabel(z) {
-  if (z === null || z === undefined) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
-  return 'Dificultad severa';
+  return zNormMeta(z, false).label;
 }
 
 function btaPcToZ(pc) {
@@ -15996,14 +15939,7 @@ function d2CalcZ(bruto, bar) {
 }
 
 function d2ZLabel(z) {
-  if (z === null || z === undefined) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= 0.5)   return 'Normal alto';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
-  return 'Dificultad severa';
+  return zNormMeta(z, false).label;
 }
 
 function d2ZColor(z) {
@@ -18855,7 +18791,7 @@ function calcularStroop() {
   var zInt = parseFloat(((ptInt - 50) / 10).toFixed(2));
 
   var edadLabels = ['16–44 años','45–64 años','65–80 años'];
-  function zLbl(z) { return z>=1.5?'Superior':z>=1.0?'Sobre el promedio':z>=-0.99?'Esperado':z>=-1.49?'Lím. inf. normativo':z>=-1.99?'Dificultad leve':'Dificultad moderada'; }
+  function zLbl(z) { return zNormMeta(z, false).label; }
 
   var detalleHtml =
     '<div class="detalle-item"><div class="detalle-num">'+(zP>=0?'+':'')+zP+'</div><div class="detalle-lbl">Z Palabras (P='+p+', corr.='+pCorr+', PT='+ptP+')</div></div>'+
@@ -19195,15 +19131,7 @@ function fcrCalcZ(pb, edad, cond) {
 }
 
 function fcrZLabel(z) {
-  if (z === null || z === undefined) return '—';
-  if (z >= 2.0) return 'Muy superior';
-  if (z >= 1.5) return 'Superior';
-  if (z >= 1.0) return 'Límite superior normativo';
-  if (z >= -0.49) return 'Normal';
-  if (z >= -1.0) return 'Límite inferior normativo';
-  if (z >= -1.5) return 'Dificultad leve';
-  if (z >= -2.0) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function fcrInterpLabel(interp, z) {
@@ -19640,13 +19568,7 @@ function btaPcToZ(pc) {
 }
 
 function btaZLabel(z) {
-  if (z === null) return '—';
-  if (z >= 1.5)   return 'Superior';
-  if (z >= -0.5)  return 'Normal';
-  if (z >= -0.99) return 'Límite inferior normativo';
-  if (z >= -1.49) return 'Dificultad leve';
-  if (z >= -1.99) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function iniciarBTA() {
@@ -19792,13 +19714,7 @@ function sdmtPcToZ(pc) {
 }
 
 function sdmtZLabel(z) {
-  if (z===null) return '—';
-  if (z>=1.5)   return 'Superior';
-  if (z>=-0.5)  return 'Normal';
-  if (z>=-0.99) return 'Límite inferior normativo';
-  if (z>=-1.49) return 'Dificultad leve';
-  if (z>=-1.99) return 'Dificultad moderada';
-  return 'Dificultad elevada';
+  return zNormMeta(z, false).label;
 }
 
 function sdmtSetVersion(v) {
@@ -20351,15 +20267,7 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom,
   // Interpretación
   function zInterp(z) {
     if (z===null||z===undefined) return nota||'—';
-    var s='';
-    if (z>=2.0)        s='Muy superior';
-    else if (z>=1.5)   s='Superior';
-    else if (z>=1.0)   s='Lím. superior norm.';
-    else if (z>=-0.49) s='Normal';
-    else if (z>=-1.0)  s='Lím. inf. normativo';
-    else if (z>=-1.5)  s='Dificultad leve';
-    else if (z>=-2.0)  s='Dificultad moderada';
-    else               s='Dificultad elevada';
+    var s = zNormMeta(z, false).label;
     return nota ? s+' · '+nota : s;
   }
 
@@ -20418,23 +20326,8 @@ function _zHdrRow() {
 }
 
 function tavecInterpWord(z, isError) {
-  if (z === null || z === undefined || isNaN(parseFloat(z))) return { label: '—', color: '888780' };
-  var zf = parseFloat(z);
-  if (isError) {
-    if (zf > 1)      return { label: 'Dificultad elevada', color: 'C53030' };
-    if (zf > 0.5)    return { label: 'Dificultad moderada', color: 'E07B00' };
-    if (zf > -0.5)   return { label: 'Normal', color: '2E7A4F' };
-    if (zf > -1)     return { label: 'Normal bajo', color: '639922' };
-    if (zf > -1.5)   return { label: 'Normal alto', color: '2E7A4F' };
-    return { label: 'Lím. superior norm.', color: '2563EB' };
-  }
-  if (zf > 1)        return { label: 'Lím. superior norm.', color: '2563EB' };
-  if (zf > 0.5)      return { label: 'Normal alto', color: '2E7A4F' };
-  if (zf >= -0.5)    return { label: 'Normal', color: '2E7A4F' };
-  if (zf >= -1)      return { label: 'Normal bajo', color: '639922' };
-  if (zf >= -1.5)    return { label: 'Dificultad leve', color: 'BA7517' };
-  if (zf >= -2)      return { label: 'Dificultad moderada', color: 'E07B00' };
-  return { label: 'Dificultad elevada', color: 'C53030' };
+  var meta = zNormMeta(z, false);
+  return { label: meta.label, color: meta.color.replace('#', '') };
 }
 
 // ── Generador principal ───────────────────────────────────────────────
@@ -21365,7 +21258,7 @@ var STROOP_VARS_ORDER = [
   ['Stroop · Interferencia', 'zInt', 'Stroop·Int', true]
 ];
 
-// [etiqueta, clave PB, clave Z, esVariableError, claveGlosario opcional]
+// [etiqueta, clave PB, clave Z, invertirZEnTooltip, claveGlosario opcional]
 var TAVEC_VARS_ORDER = [
   ['RI-A1 · 1er ensayo', 'v1', 'zA1', false, 'TAVEC·RI-A1'],
   ['RI-A5 · 5to ensayo', 'v2', 'zA5', false, 'TAVEC·RI-A5'],
@@ -21375,11 +21268,11 @@ var TAVEC_VARS_ORDER = [
   ['RCL-CP · Claves CP', 'v9', 'zRCLCP', false, 'TAVEC·RCL-CP'],
   ['RL-LP · Rec. libre LP', 'v10', 'zRLLP', false, 'TAVEC·RL-LP'],
   ['RCL-LP · Claves LP', 'v11', 'zRCLLP', false, 'TAVEC·RCL-LP'],
-  ['P · Perseveraciones', 'v20', 'zP', true, 'TAVEC·P'],
-  ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', true, 'TAVEC·I-RL'],
-  ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', true, 'TAVEC·I-RCL'],
+  ['P · Perseveraciones', 'v20', 'zP', false, 'TAVEC·P'],
+  ['I-RL · Intrusiones recuerdo libre', 'v21', 'zIRL', false, 'TAVEC·I-RL'],
+  ['I-RCL · Intrusiones con claves', 'v22', 'zIRCL', false, 'TAVEC·I-RCL'],
   ['Recon-Ac · Aciertos reconocimiento', 'v23', 'zRecon', false, 'TAVEC·Recon-Ac'],
-  ['FP · Falsos positivos', 'v24', 'zFP', true, 'TAVEC·FP'],
+  ['FP · Falsos positivos', 'v24', 'zFP', false, 'TAVEC·FP'],
   ['Discrim · Discriminabilidad', 'v25', 'zDiscrim', false, 'TAVEC·Discrim']
 ];
 
@@ -21491,14 +21384,10 @@ function calcularTavec() {
     return (el && el.value !== '') ? parseFloat(el.value) : null;
   }
   function zLbl(z, esError) {
-    if (z === null) return '—';
-    if (esError) { return z<=0.5?'Esperado':z<=1.0?'Leve ↑':z<=1.5?'Moderado ↑':'Alto ↑'; }
-    return z>=-1.0?'Esperado':z>=-1.5?'Lím. inferior':z>=-2.0?'Dificultad leve':'Dificultad moderada';
+    return zNormMeta(z, false).label;
   }
   function zColor(z, esError) {
-    if (z === null) return 'var(--muted)';
-    if (esError) return z>1.5?'var(--red)':z>0.5?'var(--yellow)':'var(--accentlt)';
-    return z<-2?'var(--red)':z<-1.5?'var(--orange)':z<-1?'var(--yellow)':'var(--accentlt)';
+    return zNormMeta(z, false).color;
   }
 
   var zAT     = getZ('v3');
@@ -21543,7 +21432,7 @@ function calcularTavec() {
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.m.toFixed(2) : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.d.toFixed(2) : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-family:monospace;font-weight:700;color:' + col + ';">' + zDisp + '</td>' +
-      '<td style="text-align:center;padding:8px;"><span style="background:' + (lbl==='Esperado'?'#d4f0e2':lbl.indexOf('Leve')>=0||lbl.indexOf('Lím.')>=0?'#fdf0c4':lbl.indexOf('Mod')>=0||lbl.indexOf('Alto')>=0?'#fde8d0':'#fad8d8') + ';border-radius:12px;padding:3px 10px;font-size:0.71rem;font-weight:700;">' + lbl + '</span></td>' +
+      '<td style="text-align:center;padding:8px;"><span style="background:' + (lbl==='Superior'?'#d8f0fa':lbl==='Normal'?'#e8f4e0':lbl==='Límite inferior normativo'?'#ece9e2':lbl==='Dificultad leve'?'#fdf0c4':lbl==='Dificultad moderada'?'#fde8d0':'#fad8d8') + ';border-radius:12px;padding:3px 10px;font-size:0.71rem;font-weight:700;">' + lbl + '</span></td>' +
       '</tr>';
   });
   html += '</tbody></table>';
@@ -21614,7 +21503,7 @@ function guardarTavec() {
     test: 'TAVEC', fecha: fecha,
     puntaje_total: d.v3,
     puntaje_z: d.zAT,
-    categoria: d.zAT === null ? 'Sin datos' : d.zAT >= -1.0 ? 'Esperado' : d.zAT >= -1.5 ? 'Lím. inferior' : d.zAT >= -2.0 ? 'Dificultad leve' : 'Dificultad moderada',
+    categoria: d.zAT === null ? 'Sin datos' : zNormMeta(d.zAT, false).label,
     datos: {
       gi: d.gi, grupoLabel: grupoLabels[d.gi],
       v1:d.v1, v2:d.v2, v3:d.v3, v4:d.v4,
@@ -21669,14 +21558,18 @@ function renderPerfilZ() {
   };
 
   function zColor(z, invertirZ) {
-    if (invertirZ && z !== null && z !== undefined) z = -z;
-    if (z === null || z === undefined) return {bg:'transparent',txt:'var(--muted)',lbl:'—'};
-    if (z >= 1.5)  return {bg:'#d8f0fa',txt:'#1565c0',lbl:'Superior'};
-    if (z >= 1.0)  return {bg:'#d8eaff',txt:'#1a4a8a',lbl:'Sobre el promedio'};
-    if (z >= -0.99)return {bg:'#e8f4e0',txt:'#325c28',lbl:'Esperado'};
-    if (z >= -1.49)return {bg:'#fdf0c4',txt:'#7a5c00',lbl:'Límite inferior normativo'};
-    if (z >= -1.99)return {bg:'#fde8d0',txt:'#a04000',lbl:'Dificultad leve'};
-    return             {bg:'#fad8d8',txt:'#a00000',lbl:'Dificultad moderada'};
+    var meta = zNormMeta(z, invertirZ);
+    var styles = {
+      'Superior': {bg:'#d8f0fa', txt:'#1565c0'},
+      'Normal': {bg:'#e8f4e0', txt:'#325c28'},
+      'Límite inferior normativo': {bg:'#ece9e2', txt:'#6f6f69'},
+      'Dificultad leve': {bg:'#fdf0c4', txt:'#7a5c00'},
+      'Dificultad moderada': {bg:'#fde8d0', txt:'#a04000'},
+      'Dificultad elevada': {bg:'#fad8d8', txt:'#a00000'},
+      '—': {bg:'transparent', txt:'var(--muted)'}
+    };
+    var style = styles[meta.label] || styles['—'];
+    return {bg:style.bg, txt:style.txt, lbl:meta.label};
   }
 
   function fmtZ(z) {
