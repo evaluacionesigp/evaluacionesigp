@@ -305,8 +305,17 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 14px 16px; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
   text-align: left; display:flex; flex-direction:column; gap:4px;
+  position: relative;
 }
 .test-card:hover { transform: translateY(-2px); border-color: var(--accentlt); box-shadow: 0 6px 18px rgba(58,143,143,0.13); }
+.np-estado-badge {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;
+  letter-spacing: 0.02em; white-space: nowrap;
+}
+.np-estado-badge.guardado { background: #d8f0e0; color: #1a6b3c; border: 1px solid #a8d5b8; }
+.np-estado-badge.pendiente { background: #f8f4ec; color: #8a7348; border: 1px solid #e5dcc8; }
+.np-estado-badge .np-estado-ico { font-size: 0.72rem; line-height: 1; }
 .test-icon { display:none; }
 .np-chip {
   display:inline-block; padding:5px 13px; border-radius:20px; font-size:0.78rem;
@@ -506,7 +515,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.5</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.13.6</div>
     </div>
   </aside>
 
@@ -5977,6 +5986,7 @@ function cargarResultados() {
       renderFiltroHistorial();
       renderHistorial();
       renderUltimas();
+      npActualizarEstados();
     });
 }
 
@@ -6138,6 +6148,7 @@ function setPacienteActivo(id) {
     else sessionStorage.removeItem('pac_activo_id');
   } catch(e) {}
   actualizarTopbarPaciente();
+  npActualizarEstados();
 }
 
 function restaurarPacienteActivo() {
@@ -10098,6 +10109,46 @@ var NP_ICONS = {
 };
 
 var _npChipActivo = 'todos';
+
+function npBuildVistaTests() {
+  if (window._npVistaTests) return window._npVistaTests;
+  var m = {};
+  Object.keys(TEST_NOMBRE_A_VISTA).forEach(function(tn) {
+    var v = TEST_NOMBRE_A_VISTA[tn];
+    if (!m[v]) m[v] = [];
+    if (m[v].indexOf(tn) < 0) m[v].push(tn);
+  });
+  m.sdmt = ['SDMT-escrita', 'SDMT-oral'];
+  m.bnt = ['BNT-12', 'BNT-60'];
+  window._npVistaTests = m;
+  return m;
+}
+
+function npPacienteTieneTest(npId) {
+  if (!PAC_ACTIVO || !PAC_ACTIVO.id) return false;
+  var tests = npBuildVistaTests()[npId];
+  if (!tests || !tests.length) return false;
+  var pacId = String(PAC_ACTIVO.id);
+  return RESULTADOS.some(function(r) {
+    return String(r.paciente_id) === pacId && tests.indexOf(r.test) >= 0;
+  });
+}
+
+function npBadgeHtml(npId) {
+  if (!PAC_ACTIVO || !PAC_ACTIVO.id) return '';
+  if (npPacienteTieneTest(npId)) {
+    return '<span class="np-estado-badge guardado" title="Resultado guardado para este paciente">' +
+      '<span class="np-estado-ico">✓</span> Guardado</span>';
+  }
+  return '<span class="np-estado-badge pendiente" title="Pendiente de cargar para este paciente">' +
+    '<span class="np-estado-ico">⏳</span> Pendiente</span>';
+}
+
+function npActualizarEstados() {
+  if (!document.getElementById('np-grid')) return;
+  npRender();
+}
+
 function npChip(el, dom) {
   document.querySelectorAll('.np-chip').forEach(function(c){ c.classList.remove('active'); });
   el.classList.add('active');
@@ -10117,8 +10168,11 @@ function npRender() {
   grid.innerHTML = r.map(function(t) {
     var ico = NP_ICONS[t.dom] || '';
     return '<div class="test-card" onclick="irTest(\'' + t.id + '\')">' +
-      '<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">' + ico +
-        '<span class="test-nombre" style="margin:0;">' + t.n + '</span>' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;">' +
+        '<div style="display:flex;align-items:center;gap:7px;min-width:0;">' + ico +
+          '<span class="test-nombre" style="margin:0;">' + t.n + '</span>' +
+        '</div>' +
+        npBadgeHtml(t.id) +
       '</div>' +
       '<div class="test-desc">' + t.d + '</div>' +
       '<span class="test-tag">' + t.t + '</span>' +
