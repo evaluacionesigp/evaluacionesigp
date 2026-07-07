@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.1</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.2</div>
     </div>
   </aside>
 
@@ -4556,7 +4556,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
         </div>
         <div class="card">
           <div class="card-title">Puntajes Brutos</div>
-          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá los puntajes brutos. El PE y Z se calculan automáticamente según el grupo etario. SLN no disponible para 70+ años.<br><em style="font-size:0.78rem;">Baremos: WAIS-IV adaptación chilena (estandarización latinoamericana).</em></p>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá los puntajes brutos. RD y Claves usan baremos WAIS-IV (adaptación chilena). <strong>SLN</strong> usa baremos WMS-III LeNu (Tablas D.1–D.6): Z = (PB − M) / DS según grupo etario WMS-III.</p>
           <div class="form-grid-3">
             <div class="field">
               <label>Retención de Dígitos (RD)</label>
@@ -4570,7 +4570,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
             </div>
             <div class="field">
               <label>Secuencia Número-Letra (SLN)</label>
-              <input type="number" id="waisiv-sln" min="0" max="30" placeholder="0–30" oninput="waisivActualizar()">
+              <input type="number" id="waisiv-sln" min="0" max="21" placeholder="0–21" oninput="waisivActualizar()">
               <div id="waisiv-sln-result" style="font-size:0.85rem;color:var(--accent);margin-top:4px;min-height:20px;font-weight:600;"></div>
             </div>
           </div>
@@ -8825,7 +8825,7 @@ function renderCuestionariosFam(d) {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WAIS-IV · Retención de Dígitos, Claves, Sec. Número-Letra</td></tr>';
           if (d.rd_pb != null) rows += filaTabla('Retención de Dígitos', d.rd_pb, 10, 3, d.rd_z, r.fecha);
           if (d.cla_pb != null) rows += filaTabla('Claves', d.cla_pb, 10, 3, d.cla_z, r.fecha);
-          if (d.sln_pb != null) rows += filaTabla('Sec. Número-Letra', d.sln_pb, 10, 3, d.sln_z, r.fecha);
+          if (d.sln_pb != null) rows += filaTabla('Sec. Número-Letra (WMS-III LeNu)', d.sln_pb, d.sln_m != null ? d.sln_m : null, d.sln_ds != null ? d.sln_ds : null, d.sln_z, r.fecha, d.sln_grupo || '');
 
         } else if (testNombre === 'WAIS-IV Perfil') {
           rows += '<tr><td colspan="9" style="padding:4px 10px;font-size:8.5px;font-weight:700;color:#2a6e6e;background:#d8ecd0;border-left:3px solid #325c28;border-bottom:0.5px solid #a8c4a0;">WAIS-IV · Perfil de Índices (ICV · IRP · IMT · IVP · CIT)</td></tr>';
@@ -13239,18 +13239,65 @@ var WAIS4_CLA = [
   [null,[0,0],[1,1],[2,3],[4,6],[7,9],[10,13],[14,17],[18,21],[22,26],[27,30],[31,36],[37,41],[42,48],[49,56],[57,64],[65,70],[71,74],[75,135]]
 ];
 
-var WAIS4_SLN = [
-  [[0,8],[9,9],[10,10],[11,11],[12,13],[14,14],[15,15],[16,16],[17,18],[19,19],[20,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,26],[27,27],[28,30]],
-  [[0,8],[9,9],[10,10],[11,11],[12,13],[14,14],[15,15],[16,16],[17,18],[19,19],[20,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,26],[27,27],[28,30]],
-  [[0,9],[10,10],[11,11],[12,12],[13,14],[15,15],[16,16],[17,17],[18,19],[20,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,26],[27,27],[28,28],[29,30]],
-  [[0,7],[8,9],[10,10],[11,11],[12,12],[13,14],[15,15],[16,16],[17,18],[19,19],[20,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,26],[27,27],[28,30]],
-  [[0,6],[7,7],[8,9],[10,10],[11,12],[13,13],[14,15],[16,16],[17,17],[18,18],[19,19],[20,20],[21,21],[22,22],[23,23],[24,24],[25,25],[26,26],[27,30]],
-  [[0,4],[5,6],[7,8],[9,10],[11,11],[12,12],[13,14],[15,15],[16,17],[18,18],[19,19],[20,20],[21,21],[null,null],[22,22],[23,23],[24,24],[25,25],[26,30]],
-  [[0,2],[3,4],[5,5],[6,7],[8,9],[10,10],[11,12],[13,14],[15,15],[16,17],[18,18],[19,19],[20,20],[21,21],[null,null],[22,22],[null,null],[null,null],[23,30]],
-  [[0,1],[2,3],[4,4],[5,6],[7,8],[9,10],[11,11],[12,13],[14,15],[16,17],[18,18],[19,19],[20,20],[null,null],[21,21],[null,null],[null,null],[null,null],[22,30]],
-  [[0,0],[1,2],[3,3],[4,5],[6,6],[7,8],[9,10],[11,13],[14,15],[16,16],[17,17],[18,18],[19,19],[null,null],[20,20],[null,null],[null,null],[null,null],[21,30]],
-  null, null, null, null
+
+// WMS-III · LeNu (Secuencia Número-Letra) — Apéndice D Tablas D.1–D.6.
+// Z directo sobre PB: Z = (PB − M) / DS · M = PD en Pe 10 · DS = 3 (DT estándar WMS-III).
+var LENU_GRUPOS = ['16–19','20–34','35–54','55–65','66–73','74+'];
+var LENU_BAR = [
+  {m:11, ds:3},
+  {m:11, ds:3},
+  {m:10, ds:3},
+  {m:8, ds:3},
+  {m:6, ds:3},
+  {m:4, ds:3}
 ];
+// [PE1..PE19] = [minPB, maxPB] por grupo etario WMS-III (índice 0–5).
+var LENU_PB = [
+  [null,null,[0,6],[7,7],null,[8,8],null,[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],null,[16,17],[18,18],[19,20],[21,21]],
+  [null,null,[0,5],[6,6],[7,7],[8,8],null,[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],[19,19],[20,21]],
+  [null,null,[0,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,18],[19,19],[20,21],null],
+  [null,[0,0],[1,2],[3,3],null,[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],null,[10,10],[11,11],[12,12],[13,14],[15,16],[17,21],null],
+  [null,null,null,[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],null,[8,8],null,[9,9],[10,10],[11,12],[13,21]],
+  [null,null,null,null,[0,0],[1,1],null,[2,2],[3,3],[4,4],[5,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,21],null]
+];
+
+function wais4GiToLenuGi(gi) {
+  if (gi < 0) return -1;
+  if (gi <= 1) return 0;
+  if (gi <= 4) return 1;
+  if (gi <= 6) return 2;
+  if (gi <= 8) return 3;
+  if (gi === 9) return 4;
+  return 5;
+}
+
+function waisivGetLenuGi() {
+  if (PAC_ACTIVO && PAC_ACTIVO.fecha_nacimiento) {
+    var lg = loesGetGrupo(calcularEdad(PAC_ACTIVO.fecha_nacimiento));
+    if (lg >= 0) return lg;
+  }
+  var giEl = document.getElementById('waisiv-gi');
+  var gi = giEl && giEl.value !== '' ? parseInt(giEl.value) : -1;
+  return wais4GiToLenuGi(gi);
+}
+
+function lenuPBtoPE(pb, gi) {
+  if (pb === null || pb === undefined || isNaN(pb) || gi < 0 || gi >= LENU_PB.length) return null;
+  var grupo = LENU_PB[gi];
+  if (!grupo) return null;
+  for (var pe = 0; pe < grupo.length; pe++) {
+    var rango = grupo[pe];
+    if (!rango) continue;
+    if (pb >= rango[0] && pb <= rango[1]) return pe + 1;
+  }
+  return null;
+}
+
+function lenuCalcZ(pb, gi) {
+  if (pb === null || pb === undefined || isNaN(pb) || gi < 0 || gi >= LENU_BAR.length) return null;
+  var bar = LENU_BAR[gi];
+  return parseFloat(((pb - bar.m) / bar.ds).toFixed(2));
+}
 
 function wais4GetGrupo(edad) {
   if (edad < 16) return -1;
@@ -13310,8 +13357,21 @@ function waisivActualizar() {
   var rdEl=document.getElementById('waisiv-rd'),claEl=document.getElementById('waisiv-cla'),slnEl=document.getElementById('waisiv-sln');
   calcShow('waisiv-rd-result',rdEl?rdEl.value:'',WAIS4_RD);
   calcShow('waisiv-cla-result',claEl?claEl.value:'',WAIS4_CLA);
-  if(gi>=9){var el=document.getElementById('waisiv-sln-result');if(el)el.innerHTML='<span style="color:#aaa;font-size:0.8rem;">No disponible para este grupo etario</span>';}
-  else calcShow('waisiv-sln-result',slnEl?slnEl.value:'',WAIS4_SLN);
+  var slnRes=document.getElementById('waisiv-sln-result');
+  if(slnRes){
+    var slnPb=slnEl?slnEl.value:'';
+    var lgi=waisivGetLenuGi();
+    if(slnPb===''||slnPb===null||isNaN(parseFloat(slnPb))||lgi<0){slnRes.innerHTML='';}
+    else{
+      var pbNum=parseFloat(slnPb);
+      var bar=LENU_BAR[lgi];
+      var z=lenuCalcZ(pbNum,lgi);
+      var pe=lenuPBtoPE(pbNum,lgi);
+      var zCol=z<=-2?'#c0392b':z<=-1?'#c0602b':z>=1?'#1D9E75':'#555';
+      var peTxt=pe!==null?' · Pe: <strong>'+pe+'</strong>':'';
+      slnRes.innerHTML='WMS '+LENU_GRUPOS[lgi]+': M=<strong>'+bar.m+'</strong> · DS=<strong>'+bar.ds+'</strong>'+peTxt+' · Z: <strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
+    }
+  }
 }
 function guardarWaisiv() {
   if(!SESSION)return;
@@ -13337,17 +13397,22 @@ function guardarWaisiv() {
     dat.cla_pb=parseFloat(claVal);dat.cla_pe=pe;dat.cla_z=z;
     if(z!==null)interp.push('Claves: PB='+claVal+' → PE='+pe+' → Z='+(z>=0?'+':'')+z);
   }
-  if(slnVal!==''&&gi<9){
-    var pe=wais4PBtoPE(parseFloat(slnVal),WAIS4_SLN,gi);var z=wais4PEtoZ(pe);
-    dat.sln_pb=parseFloat(slnVal);dat.sln_pe=pe;dat.sln_z=z;
-    if(z!==null)interp.push('SLN: PB='+slnVal+' → PE='+pe+' → Z='+(z>=0?'+':'')+z);
+  if(slnVal!==''){
+    var lgi=waisivGetLenuGi();
+    if(lgi<0){toast('No se pudo determinar el grupo WMS-III para SLN.','error');return;}
+    var slnPb=parseFloat(slnVal);
+    var bar=LENU_BAR[lgi];
+    var pe=lenuPBtoPE(slnPb,lgi);
+    var z=lenuCalcZ(slnPb,lgi);
+    dat.sln_pb=slnPb;dat.sln_pe=pe;dat.sln_z=z;dat.sln_m=bar.m;dat.sln_ds=bar.ds;dat.sln_gi=lgi;dat.sln_grupo=LENU_GRUPOS[lgi];
+    if(z!==null)interp.push('SLN (WMS-III LeNu, '+LENU_GRUPOS[lgi]+'): PB='+slnPb+' · M='+bar.m+' · DS='+bar.ds+' · Z='+(z>=0?'+':'')+z);
   }
   var zPpal=dat.rd_z!=null?dat.rd_z:(dat.cla_z!=null?dat.cla_z:(dat.sln_z!=null?dat.sln_z:null));
   // Mostrar resultado antes de guardar
   var detEl=document.getElementById('waisiv-detalle');
   if(detEl) detEl.innerHTML=interp.map(function(s){return '<div class="detalle-item"><div class="detalle-lbl">'+s+'</div></div>';}).join('');
   var interpEl=document.getElementById('waisiv-interp');
-  if(interpEl) interpEl.innerHTML='<p>Grupo etario: <strong>'+WAIS4_GRUPOS[gi]+' años</strong>. Z calculado con M=10, DS=3 (estándar WAIS-IV).</p><p><em>Baremos: Tabla A.1 — Adaptación argentina WAIS-IV.</em></p>';
+  if(interpEl) interpEl.innerHTML='<p>Grupo WAIS-IV: <strong>'+WAIS4_GRUPOS[gi]+' años</strong>. RD y Claves: PE → Z con M=10, DS=3 (WAIS-IV). SLN: Z = (PB − M) / DS con baremos WMS-III LeNu (Tablas D.1–D.6).</p>';
   document.getElementById('waisiv-form').style.display='none';
   document.getElementById('waisiv-resultado').style.display='block';
   supaFetch('/rest/v1/psico_resultados','POST',{
@@ -20587,7 +20652,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         } else if(tn==='WAIS-IV'){
           if(d.rd_pb!=null)add('WAIS-IV · Ret. Dígitos',d.rd_pb,10,3,d.rd_z,null);
           if(d.cla_pb!=null)add('WAIS-IV · Claves',d.cla_pb,10,3,d.cla_z,null);
-          if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra',d.sln_pb,10,3,d.sln_z,null);
+          if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra (WMS-III LeNu)',d.sln_pb,d.sln_m!=null?d.sln_m:null,d.sln_ds!=null?d.sln_ds:null,d.sln_z,d.sln_grupo||null);
         } else if(tn==='Stroop'){
           if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
           if(d.zC!=null) add('Stroop — Color',d.c!=null?d.c:d.cCorr,50,10,d.zC,null);
