@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.7</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.8</div>
     </div>
   </aside>
 
@@ -6036,7 +6036,7 @@ function renderPacientesInicio() {
   }
   el.innerHTML = PACIENTES.map(function(p) {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
-    var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
+    var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">' +
       '<div><div style="font-size:0.88rem;font-weight:600;color:var(--text);">' + escHtml(p.nombre) + '</div>' +
       '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
@@ -6073,7 +6073,7 @@ function renderPacientes() {
   if (!PACIENTES.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-txt">No hay pacientes registrados aún.</div></div>'; return; }
   el.innerHTML = PACIENTES.map(function(p) {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
-    var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
+    var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
     return '<div class="paciente-item">' +
       '<div><div class="pac-nombre">' + escHtml(p.nombre) + '</div>' +
       '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
@@ -6572,8 +6572,8 @@ function abrirModalPac(id) {
   document.getElementById('modal-pac-nombre').textContent = p.nombre;
   var info = '';
   if (p.fecha_nacimiento) info += '<b>Fecha nac.:</b> ' + p.fecha_nacimiento + ' (' + calcularEdad(p.fecha_nacimiento) + ' años)<br>';
-  if (p.sexo) info += '<b>Sexo:</b> ' + p.sexo + '<br>';
-  if (p.escolaridad) info += '<b>Escolaridad:</b> ' + p.escolaridad + '<br>';
+  if (p.sexo) info += '<b>Sexo:</b> ' + escHtml(p.sexo) + '<br>';
+  if (p.escolaridad) info += '<b>Escolaridad:</b> ' + escHtml(p.escolaridad) + '<br>';
   if (p.notas) info += '<b>Notas:</b> ' + escHtml(p.notas);
   document.getElementById('modal-pac-info').innerHTML = info || 'Sin datos adicionales.';
   document.getElementById('modal-pac').classList.add('active');
@@ -9936,6 +9936,133 @@ function guardarResultadoRey() {
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
   }).catch(catchGuardarError);
+}
+
+// ══ BEM 144 · Signoret ═══════════════════════════════════════════════════════
+// Mismos baremos (M/DS por grupo de edad) ya usados para el Apéndice B del
+// informe (ver renderizado de 'BEM 144 Signoret' en la generación de Word).
+var SIGNORET_BAR = {
+  rli: { M:[9.19,9.07,8.91,9.12,7.91,7.58], DS:[2.12,1.83,1.54,1.33,1.31,0.74], label:'Rec. Lógico Inmediato' },
+  rld: { M:[9.22,8.97,8.83,8.75,7.70,7.25], DS:[2.07,1.90,1.63,1.50,1.22,0.61], label:'Rec. Lógico Diferido' },
+  as:  { M:[9.92,9.88,9.27,8.96,7.82,6.80], DS:[1.69,1.04,1.79,1.54,1.62,1.09], label:'Aprendizaje Serial (AS3)' },
+  rs:  { M:[8.97,9.16,8.23,7.89,6.86,5.80], DS:[1.87,1.67,1.83,1.70,1.45,1.09], label:'Recuerdo Serial' },
+  rc:  { M:[11.00,11.16,11.20,10.20,10.00,10.00], DS:[1.62,1.39,1.03,2.20,1.79,1.22], label:'Rec. con Claves Semánticas' },
+  reco:{ M:[11.85,11.91,11.70,11.69,11.43,11.00], DS:[0.47,0.29,0.53,0.70,0.81,1.73], label:'Reconocimiento' }
+};
+var SIGNORET_KEYS = ['rli','rld','as','rs','rc','reco'];
+
+function iniciarSignoret() {
+  document.getElementById('signoret-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('signoret-form').style.display = 'block';
+  document.getElementById('signoret-resultado').style.display = 'none';
+}
+
+function limpiarSignoret() {
+  if (!confirm('¿Limpiar todos los datos?')) return;
+  SIGNORET_KEYS.map(function(k){ return 'sig-' + k; }).forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+}
+
+function calcularSignoret() {
+  var giStr = document.getElementById('signoret-edad').value;
+  if (giStr === '') { toast('Seleccioná el grupo de edad', 'error'); return; }
+  var gi = parseInt(giStr, 10);
+
+  var html = '<table style="width:100%;border-collapse:collapse;">' +
+    '<thead><tr>' +
+    '<th style="text-align:left;padding:8px 12px;font-size:0.8rem;color:var(--muted);">Subprueba</th>' +
+    '<th style="padding:8px 12px;font-size:0.8rem;color:var(--muted);">PB</th>' +
+    '<th style="padding:8px 12px;font-size:0.8rem;color:var(--muted);">M</th>' +
+    '<th style="padding:8px 12px;font-size:0.8rem;color:var(--muted);">DS</th>' +
+    '<th style="padding:8px 12px;font-size:0.8rem;color:var(--muted);">Z</th>' +
+    '<th style="padding:8px 12px;font-size:0.8rem;color:var(--muted);">Interpretación</th>' +
+    '</tr></thead><tbody>';
+  var zSum = 0, zCount = 0;
+  var raws = {};
+  SIGNORET_KEYS.forEach(function(k) {
+    var el = document.getElementById('sig-' + k);
+    var raw = el ? el.value : '';
+    var bar = SIGNORET_BAR[k];
+    if (raw === '') {
+      html += '<tr><td style="padding:8px 12px;font-size:0.84rem;">' + bar.label + '</td>' +
+        '<td colspan="4" style="text-align:center;padding:8px 12px;color:var(--muted);font-size:0.82rem;">—</td>' +
+        '<td style="text-align:center;padding:8px 12px;color:var(--muted);font-size:0.82rem;">Sin datos</td></tr>';
+      return;
+    }
+    var bruto = parseFloat(raw);
+    raws[k] = bruto;
+    var m = bar.M[gi], ds = bar.DS[gi];
+    var z = parseFloat(((bruto - m) / ds).toFixed(2));
+    zSum += z; zCount++;
+    var meta = zNormMeta(z, false);
+    html += '<tr style="border-bottom:1px solid var(--border);">' +
+      '<td style="padding:8px 12px;font-size:0.84rem;font-weight:500;">' + bar.label + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;font-family:\'DM Mono\',monospace;">' + bruto + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;font-family:\'DM Mono\',monospace;color:var(--muted);">' + m.toFixed(2) + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;font-family:\'DM Mono\',monospace;color:var(--muted);">' + ds.toFixed(2) + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;font-family:\'DM Mono\',monospace;font-weight:600;color:' + meta.color + ';">' + (z >= 0 ? '+' : '') + z.toFixed(2) + '</td>' +
+      '<td style="padding:8px 12px;text-align:center;color:' + meta.color + ';font-weight:600;">' + meta.label + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  if (raws.rc !== undefined && raws.reco !== undefined) {
+    var recCe = (raws.rc + raws.reco) / 2;
+    html += '<p style="font-size:0.8rem;color:var(--muted);margin-top:10px;">Rec-CE (promedio Claves + Reconocimiento): <strong>' + recCe.toFixed(1) + '</strong> (valor descriptivo, sin baremo propio).</p>';
+  }
+  document.getElementById('signoret-detalle').innerHTML = html;
+
+  var zProm = zCount ? parseFloat((zSum / zCount).toFixed(2)) : null;
+  window._signoretData = { gi: gi, zProm: zProm };
+
+  var interp;
+  if (zProm === null) {
+    interp = '<p>Completá al menos una subprueba para obtener una interpretación.</p>';
+  } else {
+    var metaProm = zNormMeta(zProm, false);
+    interp = '<p>El promedio de Z de las subpruebas completadas (Z=' + (zProm >= 0 ? '+' : '') + zProm.toFixed(2) + ') se ubica en el rango <strong>' + metaProm.label + '</strong>.</p>' +
+      '<p><em>Nota: este promedio es una síntesis orientativa. Se recomienda analizar el perfil por subprueba (memoria lógica verbal vs. memoria episódica verbal) y contrastarlo con TAVEC y Figura de Rey.</em></p>';
+  }
+  document.getElementById('signoret-interp').innerHTML = interp;
+
+  document.getElementById('signoret-form').style.display = 'none';
+  document.getElementById('signoret-resultado').style.display = 'block';
+}
+
+function guardarResultadoSignoret() {
+  if (!SESSION) return;
+  var pacId = document.getElementById('signoret-paciente').value;
+  var fecha = document.getElementById('signoret-fecha').value;
+  var giStr = document.getElementById('signoret-edad').value;
+  if (!pacId) { toast('Seleccioná un paciente primero'); return; }
+  var datosObj = { grupo_edad: giStr !== '' ? parseInt(giStr, 10) : null };
+  var total = 0, totalCount = 0;
+  SIGNORET_KEYS.forEach(function(k) {
+    var el = document.getElementById('sig-' + k);
+    var raw = el ? el.value : '';
+    if (raw === '') return;
+    var v = parseFloat(raw);
+    datosObj[k] = v;
+    total += v; totalCount++;
+  });
+  var zProm = (window._signoretData && window._signoretData.zProm !== undefined) ? window._signoretData.zProm : null;
+  var catSignoret = zProm === null ? 'Ver detalle' : zNormMeta(zProm, false).label;
+  var body = {
+    user_id: SESSION.user.id, paciente_id: pacId, test: 'BEM 144 Signoret',
+    fecha: fecha, puntaje_total: totalCount ? total : null,
+    categoria: catSignoret, puntaje_z: zProm,
+    puntaje_t: zProm !== null ? parseFloat((50 + 10 * zProm).toFixed(1)) : null,
+    percentil: zProm !== null ? Math.max(1, Math.min(99, Math.round(50 + 28.57 * zProm))) : null,
+    datos: datosObj
+  };
+  supaFetch('/rest/v1/psico_resultados', 'POST', body, SESSION.access_token)
+    .then(function(){
+      cargarResultados();
+      toast('✓ Resultado guardado', 'success');
+      var btnAll = document.querySelectorAll('.vista.active .btn-primary');
+      var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
+      if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
+    }).catch(catchGuardarError);
 }
 
 // ══ TMT — BAREMOS ════════════════════════════════════════════════════════════
