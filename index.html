@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.6</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.7</div>
     </div>
   </aside>
 
@@ -5847,6 +5847,31 @@ var pacienteSelModal = null;
 var sectorActual = '';
 var PAC_ACTIVO = null;
 
+// ══ AVISO DE CAMBIOS SIN GUARDAR ═════════════════════════════════════════════
+// Se marca "sucio" cualquier formulario de test dentro de la vista activa; se
+// limpia al guardar con éxito (cargarResultados) o al confirmar la salida.
+// Cubre tanto la navegación interna (irTest/irVista/irSector) como el cierre
+// o recarga de la pestaña (beforeunload).
+var FORM_DIRTY = false;
+document.addEventListener('input', function(e){
+  if (e.target.closest && e.target.closest('.vista.active [id$="-form"]')) FORM_DIRTY = true;
+});
+document.addEventListener('change', function(e){
+  if (e.target.closest && e.target.closest('.vista.active [id$="-form"]')) FORM_DIRTY = true;
+});
+window.addEventListener('beforeunload', function(e){
+  if (!FORM_DIRTY) return;
+  e.preventDefault();
+  e.returnValue = '';
+  return '';
+});
+function confirmarSalidaSinGuardar() {
+  if (!FORM_DIRTY) return true;
+  var salir = confirm('Hay datos cargados en este test que no guardaste. ¿Salir igual?');
+  if (salir) FORM_DIRTY = false;
+  return salir;
+}
+
 // ══ SUPABASE HELPER ══════════════════════════════════════════════════════════
 function supaFetch(path, method, body, token, extraHeaders) {
   if (method === 'POST' && path === '/rest/v1/psico_resultados' && window.RESULTADO_EDIT && window.RESULTADO_EDIT.id) {
@@ -5868,18 +5893,31 @@ function supaFetch(path, method, body, token, extraHeaders) {
     .then(function(res) {
       if (res.status === 401) {
         manejarSesionExpirada();
-        throw new Error('SESION_EXPIRADA');
+        var sesErr = new Error('SESION_EXPIRADA');
+        sesErr.userNotified = true;
+        throw sesErr;
       }
       if (!res.ok) {
         return res.text().then(function(t) {
           var msg = t || ('Error HTTP ' + res.status);
           try { var j = JSON.parse(t); msg = j.message || j.error_description || j.error || j.hint || msg; } catch (e) {}
           toast('✗ ' + msg.substring(0, 160), 'error');
-          throw new Error(msg);
+          var httpErr = new Error(msg);
+          httpErr.userNotified = true;
+          throw httpErr;
         });
       }
       return res;
     });
+}
+// Handler genérico de error para guardarX(): si supaFetch ya avisó al usuario
+// (toast de error HTTP o redirección por sesión vencida) no repite el aviso;
+// si la promesa se rechazó antes de eso (sin conexión, etc.) sí avisa, porque
+// si no el residente no se entera de que el guardado falló.
+function catchGuardarError(err) {
+  if (err && err.userNotified) return;
+  var msg = (err && err.message) || '';
+  toast('✗ No se pudo guardar' + (msg ? ': ' + msg.substring(0, 140) : '. Verificá tu conexión a internet.'), 'error');
 }
 function supaAuth(action, body) {
   return fetch(SUPA_URL + '/auth/v1/' + action, {
@@ -5976,6 +6014,7 @@ function cargarPacientes() {
     });
 }
 function cargarResultados() {
+  FORM_DIRTY = false;
   supaFetch('/rest/v1/psico_resultados?select=*,psico_pacientes(nombre)&order=creado.desc&limit=200', 'GET', null, SESSION.access_token)
     .then(function(r){ return r.json(); })
     .then(function(data) {
@@ -6110,7 +6149,7 @@ function editarPaciente(id) {
       renderPacientesInicio();
       llenarSelectPacientes();
       toast('✓ Paciente actualizado','success');
-    }).catch(function(){});
+    }).catch(catchGuardarError);
   };
 }
 
@@ -6522,7 +6561,8 @@ function guardarPaciente() {
   };
   supaFetch('/rest/v1/psico_pacientes', 'POST', body, SESSION.access_token)
     .then(function(r){ return r.json(); })
-    .then(function() { cancelarFormPac(); cargarPacientes(); toast('Paciente guardado ✓'); });
+    .then(function() { cancelarFormPac(); cargarPacientes(); toast('Paciente guardado ✓'); })
+    .catch(catchGuardarError);
 }
 
 function abrirModalPac(id) {
@@ -8633,6 +8673,7 @@ function renderUltimas() {
 
 // ══ NAVEGACIÓN ═══════════════════════════════════════════════════════════════
 function irVista(v) {
+  if (!confirmarSalidaSinGuardar()) return;
   document.querySelectorAll('.vista').forEach(function(el){ el.classList.remove('active'); });
   var el = document.getElementById('vista-' + v);
   if(el) el.classList.add('active');
@@ -8777,6 +8818,7 @@ function npRender() {
 }
 
 function irSector(s) {
+  if (!confirmarSalidaSinGuardar()) return;
   sectorActual = s;
   document.querySelectorAll('.sidebar-section').forEach(function(el){ el.classList.remove('active'); });
   var map = {clinica:'snav-clinica', tdah:'snav-tdah', neuro:'snav-neuro', dolor:'snav-dolor'};
@@ -9009,6 +9051,7 @@ function irSector(s) {
 }
 
 function irTest(t) {
+  if (!confirmarSalidaSinGuardar()) return;
   document.querySelectorAll('.vista').forEach(function(el){ el.classList.remove('active'); });
   document.getElementById('vista-' + t).classList.add('active');
   llenarSelectPacientes(); // siempre actualizar la lista antes de abrir el test
@@ -9538,7 +9581,7 @@ function guardarResultadoBDI() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ STAI ═════════════════════════════════════════════════════════════════════
@@ -9706,7 +9749,7 @@ function guardarResultadoSTAI() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ REY VERBAL — BAREMOS ════════════════════════════════════════════════════
@@ -9892,7 +9935,7 @@ function guardarResultadoRey() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ TMT — BAREMOS ════════════════════════════════════════════════════════════
@@ -10174,7 +10217,7 @@ function guardarResultadoTMT() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ── Etiquetas simplificadas informe (Apéndice B Word/PDF) ──
@@ -10442,7 +10485,7 @@ function guardarResultadoFLV() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ PHQ-9 ════════════════════════════════════════════════════════════════════
@@ -10517,7 +10560,7 @@ function guardarResultadoPHQ() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ GAD-7 ════════════════════════════════════════════════════════════════════
@@ -10582,7 +10625,7 @@ function guardarResultadoGAD(){
     toast('✓ Resultado guardado', 'success');
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
-    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
+    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };}).catch(catchGuardarError);
 }
 
 
@@ -10719,7 +10762,7 @@ function guardarCRC() {
   var datos={total:total};
   CRC_ITEMS.forEach(function(item){var s=document.querySelector('[name="crc_'+item.id+'"]:checked');if(s)datos[item.id]=parseInt(s.value);});
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'CRC',fecha:fecha,puntaje_total:total,categoria:cat,datos:datos},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ CRC guardado','success');}).catch(function(){});
+    .then(function(){cargarResultados();toast('✓ CRC guardado','success');}).catch(catchGuardarError);
 }
 
 // ══ PSS-10 · Escala de Estrés Percibido (Cohen et al. 1983) ══════════════════
@@ -10792,7 +10835,7 @@ function guardarPSS(){
   var total=window._pssTotal!=null?window._pssTotal:parseInt(document.getElementById('pss-pts').textContent)||0;
   var cat=document.getElementById('pss-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'PSS-10',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ PSS-10 guardado','success');}).catch(function(){});
+    .then(function(){cargarResultados();toast('✓ PSS-10 guardado','success');}).catch(catchGuardarError);
 }
 
 // ══ HOLMES & RAHE · Escala de Reajuste Psicosocial (1967) ════════════════════
@@ -10883,7 +10926,7 @@ function guardarHolmes(){
   var total=window._holmesTotal!=null?window._holmesTotal:parseInt(document.getElementById('holmes-pts').textContent)||0;
   var cat=document.getElementById('holmes-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'Holmes-Rahe',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total,eventos:window._holmesEventos||[]}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ Holmes & Rahe guardado','success');}).catch(function(){});
+    .then(function(){cargarResultados();toast('✓ Holmes & Rahe guardado','success');}).catch(catchGuardarError);
 }
 
 // ══ GDS-30 · Escala de Depresión Geriátrica Yesavage (1983) ══════════════════
@@ -10978,7 +11021,7 @@ function guardarYesavage(){
   var total=window._yesavageTotal!=null?window._yesavageTotal:parseInt(document.getElementById('yesavage-pts').textContent)||0;
   var cat=document.getElementById('yesavage-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'GDS-30',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ GDS-30 guardado','success');}).catch(function(){});
+    .then(function(){cargarResultados();toast('✓ GDS-30 guardado','success');}).catch(catchGuardarError);
 }
 
 // ══ BIRLESON (PACES) ═════════════════════════════════════════════════════════
@@ -11074,7 +11117,7 @@ function guardarResultadoBirleson() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ AAA ════════════════════════════════════════════════════════════════════════
@@ -11190,7 +11233,7 @@ function guardarResultadoAAA() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ SPAI-B ═══════════════════════════════════════════════════════════════════
@@ -11279,7 +11322,7 @@ function guardarResultadoSPAIB(){
     toast('✓ Resultado guardado', 'success');
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
-    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
+    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };}).catch(catchGuardarError);
 }
 
 // ══ MoCA ═════════════════════════════════════════════════════════════════════
@@ -11361,7 +11404,7 @@ function guardarResultadoMoCA(){
     toast('✓ Resultado guardado', 'success');
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
-    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
+    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };}).catch(catchGuardarError);
 }
 
 // ══ Mini Mental Parkinson (MMP) ═════════════════════════════════════════════
@@ -11444,7 +11487,7 @@ function guardarResultadoMMP() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function() { btn.classList.remove('btn-saved'); }, 1500); }
-  });
+  }).catch(catchGuardarError);
 }
 
 // ══ IFS ══════════════════════════════════════════════════════════════════════
@@ -11562,7 +11605,7 @@ function guardarResultadoWCST() {
   }, SESSION.access_token).then(function(){
     cargarResultados();
     toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 var IFS_BAR = [
@@ -11709,7 +11752,7 @@ function guardarFAB() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 // ══ fin FAB ══════════════════════════════════════════════════════════════════
 
@@ -11785,7 +11828,7 @@ function guardarResultadoIFS(){
     toast('✓ Resultado guardado', 'success');
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
-    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };});
+    if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); };}).catch(catchGuardarError);
 }
 // ══ DÍGITOS WAIS ═════════════════════════════════════════════════════════════
 // Baremos Fay, Leiva & Margulis (2018) — CABA. Por edad y NE.
@@ -12049,7 +12092,7 @@ function guardarWaisiv() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ WMS-III · Localización Espacial (LoEs) ═══════════════════════════════════
@@ -12187,7 +12230,7 @@ function guardarLoEs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ WAIS-IV PERFIL (carga manual de índices) ════════════════════════════════
@@ -12399,7 +12442,7 @@ function guardarWaisperfil() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ ASRS-V1.1 ════════════════════════════════════════════════════════════════
@@ -12579,7 +12622,7 @@ function guardarEAVA() {
     cargarResultados(); toast('✓ EAVA guardado', 'success');
     var btn = document.querySelector('.vista.active .btn-primary:last-child');
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ CUESTIONARIOS TEA · NEURODESARROLLO ═════════════════════════════════════
@@ -12663,7 +12706,7 @@ function ndGuardar(testName, pacSelId, fechaId, total, cat, datos) {
     puntaje_total: total, categoria: cat, datos: datos
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ ' + testName + ' guardado', 'success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── AQ 50 ítems ──
@@ -13180,7 +13223,7 @@ function guardarDislex1() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Instrumento 2: Lista Revisada de Dislexia en Adultos ─────────────────────
@@ -13285,7 +13328,7 @@ function guardarDislex2() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Instrumento 3: Identificación de Palabras con Sentido ────────────────────
@@ -13368,7 +13411,7 @@ function guardarDislex3() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Instrumento 4: TECLE ─────────────────────────────────────────────────────
@@ -13512,7 +13555,7 @@ function guardarTecle() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Instrumento 5: Lectura de Palabras y Pseudopalabras ──────────────────────
@@ -13575,7 +13618,7 @@ function guardarDislex5() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 function iniciarAsrs() {
@@ -13679,7 +13722,7 @@ function guardarAsrs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ BADS · Farías Sarquís et al. (2021) — Cuadernos de Neuropsicología 15(1):25-48 ═══
@@ -13851,7 +13894,7 @@ function guardarLlaves() {
     datos:d
   }, SESSION.access_token).then(function(){
     window._llavesData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Juicio Temporal ──────────────────────────────────────────────────────────
@@ -13991,7 +14034,7 @@ function guardarJuicio() {
     puntaje_total:d.conv, puntaje_z:d.z, categoria:badsZLabel(d.z), datos:d
   }, SESSION.access_token).then(function(){
     window._juicioData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Mapa del Zoo ─────────────────────────────────────────────────────────────
@@ -14247,7 +14290,7 @@ function guardarZoo() {
     puntaje_total:pjeGuardar, puntaje_z:d.z, categoria:badsZLabel(d.z), datos:d
   }, SESSION.access_token).then(function(){
     window._zooData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ TEST DEL HOTEL ═══════════════════════════════════════════════════════════
@@ -14512,7 +14555,7 @@ function guardarHotel() {
   }, SESSION.access_token).then(function(){
     window._hotelData = null;
     cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ BTA — Brief Test of Attention ══════════════════════════════════════════
@@ -14682,7 +14725,7 @@ function guardarD2() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 // ══ fin D2 ═══════════════════════════════════════════════════════════════════
 
@@ -14822,7 +14865,7 @@ function guardarDEX() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 // ══ fin DEX ══════════════════════════════════════════════════════════════════
 
@@ -14902,7 +14945,7 @@ function guardarWurs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ MBI-HSS ════════════════════════════════════════════════════════════════
@@ -14963,7 +15006,7 @@ function guardarResultadoMBI() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ TEST DEL RELOJ (Cacho) ════════════════════════════════════════════════
@@ -15021,7 +15064,7 @@ function guardarResultadoReloj() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 
@@ -15111,7 +15154,7 @@ function guardarResultadoACER(){
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ SCL-90-R ═════════════════════════════════════════════════════════════════
@@ -15250,7 +15293,7 @@ function guardarResultadoScl90(){
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // irTest SCL90 y ACER
@@ -15508,7 +15551,7 @@ function guardarToken() {
   },SESSION.access_token).then(function(){
     window._tokenData=null;
     cargarResultados();toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 // ══ fin Token Test ════════════════════════════════════════════════════════════
 
@@ -15625,7 +15668,7 @@ function guardarBNT() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 var INF_CFG_PREFIX = '/*INF_CFG:';
@@ -17236,7 +17279,7 @@ function guardarDolor(tipo) {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ── Auto-iniciar si hay sesión ─────────────────
@@ -17399,7 +17442,7 @@ function guardarStroop() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ CSI · Inventario de Estrategias de Afrontamiento ═════════════════════════
@@ -17612,7 +17655,7 @@ function guardarCSI() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ FIGURA COMPLEJA DE REY · FIGURA A ════════════════════════════════════════
@@ -18017,7 +18060,7 @@ function guardarFCR() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function() { btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 function fcrRestaurarEdicion(d) {
@@ -18185,7 +18228,7 @@ function guardarBTA() {
   }, SESSION.access_token).then(function(){
     window._btaData = null;
     cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ SDMT · Symbol Digit Modalities Test ══════════════════════════════════════
@@ -18379,7 +18422,7 @@ function guardarSDMT() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -20069,7 +20112,7 @@ function guardarTavec() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 // ══ PANEL PERFIL Z — guía de redacción para residentes ══════════════════════
@@ -20606,7 +20649,7 @@ function guardarFamiliar() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){});
+  }).catch(catchGuardarError);
 }
 
 window.addEventListener('DOMContentLoaded', function() {
