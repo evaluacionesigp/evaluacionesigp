@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.2</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.3</div>
     </div>
   </aside>
 
@@ -4530,10 +4530,17 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
       <div id="waisiv-form">
         <div class="card">
           <div class="card-title">Datos de la evaluación</div>
-          <div class="form-grid-3">
+          <div class="form-grid-2">
             <div class="field"><label>Paciente *</label><select id="waisiv-paciente"><option value="">— Seleccionar paciente —</option></select></div>
+            <div class="field"><label>Fecha de evaluación</label><input type="date" id="waisiv-fecha"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Retención de Dígitos y Claves · WAIS-IV</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Baremos WAIS-IV (adaptación chilena). Ingresá el puntaje bruto; el PE y Z se calculan con el grupo etario WAIS-IV.</p>
+          <div class="form-grid-3">
             <div class="field">
-              <label>Grupo etario *</label>
+              <label>Grupo etario WAIS-IV *</label>
               <select id="waisiv-gi" onchange="waisivActualizar()">
                 <option value="">— Seleccionar grupo —</option>
                 <option value="0">16–17 años</option>
@@ -4551,13 +4558,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
                 <option value="12">85–90 años</option>
               </select>
             </div>
-            <div class="field"><label>Fecha de evaluación</label><input type="date" id="waisiv-fecha"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Puntajes Brutos</div>
-          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Ingresá los puntajes brutos. RD y Claves usan baremos WAIS-IV (adaptación chilena). <strong>SLN</strong> usa baremos WMS-III LeNu (Tablas D.1–D.6): Z = (PB − M) / DS según grupo etario WMS-III.</p>
-          <div class="form-grid-3">
             <div class="field">
               <label>Retención de Dígitos (RD)</label>
               <input type="number" id="waisiv-rd" min="0" max="48" placeholder="0–48" oninput="waisivActualizar()">
@@ -4567,6 +4567,24 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
               <label>Claves (Cla)</label>
               <input type="number" id="waisiv-cla" min="0" max="135" placeholder="0–135" oninput="waisivActualizar()">
               <div id="waisiv-cla-result" style="font-size:0.85rem;color:var(--accent);margin-top:4px;min-height:20px;font-weight:600;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Secuencia Número-Letra · WMS-III</div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Baremos WMS-III LeNu (Tablas D.1–D.6), independientes del WAIS-IV. Z = (PB − M) / DS según el grupo etario WMS-III.</p>
+          <div class="form-grid-2">
+            <div class="field">
+              <label>Grupo etario WMS-III *</label>
+              <select id="waisiv-sln-gi" onchange="waisivActualizar()">
+                <option value="">— Seleccionar grupo —</option>
+                <option value="0">16–19 años</option>
+                <option value="1">20–34 años</option>
+                <option value="2">35–54 años</option>
+                <option value="3">55–65 años</option>
+                <option value="4">66–73 años</option>
+                <option value="5">74 años o más</option>
+              </select>
             </div>
             <div class="field">
               <label>Secuencia Número-Letra (SLN)</label>
@@ -6450,6 +6468,9 @@ function aplicarPacienteActivoATest(testId) {
     pacSetVal('d2-edad', edad);
     var loesGi = loesGetGrupo(edad);
     if (loesGi >= 0) pacSetVal('loes-gi', loesGi);
+    var waisGi = wais4GetGrupo(edad);
+    if (waisGi >= 0) pacSetVal('waisiv-gi', waisGi);
+    if (loesGi >= 0) pacSetVal('waisiv-sln-gi', loesGi);
   }
 
   pacSetVal('rey-sexo', sexoARey(p.sexo));
@@ -13261,24 +13282,10 @@ var LENU_PB = [
   [null,null,null,null,[0,0],[1,1],null,[2,2],[3,3],[4,4],[5,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,21],null]
 ];
 
-function wais4GiToLenuGi(gi) {
-  if (gi < 0) return -1;
-  if (gi <= 1) return 0;
-  if (gi <= 4) return 1;
-  if (gi <= 6) return 2;
-  if (gi <= 8) return 3;
-  if (gi === 9) return 4;
-  return 5;
-}
-
-function waisivGetLenuGi() {
-  if (PAC_ACTIVO && PAC_ACTIVO.fecha_nacimiento) {
-    var lg = loesGetGrupo(calcularEdad(PAC_ACTIVO.fecha_nacimiento));
-    if (lg >= 0) return lg;
-  }
-  var giEl = document.getElementById('waisiv-gi');
-  var gi = giEl && giEl.value !== '' ? parseInt(giEl.value) : -1;
-  return wais4GiToLenuGi(gi);
+function waisivGetSlnGi() {
+  var giEl = document.getElementById('waisiv-sln-gi');
+  if (!giEl || giEl.value === '') return -1;
+  return parseInt(giEl.value);
 }
 
 function lenuPBtoPE(pb, gi) {
@@ -13338,11 +13345,26 @@ function iniciarWaisiv() {
   document.getElementById('waisiv-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('waisiv-form').style.display = 'block';
   document.getElementById('waisiv-resultado').style.display = 'none';
+  if (PAC_ACTIVO && PAC_ACTIVO.fecha_nacimiento) {
+    var edad = calcularEdad(PAC_ACTIVO.fecha_nacimiento);
+    var wgi = wais4GetGrupo(edad);
+    if (wgi >= 0) {
+      var giEl = document.getElementById('waisiv-gi');
+      if (giEl && !giEl.value) giEl.value = String(wgi);
+    }
+    var lgi = loesGetGrupo(edad);
+    if (lgi >= 0) {
+      var slnGiEl = document.getElementById('waisiv-sln-gi');
+      if (slnGiEl && !slnGiEl.value) slnGiEl.value = String(lgi);
+    }
+  }
+  waisivActualizar();
 }
 function limpiarWaisiv() {
   ['waisiv-rd','waisiv-cla','waisiv-sln'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   ['waisiv-rd-result','waisiv-cla-result','waisiv-sln-result'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';});
   var gi=document.getElementById('waisiv-gi'); if(gi) gi.value='';
+  var slnGi=document.getElementById('waisiv-sln-gi'); if(slnGi) slnGi.value='';
 }
 function waisivActualizar() {
   var giEl=document.getElementById('waisiv-gi');
@@ -13360,7 +13382,7 @@ function waisivActualizar() {
   var slnRes=document.getElementById('waisiv-sln-result');
   if(slnRes){
     var slnPb=slnEl?slnEl.value:'';
-    var lgi=waisivGetLenuGi();
+    var lgi=waisivGetSlnGi();
     if(slnPb===''||slnPb===null||isNaN(parseFloat(slnPb))||lgi<0){slnRes.innerHTML='';}
     else{
       var pbNum=parseFloat(slnPb);
@@ -13380,12 +13402,12 @@ function guardarWaisiv() {
   var giEl=document.getElementById('waisiv-gi');
   var gi=giEl&&giEl.value!==''?parseInt(giEl.value):-1;
   if(!pacId){toast('Seleccioná un paciente.','error');return;}
-  if(gi<0){toast('Seleccioná un grupo etario.','error');return;}
   var rdVal=document.getElementById('waisiv-rd').value;
   var claVal=document.getElementById('waisiv-cla').value;
   var slnVal=document.getElementById('waisiv-sln').value;
   if(rdVal===''&&claVal===''&&slnVal===''){toast('Ingresá al menos un puntaje bruto.','error');return;}
-  var dat={grupo:WAIS4_GRUPOS[gi],gi:gi};
+  if((rdVal!==''||claVal!=='')&&gi<0){toast('Seleccioná el grupo etario WAIS-IV para Dígitos y/o Claves.','error');return;}
+  var dat={grupo:gi>=0?WAIS4_GRUPOS[gi]:null,gi:gi>=0?gi:null};
   var interp=[];
   if(rdVal!==''){
     var pe=wais4PBtoPE(parseFloat(rdVal),WAIS4_RD,gi);var z=wais4PEtoZ(pe);
@@ -13398,8 +13420,8 @@ function guardarWaisiv() {
     if(z!==null)interp.push('Claves: PB='+claVal+' → PE='+pe+' → Z='+(z>=0?'+':'')+z);
   }
   if(slnVal!==''){
-    var lgi=waisivGetLenuGi();
-    if(lgi<0){toast('No se pudo determinar el grupo WMS-III para SLN.','error');return;}
+    var lgi=waisivGetSlnGi();
+    if(lgi<0){toast('Seleccioná el grupo etario WMS-III para Secuencia Número-Letra.','error');return;}
     var slnPb=parseFloat(slnVal);
     var bar=LENU_BAR[lgi];
     var pe=lenuPBtoPE(slnPb,lgi);
@@ -13412,7 +13434,12 @@ function guardarWaisiv() {
   var detEl=document.getElementById('waisiv-detalle');
   if(detEl) detEl.innerHTML=interp.map(function(s){return '<div class="detalle-item"><div class="detalle-lbl">'+s+'</div></div>';}).join('');
   var interpEl=document.getElementById('waisiv-interp');
-  if(interpEl) interpEl.innerHTML='<p>Grupo WAIS-IV: <strong>'+WAIS4_GRUPOS[gi]+' años</strong>. RD y Claves: PE → Z con M=10, DS=3 (WAIS-IV). SLN: Z = (PB − M) / DS con baremos WMS-III LeNu (Tablas D.1–D.6).</p>';
+  if(interpEl){
+    var partes=[];
+    if(gi>=0) partes.push('WAIS-IV ('+WAIS4_GRUPOS[gi]+'): Dígitos y Claves con PE → Z (M=10, DS=3).');
+    if(dat.sln_grupo) partes.push('WMS-III LeNu ('+dat.sln_grupo+'): SLN con Z = (PB − M) / DS.');
+    interpEl.innerHTML='<p>'+partes.join(' ')+'</p>';
+  }
   document.getElementById('waisiv-form').style.display='none';
   document.getElementById('waisiv-resultado').style.display='block';
   supaFetch('/rest/v1/psico_resultados','POST',{
