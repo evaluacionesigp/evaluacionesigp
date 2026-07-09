@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.3</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.4</div>
     </div>
   </aside>
 
@@ -2990,67 +2990,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="resultado-box">
       <div class="resultado-detalle" id="bta-detalle"></div>
       <div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div><div class="interp-texto" id="bta-interp"></div></div>
-    </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button class="btn-secondary" onclick="document.getElementById('bta-resultado').style.display='none';document.getElementById('bta-form').style.display='block';">← Modificar</button>
-      <button class="btn-primary" onclick="guardarBTA()">💾 Guardar resultado</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- ── TEST BTA ── -->
-<div class="vista" id="vista-bta">
-  <div class="back-btn" onclick="volverSector()">← Volver</div>
-  <div class="vista-header"><div class="vista-titulo">BTA · Brief Test of Attention</div></div>
-  <div id="bta-form">
-    <div class="card">
-      <div class="card-title">Datos de la evaluación</div>
-      <div class="form-grid-3">
-        <div class="field"><label>Paciente *</label><select id="bta-paciente"><option value="">— Seleccionar paciente —</option></select></div>
-        <div class="field"><label>Fecha de evaluación</label><input type="date" id="bta-fecha"></div>
-        <div class="field"><label>Grupo de edad *</label>
-          <select id="bta-gi">
-            <option value="">— Seleccionar —</option>
-            <option value="0">18–22 años</option>
-            <option value="1">23–27 años</option>
-            <option value="2">28–32 años</option>
-            <option value="3">33–37 años</option>
-            <option value="4">38–42 años</option>
-            <option value="5">43–47 años</option>
-            <option value="6">48–52 años</option>
-            <option value="7">53–57 años</option>
-            <option value="8">58–62 años</option>
-            <option value="9">63–67 años</option>
-            <option value="10">68–72 años</option>
-            <option value="11">73–77 años</option>
-            <option value="12">&gt;77 años</option>
-          </select>
-        </div>
-        <div class="field"><label>Nivel educativo *</label>
-          <select id="bta-ei">
-            <option value="">— Seleccionar —</option>
-            <option value="0">&gt;12 años de educación</option>
-            <option value="1">1 a 12 años de educación</option>
-          </select>
-        </div>
-        <div class="field"><label>Puntaje total (0–20)</label><input type="number" id="bta-pb" min="0" max="20" placeholder="0–20"></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Descripción</div>
-      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">El BTA evalúa la atención dividida mediante dos series de 10 ensayos (letras N y P intercaladas con dígitos). El paciente debe contar solo las letras N en la primera serie y solo las P en la segunda. Rango: 0–20 aciertos.</p>
-      <p style="font-size:0.82rem;color:var(--muted);">Baremo: NEURONORMA Argentina · Arango-Lasprilla et al. (2015) · NeuroRehabilitation 37(4)</p>
-    </div>
-    <div class="btn-row">
-      <button class="btn-secondary" onclick="limpiarBTA()">🗑 Limpiar</button>
-      <button class="btn-primary" onclick="calcularBTA()">Calcular resultado →</button>
-    </div>
-  </div>
-  <div id="bta-resultado" style="display:none;">
-    <div class="card">
-      <div class="card-title">Resultado BTA</div>
-      <div id="bta-res-content"></div>
     </div>
     <div class="btn-row" style="margin-top:16px;">
       <button class="btn-secondary" onclick="document.getElementById('bta-resultado').style.display='none';document.getElementById('bta-form').style.display='block';">← Modificar</button>
@@ -15921,83 +15860,6 @@ function guardarHotel() {
 
 var BTA_EDAD_LABELS = ['18–22','23–27','28–32','33–37','38–42','43–47','48–52','53–57','58–62','63–67','68–72','73–77','>77'];
 var BTA_ESCOL_LABELS = ['>12 años de educación','1 a 12 años de educación'];
-var BTA_PCS = [5,10,15,20,30,40,50,60,70,80,85,90,95];
-
-// Percentiles por grupo [ei][gi][pc_idx]
-var BTA_BAR = [
-  // ei=0: >12 años
-  [
-    [null,null,20.0,19.8,18.9,16.9,17.5,18.2,18.9,19.8,20.0,null,null],  // 18-22
-    [13.0,13.9,14.6,15.1,16.0,16.7,17.3,18.0,18.7,19.6,20.0,null,null],  // 23-27
-    [12.8,13.8,14.4,14.9,15.8,16.5,17.2,17.8,18.5,19.4,19.9,20.0,null],  // 28-32
-    [12.6,13.6,14.2,14.7,15.6,16.3,17.0,17.6,18.4,19.2,19.7,20.0,null],  // 33-37
-    [12.4,13.4,14.0,14.6,15.4,16.1,16.8,17.5,18.2,19.0,19.6,20.0,null],  // 38-42
-    [12.3,13.2,13.9,14.4,15.2,16.0,16.6,17.3,18.0,18.9,19.4,20.0,null],  // 43-47
-    [11.9,12.9,13.7,13.5,15.1,15.8,16.4,17.1,17.8,18.7,19.2,19.8,20.0],  // 48-52
-    [11.9,12.9,13.7,14.2,15.1,15.8,16.3,16.9,17.6,18.5,19.0,19.7,20.0],  // 53-57
-    [11.7,12.7,13.3,13.9,14.7,15.4,15.9,16.7,17.5,18.3,18.8,19.5,20.0],  // 58-62
-    [11.7,12.7,13.3,13.9,14.7,15.4,15.9,16.7,17.5,18.3,18.7,19.3,20.0],  // 63-67
-    [11.5,12.5,13.1,13.7,14.5,15.2,15.9,16.6,17.3,18.1,18.5,19.1,20.0],  // 68-72
-    [11.4,12.3,13.0,13.5,14.3,15.1,15.7,16.4,17.1,18.0,18.5,19.0,20.0],  // 73-77
-    [11.1,12.0,12.6,13.1,14.0,14.9,15.4,16.0,16.8,17.6,18.1,18.8,19.8],  // >77
-  ],
-  // ei=1: 1-12 años
-  [
-    [11.7,12.7,13.3,13.8,14.7,15.4,16.1,16.7,17.5,18.3,18.8,19.5,20.0],  // 18-22
-    [11.5,12.5,13.1,13.7,14.5,15.2,15.9,16.6,17.3,18.1,18.7,19.3,20.0],  // 23-27
-    [11.4,12.3,13.0,13.5,14.3,15.0,15.7,16.4,17.1,18.0,18.5,19.1,20.0],  // 28-32
-    [11.2,12.1,12.8,13.3,14.2,14.9,15.5,16.2,16.9,17.8,18.3,18.8,19.9],  // 33-37
-    [11.0,12.0,12.6,13.1,14.0,14.7,15.4,16.0,16.7,17.6,18.1,18.8,19.7],  // 38-42
-    [10.8,11.8,12.4,13.0,13.8,14.5,15.2,15.8,16.6,17.4,17.9,18.6,19.5],  // 43-47
-    [10.8,11.6,12.2,12.8,13.6,14.3,15.0,15.7,16.4,17.2,17.8,18.4,19.4],  // 48-52
-    [10.5,11.4,12.1,12.6,13.4,14.2,14.8,15.5,16.2,17.1,17.6,18.2,19.2],  // 53-57
-    [10.5,11.2,11.9,12.4,13.3,14.0,14.6,15.3,16.0,16.9,17.4,18.1,19.0],  // 58-62
-    [10.3,11.1,11.7,12.2,13.1,13.8,14.5,15.1,15.9,16.9,17.4,17.9,18.8],  // 63-67
-    [10.1,10.9,11.5,12.1,12.9,13.6,14.3,15.0,15.7,16.5,17.1,17.7,18.6],  // 68-72
-    [9.8,10.7,11.5,12.1,12.9,13.6,14.3,15.0,15.7,16.5,16.9,17.5,18.5],   // 73-77
-    [9.6,10.5,11.1,10.5,12.5,13.1,13.9,14.6,15.3,16.2,16.9,17.3,18.3],   // >77
-  ]
-];
-
-function btaBuscarPc(pb, gi, ei) {
-  var tabla = BTA_BAR[ei][gi];
-  // Interpolar percentil dado el puntaje bruto
-  for (var i = 0; i < BTA_PCS.length; i++) {
-    if (tabla[i] === null) continue;
-    if (pb <= tabla[i]) {
-      if (i === 0) return BTA_PCS[0];
-      // Interpolar entre pc[i-1] y pc[i]
-      var pcLo = BTA_PCS[i-1], pcHi = BTA_PCS[i];
-      var vLo = tabla[i-1], vHi = tabla[i];
-      if (vLo === null) return pcHi;
-      if (vHi === vLo) return pcHi;
-      return Math.round(pcLo + (pb - vLo) / (vHi - vLo) * (pcHi - pcLo));
-    }
-  }
-  return 95;
-}
-
-function btaZLabel(z) {
-  return zNormMeta(z, false).label;
-}
-
-function btaPcToZ(pc) {
-  // Conversión percentil → Z aproximado
-  var tabla = {1:-2.33,2:-2.05,3:-1.88,4:-1.75,5:-1.65,7:-1.48,10:-1.28,
-    15:-1.04,16:-0.99,20:-0.84,25:-0.67,30:-0.52,35:-0.39,40:-0.25,
-    45:-0.13,50:0,55:0.13,60:0.25,65:0.39,70:0.52,75:0.67,80:0.84,
-    85:1.04,90:1.28,93:1.48,95:1.65,97:1.88,98:2.05,99:2.33};
-  if (tabla[pc] !== undefined) return tabla[pc];
-  // Interpolación lineal entre percentiles cercanos
-  var keys = Object.keys(tabla).map(Number).sort(function(a,b){return a-b;});
-  for (var i = 0; i < keys.length-1; i++) {
-    if (pc >= keys[i] && pc <= keys[i+1]) {
-      var z0 = tabla[keys[i]], z1 = tabla[keys[i+1]];
-      return parseFloat((z0 + (pc - keys[i]) / (keys[i+1] - keys[i]) * (z1 - z0)).toFixed(2));
-    }
-  }
-  return pc < 50 ? -2.33 : 2.33;
-}
 
 // ══ D2 TEST DE ATENCIÓN ══════════════════════════════════════════════════════
 // Baremos TEA Ediciones (Brickenkamp). M y DS por grupo etario
@@ -16164,68 +16026,6 @@ function guardarD2() {
   }).catch(function(){ toast('Error al guardar','error'); });
 }
 // ══ fin D2 ═══════════════════════════════════════════════════════════════════
-
-function iniciarBTA() {
-  document.getElementById('bta-fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('bta-form').style.display = 'block';
-  document.getElementById('bta-resultado').style.display = 'none';
-}
-
-function limpiarBTA() {
-  ['bta-pb'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
-  document.getElementById('bta-gi').value = '';
-  document.getElementById('bta-ei').value = '';
-}
-
-function calcularBTA() {
-  var gi = parseInt(document.getElementById('bta-gi').value);
-  var ei = parseInt(document.getElementById('bta-ei').value);
-  var pb = parseFloat(document.getElementById('bta-pb').value);
-  if (isNaN(gi) || isNaN(ei)) { toast('Seleccioná grupo de edad y nivel educativo.','error'); return; }
-  if (isNaN(pb) || pb < 0 || pb > 20) { toast('Ingresá un puntaje válido (0–20).','error'); return; }
-
-  var pc = btaBuscarPc(pb, gi, ei);
-  var z  = parseFloat(btaPcToZ(pc).toFixed(2));
-  var interp = btaZLabel(z);
-
-  window._btaData = { pb:pb, pc:pc, z:z, gi:gi, ei:ei, interp:interp };
-
-  var html = '<div class="result-grid">' +
-    '<div class="result-item"><div class="result-label">Puntaje bruto</div><div class="result-value">' + pb + '/20</div></div>' +
-    '<div class="result-item"><div class="result-label">Percentil</div><div class="result-value">Pc ' + pc + '</div></div>' +
-    '<div class="result-item"><div class="result-label">Z</div><div class="result-value">' + (z>=0?'+':'') + z + '</div></div>' +
-    '</div>' +
-    '<div class="interp-box"><div class="interp-titulo">📋 Interpretación clínica</div>' +
-    '<div class="interp-texto">' + interp + '</div></div>' +
-    '<p style="font-size:0.78rem;color:var(--muted);margin-top:10px;">' +
-    BTA_EDAD_LABELS[gi] + ' · ' + BTA_ESCOL_LABELS[ei] + ' · Pc ' + pc + ' estimado por interpolación</p>';
-
-  document.getElementById('bta-res-content').innerHTML = html;
-  document.getElementById('bta-form').style.display = 'none';
-  document.getElementById('bta-resultado').style.display = 'block';
-}
-
-function guardarBTA() {
-  if (!SESSION) return;
-  var pacId = document.getElementById('bta-paciente').value;
-  var fecha = document.getElementById('bta-fecha').value;
-  if (!pacId) { toast('Seleccioná un paciente.','error'); return; }
-  if (!window._btaData) { toast('Calculá el resultado antes de guardar.','error'); return; }
-  var d = window._btaData;
-  supaFetch('/rest/v1/psico_resultados','POST',{
-    user_id: SESSION.user.id, paciente_id: pacId,
-    test: 'BTA', fecha: fecha,
-    puntaje_total: d.pb, puntaje_z: d.z,
-    categoria: d.interp,
-    datos: { pb:d.pb, pc:d.pc, z:d.z, gi:d.gi, ei:d.ei }
-  }, SESSION.access_token).then(function(){
-    window._btaData = null;
-    cargarResultados(); toast('✓ Resultado guardado','success');
-    var btn = document.querySelectorAll('.vista.active .btn-primary');
-    if (btn.length) { btn[btn.length-1].classList.add('btn-saved'); setTimeout(function(){ btn[btn.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
-}
-// ══ fin BTA ══════════════════════════════════════════════════════════════════
 
 // ══ WURS-25 ══// ══ WURS-25 ════════════════════════════════════════════════════════════════
 var WURS_ITEMS_LIST = [
