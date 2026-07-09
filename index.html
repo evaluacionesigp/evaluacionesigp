@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.4</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.5</div>
     </div>
   </aside>
 
@@ -5865,7 +5865,22 @@ function supaFetch(path, method, body, token, extraHeaders) {
   if (token) headers['Authorization'] = 'Bearer ' + token;
   if (method !== 'GET' && method !== 'DELETE') headers['Prefer'] = 'return=representation';
   if (extraHeaders) Object.keys(extraHeaders).forEach(function(k){ headers[k]=extraHeaders[k]; });
-  return fetch(SUPA_URL + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined });
+  return fetch(SUPA_URL + path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined })
+    .then(function(res) {
+      if (res.status === 401) {
+        manejarSesionExpirada();
+        throw new Error('SESION_EXPIRADA');
+      }
+      if (!res.ok) {
+        return res.text().then(function(t) {
+          var msg = t || ('Error HTTP ' + res.status);
+          try { var j = JSON.parse(t); msg = j.message || j.error_description || j.error || j.hint || msg; } catch (e) {}
+          toast('✗ ' + msg.substring(0, 160), 'error');
+          throw new Error(msg);
+        });
+      }
+      return res;
+    });
 }
 function supaAuth(action, body) {
   return fetch(SUPA_URL + '/auth/v1/' + action, {
@@ -5873,6 +5888,13 @@ function supaAuth(action, body) {
     headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
     body: JSON.stringify(body)
   }).then(function(r){ return r.json(); });
+}
+// Se dispara cuando Supabase devuelve 401 (token vencido o inválido) en cualquier
+// llamada autenticada: corta la sesión y vuelve al login con un aviso claro,
+// en vez de dejar la pantalla mostrando listas vacías silenciosamente.
+function manejarSesionExpirada() {
+  if (!SESSION) return;
+  doLogout('Tu sesión expiró. Iniciá sesión nuevamente.');
 }
 
 // ══ AUTH ═════════════════════════════════════════════════════════════════════
@@ -5903,10 +5925,13 @@ function doLogin() {
     cargarResultados();
   });
 }
-function doLogout() {
+function doLogout(mensaje) {
   SESSION = null; PACIENTES = []; RESULTADOS = [];
   PAC_ACTIVO = null;
-  try { localStorage.removeItem('psico_session'); sessionStorage.removeItem('pac_activo_id'); } catch(e) {}
+  try {
+    localStorage.removeItem('psico_session'); sessionStorage.removeItem('pac_activo_id');
+    limpiarBorradoresLocalesPaciente();
+  } catch(e) {}
   var app = document.getElementById('screen-app');
   app.classList.remove('active');
   app.style.display = 'none';
@@ -5914,6 +5939,21 @@ function doLogout() {
   login.style.display = 'flex';
   login.classList.add('active');
   document.getElementById('login-pass').value = '';
+  var errEl = document.getElementById('login-error');
+  if (errEl) {
+    if (mensaje) { errEl.textContent = mensaje; errEl.style.display = 'block'; }
+    else { errEl.style.display = 'none'; }
+  }
+}
+// Borra del navegador los borradores de informe (motivo de consulta, antecedentes
+// clínicos/psiquiátricos/familiares, hábitos tóxicos, conclusiones) que quedaban
+// guardados en localStorage indefinidamente, incluso después de cerrar sesión.
+function limpiarBorradoresLocalesPaciente() {
+  try {
+    var prefix = (typeof INF_DRAFT_LS_PREFIX !== 'undefined') ? INF_DRAFT_LS_PREFIX : 'igp_inf_draft_';
+    Object.keys(localStorage).filter(function(k){ return k.indexOf(prefix) === 0; })
+      .forEach(function(k){ localStorage.removeItem(k); });
+  } catch (e) {}
 }
 function doForgot() {
   var email = document.getElementById('login-email').value.trim();
@@ -5960,7 +6000,7 @@ function renderPacientesInicio() {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">' +
-      '<div><div style="font-size:0.88rem;font-weight:600;color:var(--text);">' + p.nombre + '</div>' +
+      '<div><div style="font-size:0.88rem;font-weight:600;color:var(--text);">' + escHtml(p.nombre) + '</div>' +
       '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
       (meta ? '<div style="font-size:0.76rem;color:var(--muted);margin-top:1px;">' + meta + '</div>' : '') + '</div>' +
       '<div style="display:flex;gap:6px;">' +
@@ -5997,7 +6037,7 @@ function renderPacientes() {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).join(' · ');
     return '<div class="paciente-item">' +
-      '<div><div class="pac-nombre">' + p.nombre + '</div>' +
+      '<div><div class="pac-nombre">' + escHtml(p.nombre) + '</div>' +
       '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(p) + '</div>' +
       (meta ? '<div class="pac-meta">' + meta + '</div>' : '') + '</div>' +
       '<div class="pac-acciones">' +
@@ -6071,7 +6111,7 @@ function editarPaciente(id) {
       renderPacientesInicio();
       llenarSelectPacientes();
       toast('✓ Paciente actualizado','success');
-    }).catch(function(){ toast('Error al guardar','error'); });
+    }).catch(function(){});
   };
 }
 
@@ -6127,7 +6167,7 @@ function actualizarTopbarPaciente() {
   var label = document.getElementById('topbar-paciente-label');
   var sel = document.getElementById('topbar-paciente-select');
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   if (sel) {
     sel.innerHTML = opciones;
     if (PAC_ACTIVO) {
@@ -6446,7 +6486,7 @@ function escolTecle(anios) {
 
 function llenarSelectPacientes() {
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','mmp-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
    'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','loes-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
@@ -6495,7 +6535,7 @@ function abrirModalPac(id) {
   if (p.fecha_nacimiento) info += '<b>Fecha nac.:</b> ' + p.fecha_nacimiento + ' (' + calcularEdad(p.fecha_nacimiento) + ' años)<br>';
   if (p.sexo) info += '<b>Sexo:</b> ' + p.sexo + '<br>';
   if (p.escolaridad) info += '<b>Escolaridad:</b> ' + p.escolaridad + '<br>';
-  if (p.notas) info += '<b>Notas:</b> ' + p.notas;
+  if (p.notas) info += '<b>Notas:</b> ' + escHtml(p.notas);
   document.getElementById('modal-pac-info').innerHTML = info || 'Sin datos adicionales.';
   document.getElementById('modal-pac').classList.add('active');
 }
@@ -7983,7 +8023,7 @@ function renderHistorialLista(el) {
   pacientes.forEach(function(p) {
     var pacFull = getPacienteById(p.id);
     html += '<div class="hist-pac-card" data-hist-pac-id="' + p.id + '" role="button" tabindex="0">' +
-      '<div class="hist-pac-nombre">' + p.nombre + '</div>' +
+      '<div class="hist-pac-nombre">' + escHtml(p.nombre) + '</div>' +
       '<div data-estado-inf-badge="' + p.id + '">' + badgeEstadoInformeHtml(pacFull || { estado_informe: null }) + '</div>' +
       '<div class="hist-pac-meta">' + p.count + ' test' + (p.count !== 1 ? 's' : '') + ' cargado' + (p.count !== 1 ? 's' : '') + '</div>' +
       '<div class="hist-pac-meta">Último test: ' + formatHistorialFecha(p.ultimaFecha) + '</div>' +
@@ -9965,7 +10005,7 @@ function renderUltimas() {
   el.innerHTML = ultimas.map(function(r) {
     var nomPac = r.psico_pacientes ? r.psico_pacientes.nombre : '—';
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="irVista(\'historial\')">' +
-      '<div><div style="font-size:0.86rem;font-weight:500;">' + nomPac + '</div>' +
+      '<div><div style="font-size:0.86rem;font-weight:500;">' + escHtml(nomPac) + '</div>' +
       '<div style="font-size:0.76rem;color:var(--muted);">' + r.test + ' · ' + (r.fecha||'') + '</div></div>' +
       '<div style="font-size:0.82rem;color:var(--accentdk);font-weight:600;">' + (r.categoria||'—') + '</div>' +
       '</div>';
@@ -11101,7 +11141,7 @@ function iniciarRey() {
 
 function llenarSelectRey() {
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('rey-paciente').innerHTML = opts;
 }
 
@@ -11359,7 +11399,7 @@ function iniciarTMT() {
   document.getElementById('tmt-resultado').style.display = 'none';
   tmtActualizarForm();
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('tmt-paciente').innerHTML = opts;
 }
 
@@ -11654,7 +11694,7 @@ function iniciarFLV() {
   document.getElementById('flv-form').style.display = 'block';
   document.getElementById('flv-resultado').style.display = 'none';
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + p.nombre + '</option>'; }).join('');
+    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('flv-paciente').innerHTML = opts;
 }
 
@@ -12060,7 +12100,7 @@ function guardarCRC() {
   var datos={total:total};
   CRC_ITEMS.forEach(function(item){var s=document.querySelector('[name="crc_'+item.id+'"]:checked');if(s)datos[item.id]=parseInt(s.value);});
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'CRC',fecha:fecha,puntaje_total:total,categoria:cat,datos:datos},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ CRC guardado','success');}).catch(function(){toast('Error al guardar','error');});
+    .then(function(){cargarResultados();toast('✓ CRC guardado','success');}).catch(function(){});
 }
 
 // ══ PSS-10 · Escala de Estrés Percibido (Cohen et al. 1983) ══════════════════
@@ -12133,7 +12173,7 @@ function guardarPSS(){
   var total=window._pssTotal!=null?window._pssTotal:parseInt(document.getElementById('pss-pts').textContent)||0;
   var cat=document.getElementById('pss-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'PSS-10',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ PSS-10 guardado','success');}).catch(function(){toast('Error al guardar','error');});
+    .then(function(){cargarResultados();toast('✓ PSS-10 guardado','success');}).catch(function(){});
 }
 
 // ══ HOLMES & RAHE · Escala de Reajuste Psicosocial (1967) ════════════════════
@@ -12224,7 +12264,7 @@ function guardarHolmes(){
   var total=window._holmesTotal!=null?window._holmesTotal:parseInt(document.getElementById('holmes-pts').textContent)||0;
   var cat=document.getElementById('holmes-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'Holmes-Rahe',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total,eventos:window._holmesEventos||[]}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ Holmes & Rahe guardado','success');}).catch(function(){toast('Error al guardar','error');});
+    .then(function(){cargarResultados();toast('✓ Holmes & Rahe guardado','success');}).catch(function(){});
 }
 
 // ══ GDS-30 · Escala de Depresión Geriátrica Yesavage (1983) ══════════════════
@@ -12319,7 +12359,7 @@ function guardarYesavage(){
   var total=window._yesavageTotal!=null?window._yesavageTotal:parseInt(document.getElementById('yesavage-pts').textContent)||0;
   var cat=document.getElementById('yesavage-cat').textContent;
   supaFetch('/rest/v1/psico_resultados','POST',{user_id:SESSION.user.id,paciente_id:pacId,test:'GDS-30',fecha:fecha,puntaje_total:total,categoria:cat,datos:{total:total}},SESSION.access_token)
-    .then(function(){cargarResultados();toast('✓ GDS-30 guardado','success');}).catch(function(){toast('Error al guardar','error');});
+    .then(function(){cargarResultados();toast('✓ GDS-30 guardado','success');}).catch(function(){});
 }
 
 // ══ BIRLESON (PACES) ═════════════════════════════════════════════════════════
@@ -12903,7 +12943,7 @@ function guardarResultadoWCST() {
   }, SESSION.access_token).then(function(){
     cargarResultados();
     toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 var IFS_BAR = [
@@ -13050,7 +13090,7 @@ function guardarFAB() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 // ══ fin FAB ══════════════════════════════════════════════════════════════════
 
@@ -13390,7 +13430,7 @@ function guardarWaisiv() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ══ WMS-III · Localización Espacial (LoEs) ═══════════════════════════════════
@@ -13528,7 +13568,7 @@ function guardarLoEs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){ btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ WAIS-IV PERFIL (carga manual de índices) ════════════════════════════════
@@ -13740,7 +13780,7 @@ function guardarWaisperfil() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){ toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ══ ASRS-V1.1 ════════════════════════════════════════════════════════════════
@@ -13920,7 +13960,7 @@ function guardarEAVA() {
     cargarResultados(); toast('✓ EAVA guardado', 'success');
     var btn = document.querySelector('.vista.active .btn-primary:last-child');
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ══ CUESTIONARIOS TEA · NEURODESARROLLO ═════════════════════════════════════
@@ -14004,7 +14044,7 @@ function ndGuardar(testName, pacSelId, fechaId, total, cat, datos) {
     puntaje_total: total, categoria: cat, datos: datos
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ ' + testName + ' guardado', 'success');
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ── AQ 50 ítems ──
@@ -14521,7 +14561,7 @@ function guardarDislex1() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ── Instrumento 2: Lista Revisada de Dislexia en Adultos ─────────────────────
@@ -14626,7 +14666,7 @@ function guardarDislex2() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ── Instrumento 3: Identificación de Palabras con Sentido ────────────────────
@@ -14709,7 +14749,7 @@ function guardarDislex3() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ── Instrumento 4: TECLE ─────────────────────────────────────────────────────
@@ -14853,7 +14893,7 @@ function guardarTecle() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 // ── Instrumento 5: Lectura de Palabras y Pseudopalabras ──────────────────────
@@ -14895,7 +14935,7 @@ function calcularDislex5() {
     '<div class="detalle-item"><div class="detalle-num">' + cel(datos.palabras.col5) + '</div><div class="detalle-lbl">Pal. col.5</div></div>' +
     '<div class="detalle-item"><div class="detalle-num">' + cel(datos.pseudopalabras.col6) + '</div><div class="detalle-lbl">PP col.6</div></div>';
   var interp = '<p>Registro de tiempos de lectura (segundos) por columna y tipo de estímulo (palabras / pseudopalabras).</p>';
-  if (datos.observaciones) interp += '<p><em>Observaciones: ' + datos.observaciones + '</em></p>';
+  if (datos.observaciones) interp += '<p><em>Observaciones: ' + escHtml(datos.observaciones) + '</em></p>';
   document.getElementById('dislex5-detalle').innerHTML = detalle;
   document.getElementById('dislex5-interp').innerHTML = interp;
   window._dislex5 = datos;
@@ -14916,7 +14956,7 @@ function guardarDislex5() {
   }, SESSION.access_token).then(function() {
     cargarResultados(); toast('✓ Resultado guardado', 'success');
     dislexAnimarGuardar();
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 function iniciarAsrs() {
@@ -15020,7 +15060,7 @@ function guardarAsrs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ══ BADS · Farías Sarquís et al. (2021) — Cuadernos de Neuropsicología 15(1):25-48 ═══
@@ -15192,7 +15232,7 @@ function guardarLlaves() {
     datos:d
   }, SESSION.access_token).then(function(){
     window._llavesData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ── Juicio Temporal ──────────────────────────────────────────────────────────
@@ -15332,7 +15372,7 @@ function guardarJuicio() {
     puntaje_total:d.conv, puntaje_z:d.z, categoria:badsZLabel(d.z), datos:d
   }, SESSION.access_token).then(function(){
     window._juicioData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ── Mapa del Zoo ─────────────────────────────────────────────────────────────
@@ -15588,7 +15628,7 @@ function guardarZoo() {
     puntaje_total:pjeGuardar, puntaje_z:d.z, categoria:badsZLabel(d.z), datos:d
   }, SESSION.access_token).then(function(){
     window._zooData=null; cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ TEST DEL HOTEL ═══════════════════════════════════════════════════════════
@@ -15853,7 +15893,7 @@ function guardarHotel() {
   }, SESSION.access_token).then(function(){
     window._hotelData = null;
     cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ BTA — Brief Test of Attention ══════════════════════════════════════════
@@ -16023,7 +16063,7 @@ function guardarD2() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 // ══ fin D2 ═══════════════════════════════════════════════════════════════════
 
@@ -16163,7 +16203,7 @@ function guardarDEX() {
     cargarResultados(); toast('✓ Resultado guardado','success');
     var btns = document.querySelectorAll('.vista.active .btn-primary');
     if (btns.length) { btns[btns.length-1].classList.add('btn-saved'); setTimeout(function(){ btns[btns.length-1].classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 // ══ fin DEX ══════════════════════════════════════════════════════════════════
 
@@ -16243,7 +16283,7 @@ function guardarWurs() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ══ MBI-HSS ════════════════════════════════════════════════════════════════
@@ -16304,7 +16344,7 @@ function guardarResultadoMBI() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ══ TEST DEL RELOJ (Cacho) ════════════════════════════════════════════════
@@ -16362,7 +16402,7 @@ function guardarResultadoReloj() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 
@@ -16452,7 +16492,7 @@ function guardarResultadoACER(){
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ══ SCL-90-R ═════════════════════════════════════════════════════════════════
@@ -16591,7 +16631,7 @@ function guardarResultadoScl90(){
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // irTest SCL90 y ACER
@@ -16849,7 +16889,7 @@ function guardarToken() {
   },SESSION.access_token).then(function(){
     window._tokenData=null;
     cargarResultados();toast('✓ Resultado guardado','success');
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 // ══ fin Token Test ════════════════════════════════════════════════════════════
 
@@ -16966,7 +17006,7 @@ function guardarBNT() {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 var INF_CFG_PREFIX = '/*INF_CFG:';
@@ -18577,7 +18617,7 @@ function guardarDolor(tipo) {
     var btnAll=document.querySelectorAll('.vista.active .btn-primary');
     var btn=btnAll.length?btnAll[btnAll.length-1]:null;
     if(btn){btn.classList.add('btn-saved');setTimeout(function(){btn.classList.remove('btn-saved');},1500);}
-  }).catch(function(){toast('Error al guardar','error');});
+  }).catch(function(){});
 }
 
 // ── Auto-iniciar si hay sesión ─────────────────
@@ -18740,7 +18780,7 @@ function guardarStroop() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ CSI · Inventario de Estrategias de Afrontamiento ═════════════════════════
@@ -18953,7 +18993,7 @@ function guardarCSI() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ FIGURA COMPLEJA DE REY · FIGURA A ════════════════════════════════════════
@@ -19358,7 +19398,7 @@ function guardarFCR() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length - 1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function() { btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function() { toast('Error al guardar', 'error'); });
+  }).catch(function(){});
 }
 
 function fcrRestaurarEdicion(d) {
@@ -19526,7 +19566,7 @@ function guardarBTA() {
   }, SESSION.access_token).then(function(){
     window._btaData = null;
     cargarResultados(); toast('✓ Resultado guardado','success');
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ SDMT · Symbol Digit Modalities Test ══════════════════════════════════════
@@ -19720,7 +19760,7 @@ function guardarSDMT() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); }, 1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -21410,7 +21450,7 @@ function guardarTavec() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 // ══ PANEL PERFIL Z — guía de redacción para residentes ══════════════════════
@@ -21947,7 +21987,7 @@ function guardarFamiliar() {
     var btnAll = document.querySelectorAll('.vista.active .btn-primary');
     var btn = btnAll.length ? btnAll[btnAll.length-1] : null;
     if (btn) { btn.classList.add('btn-saved'); setTimeout(function(){ btn.classList.remove('btn-saved'); },1500); }
-  }).catch(function(){ toast('Error al guardar','error'); });
+  }).catch(function(){});
 }
 
 window.addEventListener('DOMContentLoaded', function() {
