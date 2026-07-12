@@ -392,7 +392,11 @@ function enviarFamiliar() {
       p_datos: d
     })
   }).then(function(res) {
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      return res.text().then(function(body) {
+        throw new Error('HTTP ' + res.status + ' — ' + body);
+      });
+    }
     document.getElementById('pantalla-form').style.display = 'none';
     document.getElementById('pantalla-exito').style.display = 'block';
   }).catch(function(err) {
