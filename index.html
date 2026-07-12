@@ -518,7 +518,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.9</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.10</div>
     </div>
   </aside>
 
@@ -6091,6 +6091,7 @@ function renderPacientes() {
       '<div class="pac-acciones">' +
       '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-editar-pac="' + p.id + '" title="Editar datos">✏</button>' +
+      '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-familiar-pac="' + p.id + '" title="Copiar link para el familiar">📋 Cuestionario familiar</button>' +
       '<button class="btn-xs btn-xs-danger" data-borrar-pac-id="' + p.id + '" data-borrar-pac-nombre="' + encodeURIComponent(p.nombre) + '">✕</button>' +
       '</div></div>';
   }).join('');
@@ -6115,6 +6116,23 @@ function renderPacientes() {
       borrarPaciente(this.getAttribute('data-borrar-pac-id'), decodeURIComponent(this.getAttribute('data-borrar-pac-nombre')));
     });
   });
+  // Delegación Link familiar
+  el.querySelectorAll('[data-link-familiar-pac]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      copiarLinkFamiliar(this.getAttribute('data-link-familiar-pac'));
+    });
+  });
+}
+
+function copiarLinkFamiliar(id) {
+  var link = new URL('familiar.html?paciente=' + encodeURIComponent(id), window.location.href).toString();
+  var avisar = function() { toast('Link copiado. Enviáselo al familiar por WhatsApp.', 'success'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(avisar).catch(function() { prompt('Copiá el link:', link); });
+  } else {
+    prompt('Copiá el link:', link);
+  }
 }
 
 function editarPaciente(id) {
