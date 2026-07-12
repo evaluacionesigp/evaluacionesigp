@@ -41,7 +41,6 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .item-opts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .item-opts label { display: flex; align-items: center; gap: 5px; font-size: 0.84rem; cursor: pointer; }
 .item-select { width: 100%; font-size: 0.86rem; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); }
-.total-box { margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; font-weight: 600; display: none; }
 .btn-primary { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent), var(--accentlt)); border: none; border-radius: 8px; color: white; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(45,92,34,0.25); }
 .btn-primary:disabled { opacity: 0.6; cursor: default; }
 .msg-screen { text-align: center; padding: 60px 20px; }
@@ -66,9 +65,9 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   </div>
 
   <div id="pantalla-exito" class="msg-screen">
-    <div class="msg-icon">✅</div>
-    <div class="msg-titulo">Respuestas enviadas correctamente</div>
-    <div class="msg-texto">Podés cerrar esta página.</div>
+    <div class="msg-icon">🙏</div>
+    <div class="msg-titulo">¡Muchas gracias por completar el cuestionario!</div>
+    <div class="msg-texto">Tus respuestas fueron enviadas correctamente al profesional. Ya podés cerrar esta página.</div>
   </div>
 
   <div id="pantalla-form">
@@ -81,33 +80,27 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 
     <div class="card">
       <div class="card-title">NPI-Q · Inventario Neuropsiquiátrico</div>
-      <div class="card-hint">Para cada síntoma indicá si <strong>está presente</strong> y, si lo está, la <strong>gravedad</strong> (1=Leve · 2=Moderado · 3=Severo).</div>
       <div id="npiq-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Básicas de la Vida Diaria</div>
-      <div class="card-hint">Últimos 6 meses. Escala <strong>0 a 3</strong>: 0 = total independencia · 3 = necesita completa asistencia.</div>
       <div id="avdb-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Instrumentales de la Vida Diaria</div>
-      <div class="card-hint">Escala <strong>0 a 3</strong> (transporte: 0 a 4). 0 = independencia total · valores altos = mayor dependencia.</div>
       <div id="avdi-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Expansivas de la Vida Diaria</div>
-      <div class="card-hint">Escala <strong>0 a 3</strong>: 0 = independencia total · 3 = necesita completa asistencia.</div>
       <div id="avde-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">AD8-ARG · Cuestionario del Informante</div>
-      <div class="card-hint">En los últimos años, indicá si notaste el cambio en cada área (<strong>Sí / No / No sabe</strong>).</div>
       <div id="ad8-grid"></div>
-      <div id="ad8-total-box" class="total-box"></div>
     </div>
 
     <button class="btn-primary" id="btn-enviar" onclick="enviarFamiliar()">Enviar respuestas</button>
@@ -252,7 +245,7 @@ function _renderFamiliarGrids() {
       '<div class="item-opts">'+
       ['si','no','nose'].map(function(v,i){
         var lbl = ['Sí','No','No sabe'][i];
-        return '<label><input type="radio" name="ad8-'+item.id+'" value="'+v+'" onchange="ad8Calc()"> '+lbl+'</label>';
+        return '<label><input type="radio" name="ad8-'+item.id+'" value="'+v+'"> '+lbl+'</label>';
       }).join('')+
       '</div>';
     ad8G.appendChild(d);
@@ -284,20 +277,6 @@ function npiqChk(id) {
   var grav = document.getElementById('npiq-'+id+'-grav');
   grav.disabled = !pres.checked;
   if (!pres.checked) grav.value = '0';
-}
-
-function ad8Calc() {
-  var total = FAM_AD8.filter(function(item){
-    var sel = document.querySelector('input[name="ad8-'+item.id+'"]:checked');
-    return sel && sel.value === 'si';
-  }).length;
-  var box = document.getElementById('ad8-total-box');
-  box.style.display = 'block';
-  var sig = total >= 2;
-  box.style.background = sig ? '#fad8d8' : '#d4f0e2';
-  box.style.color = sig ? '#a00000' : '#1a6e3a';
-  box.style.border = '1px solid ' + (sig ? '#e6b0b0' : '#9fd4b8');
-  box.textContent = 'Total AD8-ARG: ' + total + '/8 — ' + (sig ? 'Significativo (≥ 2 · posible deterioro cognitivo)' : 'Sin significancia clínica (< 2)');
 }
 
 function _getFamData() {
