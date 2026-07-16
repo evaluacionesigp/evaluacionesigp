@@ -327,7 +327,10 @@ function enviarFamiliar() {
     console.error('Error al enviar cuestionarios familiares:', err);
     btn.disabled = false;
     btn.textContent = 'Enviar respuestas';
-    document.getElementById('msg-envio').textContent = 'Hubo un error al enviar. Por favor avisá al profesional.';
+    var venciado = err && err.message && err.message.indexOf('LINK_VENCIDO') !== -1;
+    document.getElementById('msg-envio').textContent = venciado
+      ? 'Este link ya venció. Pedile al profesional que te mande uno nuevo.'
+      : 'Hubo un error al enviar. Por favor avisá al profesional.';
   });
 }
 

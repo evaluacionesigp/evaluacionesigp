@@ -1,6 +1,14 @@
 import { supaAuth } from './supabase-client.js';
 
 // ══ AUTH ═════════════════════════════════════════════════════════════════════
+export function toggleLoginPass() {
+  var input = document.getElementById('login-pass');
+  var icon = document.getElementById('login-pass-toggle');
+  var mostrar = input.type === 'password';
+  input.type = mostrar ? 'text' : 'password';
+  icon.textContent = mostrar ? '🙈' : '👁';
+}
+
 export function doLogin() {
   var email = document.getElementById('login-email').value.trim();
   var pass  = document.getElementById('login-pass').value;

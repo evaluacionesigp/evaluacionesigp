@@ -113,14 +113,22 @@ function renderPacientes() {
   });
 }
 
+// El link vale 7 días desde que se genera: cada vez que se pide, se renueve el
+// vencimiento en psico_pacientes.familiar_link_expira (la función RPC pública
+// insertar_resultado_familiar rechaza envíos si ya venció).
 function copiarLinkFamiliar(id) {
   var link = new URL('familiar.html?paciente=' + encodeURIComponent(id), window.location.href).toString();
-  var avisar = function() { toast('Link copiado. Enviáselo al familiar por WhatsApp.', 'success'); };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(link).then(avisar).catch(function() { prompt('Copiá el link:', link); });
-  } else {
-    prompt('Copiá el link:', link);
-  }
+  var avisar = function() { toast('Link copiado (válido por 7 días). Enviáselo al familiar por WhatsApp.', 'success'); };
+  var expira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'PATCH', { familiar_link_expira: expira }, SESSION.access_token)
+    .then(function() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(avisar).catch(function() { prompt('Copiá el link (válido por 7 días):', link); });
+      } else {
+        prompt('Copiá el link (válido por 7 días):', link);
+      }
+    })
+    .catch(catchGuardarError);
 }
 
 function editarPaciente(id) {

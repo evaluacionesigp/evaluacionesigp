@@ -1,5 +1,5 @@
 import { supaFetch, supaAuth, catchGuardarError, manejarSesionExpirada } from './core/supabase-client.js';
-import { doLogin, doLogout, limpiarBorradoresLocalesPaciente, doForgot } from './core/auth.js';
+import { doLogin, doLogout, limpiarBorradoresLocalesPaciente, doForgot, toggleLoginPass } from './core/auth.js';
 import { PHQ_OPS, iniciarPHQ, limpiarPHQ, calcularPHQ, guardarResultadoPHQ } from './tests/phq9.js';
 import { tokenLive, limpiarToken, iniciarToken, calcularToken, guardarToken } from './tests/token-test.js';
 
@@ -10,7 +10,7 @@ import { tokenLive, limpiarToken, iniciarToken, calcularToken, guardarToken } fr
 // reutiliza esas mismas opciones de escala.
 Object.assign(window, {
   supaFetch, supaAuth, catchGuardarError, manejarSesionExpirada,
-  doLogin, doLogout, limpiarBorradoresLocalesPaciente, doForgot,
+  doLogin, doLogout, limpiarBorradoresLocalesPaciente, doForgot, toggleLoginPass,
   PHQ_OPS, iniciarPHQ, limpiarPHQ, calcularPHQ, guardarResultadoPHQ,
   tokenLive, limpiarToken, iniciarToken, calcularToken, guardarToken,
 });
