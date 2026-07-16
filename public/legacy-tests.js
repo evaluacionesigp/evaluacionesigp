@@ -2713,6 +2713,8 @@ function irVista(v) {
   document.querySelectorAll('.sidebar-section').forEach(function(el){ el.classList.remove('active'); });
   var map = {inicio:'snav-inicio', pacientes:'snav-pacientes', historial:'snav-historial', informe:'snav-historial'};
   if(map[v]) { var s=document.getElementById(map[v]); if(s) s.classList.add('active'); }
+  sectorActual = '';
+  aplicarContextoSector();
   if (v === 'historial') {
     renderFiltroHistorial();
     HISTORIAL_ENTRADA_AUTO = !!(PAC_ACTIVO && PAC_ACTIVO.id);
@@ -2858,6 +2860,7 @@ function irSector(s) {
   if(map[s]) { var sid=document.getElementById(map[s]); if(sid) sid.classList.add('active'); }
   document.querySelectorAll('.vista').forEach(function(el){ el.classList.remove('active'); });
   document.getElementById('vista-sector').classList.add('active');
+  aplicarContextoSector();
   if (s === 'clinica') {
     document.getElementById('sector-titulo').textContent = 'Psicología Clínica';
     document.getElementById('tests-grid').innerHTML =
@@ -3087,6 +3090,7 @@ function irTest(t) {
   if (!confirmarSalidaSinGuardar()) return;
   document.querySelectorAll('.vista').forEach(function(el){ el.classList.remove('active'); });
   document.getElementById('vista-' + t).classList.add('active');
+  aplicarContextoSector();
   llenarSelectPacientes(); // siempre actualizar la lista antes de abrir el test
   if (t === 'bdi') iniciarBDI();
   if (t === 'stai') iniciarSTAI();
