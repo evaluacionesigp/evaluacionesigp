@@ -32,32 +32,37 @@
     <div class="card">
       <div class="card-title">Bienvenido/a</div>
       <div class="card-hint">Por favor completá los siguientes cuestionarios sobre el paciente que acompañás. Tus respuestas se envían directamente al profesional que te dio este link.</div>
-      <div class="field"><label>Tu nombre y relación con el paciente</label><input type="text" id="familiar-informante" placeholder="Ej: María Pérez, hija"></div>
-      <div class="field"><label>Fecha</label><input type="date" id="familiar-fecha"></div>
+      <div class="field"><label>Tu nombre y relación con el paciente *</label><input type="text" id="familiar-informante" placeholder="Ej: María Pérez, hija" required></div>
+      <div class="field"><label>Fecha *</label><input type="date" id="familiar-fecha" required></div>
     </div>
 
     <div class="card">
       <div class="card-title">NPI-Q · Inventario Neuropsiquiátrico</div>
+      <div class="card-hint">Por favor, marque la opción "Sí" si ha notado alguno de los siguientes síntomas en el último mes. Si no ha experimentado ningún síntoma, marque la opción "No". Si ha experimentado algún síntoma, evalúe su gravedad utilizando una escala de 1 a 3, siendo 1 (leve), 2 (moderado) o 3 (severo).</div>
       <div id="npiq-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Básicas de la Vida Diaria</div>
+      <div class="card-hint">Considerando los últimos 6 meses, por favor, seleccione la opción que mejor refleje la capacidad de su familiar para realizar estas actividades. Utilice una escala de 0 a 3, donde 0 significa que puede hacerlo con total independencia y 3 significa que necesita completa asistencia.</div>
       <div id="avdb-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Instrumentales de la Vida Diaria</div>
+      <div class="card-hint">Considerando los últimos 6 meses, por favor, seleccione la opción que mejor refleje la capacidad de su familiar para realizar estas actividades. Utilice una escala de 0 a 3 (algún ítem puede llegar a 4), donde 0 significa que puede hacerlo con total independencia y el valor más alto significa que necesita completa asistencia.</div>
       <div id="avdi-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">Actividades Expansivas de la Vida Diaria</div>
+      <div class="card-hint">Considerando los últimos 6 meses, por favor, seleccione la opción que mejor refleje la capacidad de su familiar para realizar estas actividades. Utilice una escala de 0 a 3, donde 0 significa que puede hacerlo con total independencia y 3 significa que necesita completa asistencia.</div>
       <div id="avde-grid"></div>
     </div>
 
     <div class="card">
       <div class="card-title">AD8-ARG · Cuestionario del Informante</div>
+      <div class="card-hint">En los últimos años, ¿ha notado en su familiar los siguientes cambios? Por favor, responda cada pregunta.</div>
       <div id="ad8-grid"></div>
     </div>
 

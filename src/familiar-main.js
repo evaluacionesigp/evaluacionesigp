@@ -111,14 +111,17 @@ function _renderFamiliarGrids() {
     d.innerHTML = '<div class="item-label">'+item.label+'</div>'+
       (item.prompt ? '<div class="item-prompt">'+item.prompt+'</div>' : '')+
       '<div class="item-opts">'+
-      '<label><input type="checkbox" id="npiq-'+item.id+'-pres" onchange="npiqChk(\''+item.id+'\')"> Sí</label>'+
-      '<select id="npiq-'+item.id+'-grav" class="item-select" disabled style="width:auto;">'+
-        '<option value="0">— gravedad —</option>'+
+      '<label><input type="radio" name="npiq-'+item.id+'" value="si" onchange="npiqChk(\''+item.id+'\')"> Sí</label>'+
+      '<label><input type="radio" name="npiq-'+item.id+'" value="no" onchange="npiqChk(\''+item.id+'\')"> No</label>'+
+      '</div>'+
+      '<div class="item-opts" id="npiq-'+item.id+'-grav-wrap" style="display:none;margin-top:6px;">'+
+      '<label style="font-size:0.75rem;color:var(--muted);">Gravedad:</label>'+
+      '<select id="npiq-'+item.id+'-grav" class="item-select" style="width:auto;">'+
+        '<option value="">— gravedad —</option>'+
         '<option value="1">1 · Leve</option>'+
         '<option value="2">2 · Moderado</option>'+
         '<option value="3">3 · Severo</option>'+
       '</select>'+
-      '<span style="font-size:0.75rem;color:var(--muted);">No = ausente</span>'+
       '</div>';
     npiqG.appendChild(d);
   });
@@ -160,39 +163,86 @@ function _renderFamiliarGrids() {
 }
 
 function npiqChk(id) {
-  var pres = document.getElementById('npiq-'+id+'-pres');
-  var grav = document.getElementById('npiq-'+id+'-grav');
-  grav.disabled = !pres.checked;
-  if (!pres.checked) grav.value = '0';
+  var gravWrap = document.getElementById('npiq-'+id+'-grav-wrap');
+  var sel = document.querySelector('input[name="npiq-'+id+'"]:checked');
+  var esSi = sel && sel.value === 'si';
+  gravWrap.style.display = esSi ? 'flex' : 'none';
+  if (!esSi) {
+    var grav = document.getElementById('npiq-'+id+'-grav');
+    if (grav) grav.value = '';
+  }
 }
 
+// Recorre las 5 secciones y junta, en texto legible, lo que falta contestar.
+// Se usa para bloquear el envío hasta que el cuestionario esté completo.
+function _faltantesFamiliar() {
+  var faltantes = [];
+  if (!document.getElementById('familiar-informante').value.trim()) faltantes.push('tu nombre y relación con el paciente');
+  if (!document.getElementById('familiar-fecha').value) faltantes.push('la fecha');
+
+  var npiqSinResp = FAM_NPIQ.filter(function(item){
+    var sel = document.querySelector('input[name="npiq-'+item.id+'"]:checked');
+    if (!sel) return true;
+    if (sel.value === 'si') {
+      var grav = document.getElementById('npiq-'+item.id+'-grav');
+      return !grav || !grav.value;
+    }
+    return false;
+  }).length;
+  if (npiqSinResp > 0) faltantes.push(npiqSinResp + ' síntoma(s) del NPI-Q');
+
+  var ad8SinResp = FAM_AD8.filter(function(item){
+    return !document.querySelector('input[name="ad8-'+item.id+'"]:checked');
+  }).length;
+  if (ad8SinResp > 0) faltantes.push(ad8SinResp + ' pregunta(s) del AD8-ARG');
+
+  function contarSinResp(items, prefix) {
+    return items.filter(function(item){
+      var el = document.querySelector('select[name="'+prefix+'-'+item.id+'"]');
+      return !el || el.value === '';
+    }).length;
+  }
+  var avdbSinResp = contarSinResp(FAM_AVDB, 'avdb-grid');
+  if (avdbSinResp > 0) faltantes.push(avdbSinResp + ' actividad(es) básica(s)');
+  var avdiSinResp = contarSinResp(FAM_AVDI, 'avdi-grid');
+  if (avdiSinResp > 0) faltantes.push(avdiSinResp + ' actividad(es) instrumental(es)');
+  var avdeSinResp = contarSinResp(FAM_AVDE, 'avde-grid');
+  if (avdeSinResp > 0) faltantes.push(avdeSinResp + ' actividad(es) expansiva(s)');
+
+  return faltantes;
+}
+
+// Solo se llama una vez confirmado (vía _faltantesFamiliar) que todo está
+// completo, así que acá no hace falta contemplar valores nulos/parciales.
 function _getFamData() {
   var npiq = {};
   FAM_NPIQ.forEach(function(item){
-    var pres = document.getElementById('npiq-'+item.id+'-pres');
-    var grav = document.getElementById('npiq-'+item.id+'-grav');
-    npiq[item.id] = (pres && pres.checked) ? parseInt(grav.value)||1 : 0;
+    var sel = document.querySelector('input[name="npiq-'+item.id+'"]:checked');
+    if (sel && sel.value === 'si') {
+      var grav = document.getElementById('npiq-'+item.id+'-grav');
+      npiq[item.id] = parseInt(grav.value, 10);
+    } else {
+      npiq[item.id] = 0;
+    }
   });
   var npiqTotal = Object.values(npiq).reduce(function(a,b){return a+(b>0?1:0);},0);
-  var hayNpiq = npiqTotal > 0;
 
   var ad8 = {};
   var ad8Total = 0;
   FAM_AD8.forEach(function(item){
     var sel = document.querySelector('input[name="ad8-'+item.id+'"]:checked');
-    ad8[item.id] = sel ? sel.value : null;
-    if (sel && sel.value === 'si') ad8Total++;
+    ad8[item.id] = sel.value;
+    if (sel.value === 'si') ad8Total++;
   });
-  var hayAD8 = FAM_AD8.some(function(item){ return ad8[item.id] !== null; });
 
   function getAvd(items, prefix) {
-    var avd = {}, total = 0, hay = false;
+    var avd = {}, total = 0;
     items.forEach(function(item){
       var el = document.querySelector('select[name="'+prefix+'-'+item.id+'"]');
-      avd[item.id] = el && el.value !== '' ? parseInt(el.value, 10) : null;
-      if (el && el.value !== '') { hay = true; total += parseInt(el.value, 10); }
+      avd[item.id] = parseInt(el.value, 10);
+      total += avd[item.id];
     });
-    return {data: avd, total: total, hay: hay};
+    return {data: avd, total: total};
   }
   var avdb = getAvd(FAM_AVDB, 'avdb-grid');
   var avdi = getAvd(FAM_AVDI, 'avdi-grid');
@@ -200,15 +250,15 @@ function _getFamData() {
 
   return {
     informante: document.getElementById('familiar-informante').value || null,
-    npiq: hayNpiq ? npiq : null,
+    npiq: npiq,
     npiqTotal: npiqTotal,
-    ad8: hayAD8 ? ad8 : null,
+    ad8: ad8,
     ad8Total: ad8Total,
-    avdb: avdb.hay ? avdb.data : null,
+    avdb: avdb.data,
     avdbTotal: avdb.total,
-    avdi: avdi.hay ? avdi.data : null,
+    avdi: avdi.data,
     avdiTotal: avdi.total,
-    avde: avde.hay ? avde.data : null,
+    avde: avde.data,
     avdeTotal: avde.total
   };
 }
@@ -223,17 +273,25 @@ function getPacienteIdUrl() {
 function enviarFamiliar() {
   var pacId = getPacienteIdUrl();
   if (!pacId) return;
-  var d = _getFamData();
-  if (!d.npiq && !d.ad8 && !d.avdb && !d.avdi && !d.avde) {
-    document.getElementById('msg-envio').textContent = 'Completá al menos un cuestionario antes de enviar.';
+
+  var faltantes = _faltantesFamiliar();
+  var msgEl = document.getElementById('msg-envio');
+  if (faltantes.length) {
+    msgEl.style.color = '#c0392b';
+    msgEl.textContent = 'Faltan completar: ' + faltantes.join(', ') + '.';
     return;
   }
-  var resumen = [];
-  if (d.npiq)  resumen.push('NPI-Q: '+ d.npiqTotal +' síntomas');
-  if (d.ad8)   resumen.push('AD8: '+ d.ad8Total +'/8');
-  if (d.avdb)  resumen.push('AVD Básicas: '+ d.avdbTotal);
-  if (d.avdi)  resumen.push('AVD Instr.: '+ d.avdiTotal);
-  if (d.avde)  resumen.push('AVD Expan.: '+ d.avdeTotal);
+  msgEl.style.color = '';
+
+  var d = _getFamData();
+  // Las 5 secciones están garantizadas completas por _faltantesFamiliar de arriba.
+  var resumen = [
+    'NPI-Q: '+ d.npiqTotal +' síntomas',
+    'AD8: '+ d.ad8Total +'/8',
+    'AVD Básicas: '+ d.avdbTotal,
+    'AVD Instr.: '+ d.avdiTotal,
+    'AVD Expan.: '+ d.avdeTotal
+  ];
 
   var btn = document.getElementById('btn-enviar');
   btn.disabled = true;
