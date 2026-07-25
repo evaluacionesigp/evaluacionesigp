@@ -13165,7 +13165,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var COL_CL=_wordScaleCols([3200,1200,4960],WORD_CONTENT_W);
   var COL_DP=_wordScaleCols([2600,6760],WORD_CONTENT_W);
   var CL_ORDEN_WORD=['BDI-II','STAI','SPAI-B','PHQ-9','GAD-7','Birleson','AAA','CSI','MBI-HSS','CRC','PSS-10','Holmes-Rahe','GDS-30'];
-  var TD_TDAH_LIST=['ASRS-V1.1','WURS-25','DEX','EAVA'];
+  var TD_TDAH_LIST=['ASRS-V1.1','WURS-25','EAVA','DEX'];
   var TD_TEA_LIST=['AQ','AQ-10','EQ','EA','SCQ'];
   var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
   function sortTestsByOrder(list,orden){
