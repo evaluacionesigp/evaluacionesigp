@@ -12665,16 +12665,17 @@ function buildIfsSubescalasWord(testsNP) {
 }
 
 function _wordPageField(instr, sz) {
-  return '<w:r><w:fldChar w:fldCharType="begin"/></w:r>'+
-    '<w:r><w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
-    '<w:r><w:fldChar w:fldCharType="separate"/></w:r>'+
-    '<w:r><w:rPr><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="444444"/></w:rPr><w:t>1</w:t></w:r>'+
-    '<w:r><w:fldChar w:fldCharType="end"/></w:r>';
+  var rPr = '<w:rPr><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr>';
+  return '<w:r>'+rPr+'<w:fldChar w:fldCharType="begin"/></w:r>'+
+    '<w:r>'+rPr+'<w:instrText xml:space="preserve"> '+instr+' </w:instrText></w:r>'+
+    '<w:r>'+rPr+'<w:fldChar w:fldCharType="separate"/></w:r>'+
+    '<w:r>'+rPr+'<w:t>1</w:t></w:r>'+
+    '<w:r>'+rPr+'<w:fldChar w:fldCharType="end"/></w:r>';
 }
 
 function _wordFooterPageNumXml() {
   var sz = _wordSz(11);
-  var rPr = '<w:rPr><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="444444"/></w:rPr>';
+  var rPr = '<w:rPr><w:sz w:val="'+sz+'"/><w:szCs w:val="'+sz+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr>';
   return '<w:p>'+
     '<w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="0"/></w:pPr>'+
     '<w:r>'+rPr+'<w:t xml:space="preserve">Página </w:t></w:r>'+
@@ -13600,11 +13601,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       // Línea superior del footer
       '<w:p>'+
         '<w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="0"/>'+
-        '<w:pBdr><w:top w:val="single" w:sz="6" w:space="1" w:color="3a8f8f"/></w:pBdr></w:pPr>'+
+        '<w:pBdr><w:top w:val="single" w:sz="6" w:space="1" w:color="000000"/></w:pBdr></w:pPr>'+
       '</w:p>'+
       '<w:p>'+
         '<w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="0"/></w:pPr>'+
-        '<w:r><w:rPr><w:b/><w:sz w:val="'+_wordSz(14)+'"/><w:szCs w:val="'+_wordSz(14)+'"/><w:color w:val="2a6e6e"/>'+
+        '<w:r><w:rPr><w:b/><w:sz w:val="'+_wordSz(14)+'"/><w:szCs w:val="'+_wordSz(14)+'"/><w:color w:val="000000"/>'+
         '<w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr>'+
         '<w:t>CENTRO DE REHABILITACIÓN GONZÁLEZ PALAU - FUNDACIÓN CIATEC</w:t></w:r>'+
       '</w:p>'+
