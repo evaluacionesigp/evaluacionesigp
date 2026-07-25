@@ -13421,8 +13421,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   if (screeningXml || ifsXml || npRows.length) {
     body += _wPar(_wRun('Evaluación Neuropsicológica', { bold: true, sz: 20, font: 'Arial', color: '000000' }), { before: 80, after: 40 });
     if (screeningXml) body += screeningXml;
-    if (ifsXml) body += ifsXml;
     if (npRows.length) body += _wTable([_zHdrRow()].concat(npRows), COL_WIDTHS_HDR);
+    if (ifsXml) body += ifsXml;
     body += _wPar('', { before: 0, after: 80 });
   }
 
