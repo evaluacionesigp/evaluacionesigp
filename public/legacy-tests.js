@@ -11632,7 +11632,7 @@ var FCR_TIPOS = {
 
 function fcrTipoLabel(tipo) {
   if (!tipo) return '—';
-  return 'Tipo ' + tipo + (FCR_TIPOS[tipo] ? ' · ' + FCR_TIPOS[tipo] : '');
+  return 'Tipo ' + tipo;
 }
 
 function fcrCapKey(k) { return k.charAt(0).toUpperCase() + k.slice(1); }
