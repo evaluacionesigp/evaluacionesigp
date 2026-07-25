@@ -8855,6 +8855,41 @@ var DEX_BAR = {
   auto:   { total:{M:22.25,DS:10.10}, desorg:{M:8.60,DS:5.79}, desinhi:{M:9.69,DS:5.19} },
   hetero: { total:{M:20.68,DS:14.77}, desorg:{M:8.60,DS:5.79}, desinhi:{M:9.69,DS:5.19} }
 };
+var DEX_ITEMS = [
+  {n:1,  wordReport:'Problemas en el pensamiento abstracto'},
+  {n:2,  wordReport:'Impulsividad'},
+  {n:3,  wordReport:'Fabulación'},
+  {n:4,  wordReport:'Problemas de planificación'},
+  {n:5,  wordReport:'Descontrol emocional'},
+  {n:6,  wordReport:'Problemas de secuenciación temporal'},
+  {n:7,  wordReport:'Falta de conciencia del problema'},
+  {n:8,  wordReport:'Apatía / falta de iniciativa'},
+  {n:9,  wordReport:'Desinhibición social'},
+  {n:10, wordReport:'Falta de persistencia'},
+  {n:11, wordReport:'Aplanamiento afectivo'},
+  {n:12, wordReport:'Irritabilidad'},
+  {n:13, wordReport:'Despreocupación por normas sociales'},
+  {n:14, wordReport:'Perseveración'},
+  {n:15, wordReport:'Inquietud'},
+  {n:16, wordReport:'Pobre control de impulsos'},
+  {n:17, wordReport:'Discrepancia entre el decir y el hacer'},
+  {n:18, wordReport:'Distractibilidad'},
+  {n:19, wordReport:'Problemas para tomar decisiones'},
+  {n:20, wordReport:'Despreocupación por la opinión ajena'}
+];
+
+function dexItemSignificativo(v) {
+  return v != null && !isNaN(v) && v >= 2;
+}
+
+function dexReporteSintomas(scores) {
+  if (!scores || !scores.length) return null;
+  var partes = [];
+  DEX_ITEMS.forEach(function(it) {
+    if (dexItemSignificativo(scores[it.n - 1])) partes.push(it.wordReport);
+  });
+  return partes.length ? (SINT_SIG + ': ' + partes.join(' ; ')) : SINT_AUS;
+}
 
 function iniciarDEX() {
   aplicarTituloGlosario('dex-titulo-glosario', 'DEX', 'DEX · Cuestionario Disejecutivo');
@@ -13223,7 +13258,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.is!=null)addCL('SCQ · IS Interacción social',d.is,'—');
         if(d.crr!=null)addCL('SCQ · CRR Cond. repetitivas',d.crr,'—');
       }
-      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,informeTdahBinario(r.categoria));}
+      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,dexReporteSintomas(d.scores)||informeTdahBinario(r.categoria));}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
       else if(r.test==='PSS-10'){addCL('PSS-10 · Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
       else if(r.test==='Holmes-Rahe'){addCL('Holmes & Rahe · Reajuste Psicosocial',r.puntaje_total!=null?r.puntaje_total+' LCU':'—',informeHolmesEstresores(r.puntaje_total,r.categoria));}
