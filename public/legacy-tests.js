@@ -9517,7 +9517,7 @@ function guardarBNT() {
     z=parseFloat(((pb-yhat)/5.184).toFixed(2));
     cat=z>=-1.0?'Normal':z>=-1.5?'Leve ↓':z>=-2.0?'Moderado ↓':'Bajo ↓';
     testNombre='BNT-60';
-    dat={pb:pb,educ:parseInt(educ),educ_label:parseInt(educ)?'>12 años':'≤12 años',yhat:parseFloat(yhat.toFixed(2)),z:z,baremo:'Olabarrieta-Landa et al. 2015 — Argentina'};
+    dat={pb:pb,educ:parseInt(educ),educ_label:parseInt(educ)?'>12 años':'≤12 años',yhat:parseFloat(yhat.toFixed(2)),m:parseFloat(yhat.toFixed(2)),ds:5.184,z:z,baremo:'Olabarrieta-Landa et al. 2015 — Argentina'};
   } else {
     var pbVal=document.getElementById('bnt12-pb').value;
     if(pbVal===''){toast('Ingresá el puntaje bruto.','error');return;}
@@ -13095,7 +13095,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         } else if(tn==='DEX'){
           var dv2=d.version==='hetero'?'Heteroadm.':'Autoadm.';
           add('DEX Total ('+dv2+')',d.total,d.version==='hetero'?20.68:22.25,d.version==='hetero'?14.77:10.10,d.zTotal,'Pje /80');
-        } else if(tn==='BNT-60'||tn==='BNT-12'){var bM=tn==='BNT-12'?(d.m!=null&&d.m!==''?d.m:11):(d.m!=null?d.m:null);var bDS=tn==='BNT-12'?(d.ds!=null&&d.ds!==''?d.ds:1.16):(d.ds!=null?d.ds:null);add(tn+(d.educ_label?' ('+d.educ_label+')':''),d.pb!=null&&d.pb!==''?d.pb:r.puntaje_total,bM,bDS,r.puntaje_z,null);}
+        } else if(tn==='BNT-60'||tn==='BNT-12'){var bM=tn==='BNT-12'?(d.m!=null&&d.m!==''?d.m:11):(d.m!=null?d.m:(d.yhat!=null?d.yhat:null));var bDS=tn==='BNT-12'?(d.ds!=null&&d.ds!==''?d.ds:1.16):(d.ds!=null?d.ds:5.184);add(tn+(d.educ_label?' ('+d.educ_label+')':''),d.pb!=null&&d.pb!==''?d.pb:r.puntaje_total,bM,bDS,r.puntaje_z,null);}
         else if(tn==='Token Test'){add('Token Test',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='IFS'){add('IFS — Total',r.puntaje_total!=null?r.puntaje_total+'/30':null,d.m!=null?d.m:null,d.ds!=null?d.ds:null,r.puntaje_z,null);}
         else if(tn==='FAB'){add('FAB — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
