@@ -13463,9 +13463,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   if(dlxLecturaPP||dlxTecle||dlxIdentif){
     body+=_wPar(_wRun('LECTURA',{bold:true,sz:20,font:'Arial',color:'000000'}),{align:'center',before:80,after:0,shading:'D9D9D9'});
 
+    var COL_LPP=_wordScaleCols([7200,3060],WORD_CONTENT_W);
     if(dlxLecturaPP){
       var lppD=dlxLecturaPP.datos||{},lppPal=lppD.palabras||{},lppPse=lppD.pseudopalabras||{};
-      var COL_LPP=_wordScaleCols([7200,3060],WORD_CONTENT_W);
       var lppRows=[_wRow([clHdr('Lectura de Palabras y Pseudopalabras',COL_LPP[0]),clHdr('Tiempo (en segundos)',COL_LPP[1])],{hdr:true})];
       [
         ['Palabras con sílabas directas',lppPal.col1],
@@ -13478,7 +13478,24 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         var bg=i%2===0?'F2F2F2':'FFFFFF';
         lppRows.push(_wRow([clCell(it[0],COL_LPP[0],bg),clCell(it[1]!=null?String(it[1]):'—',COL_LPP[1],bg,true)]));
       });
+      if(dlxIdentif){
+        var iD=dlxIdentif.datos||{};
+        var ipsPb=dlxIdentif.puntaje_total!=null?(dlxIdentif.puntaje_total+'/'+(iD.puntaje_sobre||52)):'—';
+        var ipsFp=iD.falsos_positivos!=null?String(iD.falsos_positivos):'—';
+        lppRows.push(_wRow([_wCell(_wPar(_wRun('Identificación de Palabras con Sentido',{bold:true,sz:20,color:'000000',font:'Arial'}),{before:20,after:20,shading:'D9D9D9'}),{w:COL_LPP[0]+COL_LPP[1],fill:'D9D9D9',span:2})]));
+        lppRows.push(_wRow([clCell('PB',COL_LPP[0],'F2F2F2'),clCell(ipsPb,COL_LPP[1],'F2F2F2',true)]));
+        lppRows.push(_wRow([clCell('FP',COL_LPP[0],'FFFFFF'),clCell(ipsFp,COL_LPP[1],'FFFFFF',true)]));
+      }
       body+=_wTable(lppRows,COL_LPP);
+      body+=_wPar('',{before:0,after:0});
+    } else if(dlxIdentif){
+      var iD=dlxIdentif.datos||{};
+      var ipsPb=dlxIdentif.puntaje_total!=null?(dlxIdentif.puntaje_total+'/'+(iD.puntaje_sobre||52)):'—';
+      var ipsFp=iD.falsos_positivos!=null?String(iD.falsos_positivos):'—';
+      var ipsRows=[_wRow([_wCell(_wPar(_wRun('Identificación de Palabras con Sentido',{bold:true,sz:20,color:'000000',font:'Arial'}),{before:20,after:20,shading:'D9D9D9'}),{w:COL_LPP[0]+COL_LPP[1],fill:'D9D9D9',span:2})])];
+      ipsRows.push(_wRow([clCell('PB',COL_LPP[0],'F2F2F2'),clCell(ipsPb,COL_LPP[1],'F2F2F2',true)]));
+      ipsRows.push(_wRow([clCell('FP',COL_LPP[0],'FFFFFF'),clCell(ipsFp,COL_LPP[1],'FFFFFF',true)]));
+      body+=_wTable(ipsRows,COL_LPP);
       body+=_wPar('',{before:0,after:0});
     }
 
@@ -13494,16 +13511,6 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       eflRows.push(_wRow([clCell('TECLE',COL_EFL[0],'F2F2F2'),clCell(teclePb,COL_EFL[1],'F2F2F2',true),clCell(tecleM,COL_EFL[2],'F2F2F2',true),clCell(tecleDe,COL_EFL[3],'F2F2F2',true),clCell(tecleZ,COL_EFL[4],'F2F2F2',true)]));
       body+=_wTable(eflRows,COL_EFL);
       body+=_wPar('',{before:0,after:0});
-    }
-
-    if(dlxIdentif){
-      var iD=dlxIdentif.datos||{};
-      var COL_IPS=_wordScaleCols([7200,1530,1530],WORD_CONTENT_W);
-      var ipsRows=[_wRow([clHdr('Identificación de Palabras con Sentido',COL_IPS[0]),clHdr('PB',COL_IPS[1]),clHdr('FP',COL_IPS[2])],{hdr:true})];
-      var ipsPb=dlxIdentif.puntaje_total!=null?(dlxIdentif.puntaje_total+'/'+(iD.puntaje_sobre||52)):'—';
-      var ipsFp=iD.falsos_positivos!=null?String(iD.falsos_positivos):'—';
-      ipsRows.push(_wRow([clCell('',COL_IPS[0],'F2F2F2'),clCell(ipsPb,COL_IPS[1],'F2F2F2',true),clCell(ipsFp,COL_IPS[2],'F2F2F2',true)]));
-      body+=_wTable(ipsRows,COL_IPS);
     }
     body+=_wPar('',{before:0,after:80});
   }
