@@ -13168,7 +13168,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var CL_ORDEN_WORD=['BDI-II','STAI','SPAI-B','PHQ-9','GAD-7','Birleson','AAA','CSI','MBI-HSS','CRC','PSS-10','Holmes-Rahe','GDS-30'];
   var TD_TDAH_LIST=['ASRS-V1.1','WURS-25','EAVA','DEX'];
   var TD_TEA_LIST=['AQ','AQ-10','EQ','EA','SCQ'];
-  var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia','Identificación Palabras con Sentido','TECLE','Lectura Palabras y Pseudopalabras'];
+  var TD_DISLEX_LIST=['Cuest. Dislexia Adultos','Lista Revisada Dislexia'];
   function sortTestsByOrder(list,orden){
     var out=[],seen={};
     orden.forEach(function(t){
@@ -13455,10 +13455,62 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   var doRows=buildSimpleRows(testsDO);
   appendWordSimpleTable('Evaluación del Dolor',doRows,['Test','Puntaje','Resultado']);
 
-  // TABLA DISLEXIA
+  // TABLA DISLEXIA — "LECTURA": Lectura de Palabras y Pseudopalabras + Eficacia Lectora (TECLE) + Identif. Palabras con Sentido
+  var dlxLecturaPP=testsTD.filter(function(r){return r.test==='Lectura Palabras y Pseudopalabras';})[0]||null;
+  var dlxTecle=testsTD.filter(function(r){return r.test==='TECLE';})[0]||null;
+  var dlxIdentif=testsTD.filter(function(r){return r.test==='Identificación Palabras con Sentido';})[0]||null;
+
+  if(dlxLecturaPP||dlxTecle||dlxIdentif){
+    body+=_wPar(_wRun('LECTURA',{bold:true,sz:20,font:'Arial',color:'000000'}),{align:'center',before:80,after:0,shading:'D9D9D9'});
+
+    if(dlxLecturaPP){
+      var lppD=dlxLecturaPP.datos||{},lppPal=lppD.palabras||{},lppPse=lppD.pseudopalabras||{};
+      var COL_LPP=_wordScaleCols([7200,3060],WORD_CONTENT_W);
+      var lppRows=[_wRow([clHdr('Lectura de Palabras y Pseudopalabras',COL_LPP[0]),clHdr('Tiempo (en segundos)',COL_LPP[1])],{hdr:true})];
+      [
+        ['Palabras con sílabas directas',lppPal.col1],
+        ['Palabras con sílabas directas inversas y mixtas',lppPal.col3],
+        ['Palabras con sílabas directas con todas las estructuras',lppPal.col5],
+        ['Pseudopalabra con sílabas directas',lppPse.col2],
+        ['Pseudopalabras con sílabas directas inversas y mixtas',lppPse.col4],
+        ['Pseudopalabras con sílabas directas con todas las estructuras',lppPse.col6]
+      ].forEach(function(it,i){
+        var bg=i%2===0?'F2F2F2':'FFFFFF';
+        lppRows.push(_wRow([clCell(it[0],COL_LPP[0],bg),clCell(it[1]!=null?String(it[1]):'—',COL_LPP[1],bg,true)]));
+      });
+      body+=_wTable(lppRows,COL_LPP);
+      body+=_wPar('',{before:0,after:0});
+    }
+
+    if(dlxTecle){
+      var tD=dlxTecle.datos||{};
+      var COL_EFL=_wordScaleCols([3600,1665,1665,1665,1665],WORD_CONTENT_W);
+      var eflRows=[_wRow([clHdr('Eficacia Lectora',COL_EFL[0]),clHdr('PB',COL_EFL[1]),clHdr('M',COL_EFL[2]),clHdr('DE',COL_EFL[3]),clHdr('Z',COL_EFL[4])],{hdr:true})];
+      var teclePb=dlxTecle.puntaje_total!=null?String(dlxTecle.puntaje_total):'—';
+      var tecleM=tD.media!=null?parseFloat(tD.media).toFixed(2):'—';
+      var tecleDe=tD.ds!=null?parseFloat(tD.ds).toFixed(2):'—';
+      var tecleZv=dlxTecle.puntaje_z!=null?parseFloat(dlxTecle.puntaje_z):null;
+      var tecleZ=tecleZv!=null?(tecleZv>=0?'+':'')+tecleZv.toFixed(2):'—';
+      eflRows.push(_wRow([clCell('TECLE',COL_EFL[0],'F2F2F2'),clCell(teclePb,COL_EFL[1],'F2F2F2',true),clCell(tecleM,COL_EFL[2],'F2F2F2',true),clCell(tecleDe,COL_EFL[3],'F2F2F2',true),clCell(tecleZ,COL_EFL[4],'F2F2F2',true)]));
+      body+=_wTable(eflRows,COL_EFL);
+      body+=_wPar('',{before:0,after:0});
+    }
+
+    if(dlxIdentif){
+      var iD=dlxIdentif.datos||{};
+      var COL_IPS=_wordScaleCols([7200,1530,1530],WORD_CONTENT_W);
+      var ipsRows=[_wRow([clHdr('Identificación de Palabras con Sentido',COL_IPS[0]),clHdr('PB',COL_IPS[1]),clHdr('FP',COL_IPS[2])],{hdr:true})];
+      var ipsPb=dlxIdentif.puntaje_total!=null?(dlxIdentif.puntaje_total+'/'+(iD.puntaje_sobre||52)):'—';
+      var ipsFp=iD.falsos_positivos!=null?String(iD.falsos_positivos):'—';
+      ipsRows.push(_wRow([clCell('',COL_IPS[0],'F2F2F2'),clCell(ipsPb,COL_IPS[1],'F2F2F2',true),clCell(ipsFp,COL_IPS[2],'F2F2F2',true)]));
+      body+=_wTable(ipsRows,COL_IPS);
+    }
+    body+=_wPar('',{before:0,after:80});
+  }
+
+  // TABLA DISLEXIA — cuestionarios (Cuest. Dislexia Adultos, Lista Revisada Dislexia)
   var dlxRows=[];
   testsTD.filter(function(r){return TD_DISLEX_LIST.indexOf(r.test)>=0;}).forEach(function(r){
-    var d=r.datos||{};
     var pb='—', res='—';
     if(r.test==='Cuest. Dislexia Adultos'){
       pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/10';
@@ -13466,25 +13518,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     } else if(r.test==='Lista Revisada Dislexia'){
       pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/20';
       res=r.categoria||'—';
-    } else if(r.test==='Identificación Palabras con Sentido'){
-      pb=(r.puntaje_total!=null?r.puntaje_total:'—')+'/52'+(d.falsos_positivos!=null?' FP:'+d.falsos_positivos:'');
-      res='—';
-    } else if(r.test==='TECLE'){
-      pb=r.puntaje_total!=null?r.puntaje_total:'—';
-      var tecleZ=r.puntaje_z!=null?parseFloat(r.puntaje_z):null;
-      var tecleZStr=fmtZInforme(tecleZ);
-      var tecleInterp=tecleZ!=null?zInterpNormativo(tecleZ):(r.categoria||'—');
-      res=tecleZStr?(tecleZStr+' · '+tecleInterp):tecleInterp;
-    } else if(r.test==='Lectura Palabras y Pseudopalabras'){
-      var pp=d.palabras||{},ppp=d.pseudopalabras||{};
-      var ts=[pp.col1,pp.col3,pp.col5,ppp.col2,ppp.col4,ppp.col6].filter(function(v){return v!=null;});
-      pb=ts.length?ts.join(' / ')+' seg':'—';
-      res='Tiempos';
     }
     var bg=dlxRows.length%2===0?'F2F2F2':'FFFFFF';
     dlxRows.push(_wRow([clCell(r.test,COL_CL[0],bg),clCell(String(pb),COL_CL[1],bg,true),clCell(res,COL_CL[2],bg)]));
   });
-  appendWordSimpleTable('Neurodesarrollo · Dislexia',dlxRows,['Test','Puntaje / Tiempos','Resultado']);
+  appendWordSimpleTable('Neurodesarrollo · Dislexia',dlxRows,['Test','Puntaje','Resultado']);
 
   // 10. CUESTIONARIOS FAMILIARES (sección separada con tabla de síntomas)
   if(famResults.length){
