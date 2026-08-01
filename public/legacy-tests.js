@@ -13770,15 +13770,16 @@ var TAVEC_BAR = {
 var TAVEC_ERRORES = ['v20','v21','v22','v24'];
 
 // [etiqueta, clave Z en datos, claveGlosario, invertirZ en tooltip/perfil]
+// tmt_a_z/tmt_b_z/zInt ya vienen invertidos al calcularse (positivo = mejor), igual que en el Word — no re-invertir acá.
 var TMT_VARS_ORDER = [
-  ['TMT A · tiempo (seg)', 'tmt_a_z', 'TMT·A', true],
-  ['TMT B · tiempo (seg)', 'tmt_b_z', 'TMT·B', true]
+  ['TMT A · tiempo (seg)', 'tmt_a_z', 'TMT·A', false],
+  ['TMT B · tiempo (seg)', 'tmt_b_z', 'TMT·B', false]
 ];
 var STROOP_VARS_ORDER = [
   ['Stroop · Palabras (P)', 'zP', 'Stroop·P', false],
   ['Stroop · Color (C)', 'zC', 'Stroop·C', false],
   ['Stroop · Palabra-Color (PC)', 'zPC', 'Stroop·PC', false],
-  ['Stroop · Interferencia', 'zInt', 'Stroop·Int', true]
+  ['Stroop · Interferencia', 'zInt', 'Stroop·Int', false]
 ];
 
 // [etiqueta, clave PB, clave Z, invertirZEnTooltip, claveGlosario opcional]
@@ -14122,9 +14123,9 @@ function renderPerfilZ() {
       // Extraer variables con Z según test
       if (tn === 'TMT A-B') {
         if (dom === 'Atención') {
-          if (d.tmt_a_z != null) filas.push({lbl:'TMT A · tiempo (seg)', z: d.tmt_a_z, glosario: 'TMT·A', invertirZ: true});
+          if (d.tmt_a_z != null) filas.push({lbl:'TMT A · tiempo (seg)', z: d.tmt_a_z, glosario: 'TMT·A'});
         } else if (dom === 'Funciones ejecutivas') {
-          if (d.tmt_b_z != null) filas.push({lbl:'TMT B · tiempo (seg)', z: d.tmt_b_z, glosario: 'TMT·B', invertirZ: true});
+          if (d.tmt_b_z != null) filas.push({lbl:'TMT B · tiempo (seg)', z: d.tmt_b_z, glosario: 'TMT·B'});
         }
       } else if (tn === 'Stroop') {
         STROOP_VARS_ORDER.forEach(function(td) {
