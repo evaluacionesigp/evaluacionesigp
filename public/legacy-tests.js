@@ -2874,85 +2874,85 @@ function irSector(s) {
     document.getElementById('tests-grid').innerHTML =
       '<div class="test-card" onclick="irTest(\'bdi\')">' +
         '<div class="test-icon">😔</div>' +
-        '<div class="test-nombre">BDI-II</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">BDI-II</div>' + npBadgeHtml('bdi') + '</div>' +
         '<div class="test-desc">Inventario de Depresión de Beck — Segunda Edición</div>' +
         '<span class="test-tag">21 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'stai\')">' +
         '<div class="test-icon">😰</div>' +
-        '<div class="test-nombre">STAI</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">STAI</div>' + npBadgeHtml('stai') + '</div>' +
         '<div class="test-desc">Inventario de Ansiedad Estado-Rasgo</div>' +
         '<span class="test-tag">40 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'phq\')">' +
         '<div class="test-icon">🌧</div>' +
-        '<div class="test-nombre">PHQ-9</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">PHQ-9</div>' + npBadgeHtml('phq') + '</div>' +
         '<div class="test-desc">Cuestionario de Salud del Paciente — Screening de depresión mayor</div>' +
         '<span class="test-tag">9 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'gad\')">' +
         '<div class="test-icon">🌀</div>' +
-        '<div class="test-nombre">GAD-7</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">GAD-7</div>' + npBadgeHtml('gad') + '</div>' +
         '<div class="test-desc">Escala de Trastorno de Ansiedad Generalizada</div>' +
         '<span class="test-tag">7 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'birleson\')">' +
         '<div class="test-icon">🌧</div>' +
-        '<div class="test-nombre">Birleson (PACES)</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Birleson (PACES)</div>' + npBadgeHtml('birleson') + '</div>' +
         '<div class="test-desc">Escala de Depresión en Adolescentes — tamizaje · corte ≥14</div>' +
         '<span class="test-tag">18 ítems · 0–36</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'aaa\')">' +
         '<div class="test-icon">😰</div>' +
-        '<div class="test-nombre">AAA</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">AAA</div>' + npBadgeHtml('aaa') + '</div>' +
         '<div class="test-desc">Autoreporte de Ansiedad para Adolescentes — INPRF · corte ≥25</div>' +
         '<span class="test-tag">41 ítems · 0–82</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'spaib\')">' +
         '<div class="test-icon">👥</div>' +
-        '<div class="test-nombre">SPAI-B</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">SPAI-B</div>' + npBadgeHtml('spaib') + '</div>' +
         '<div class="test-desc">Inventario de Fobia y Ansiedad Social — Forma Breve</div>' +
         '<span class="test-tag">16 ítems · Baremos argentinos</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'csi\')">' +
         '<div class="test-icon">🧩</div>' +
-        '<div class="test-nombre">CSI</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">CSI</div>' + npBadgeHtml('csi') + '</div>' +
         '<div class="test-desc">Inventario de Estrategias de Afrontamiento — 8 subescalas</div>' +
         '<span class="test-tag">40 ítems · Cano, Rodríguez & García 2006</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'scl90\')">'+
         '<div class="test-icon">🧩</div>'+
-        '<div class="test-nombre">SCL-90-R</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">SCL-90-R</div>' + npBadgeHtml('scl90') + '</div>' +
         '<div class="test-desc">Inventario de Síntomas de Derogatis — 9 dimensiones</div>'+
         '<span class="test-tag">90 ítems · Casullo & Pérez 2008</span>'+
       '</div>' +
       '<div class="test-card" onclick="irTest(\'mbi\')">'+
         '<div class="test-icon">🔥</div>'+
-        '<div class="test-nombre">MBI-HSS</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">MBI-HSS</div>' + npBadgeHtml('mbi') + '</div>' +
         '<div class="test-desc">Inventario de Burnout de Maslach — Profesionales de salud</div>'+
         '<span class="test-tag">22 ítems · 3 subescalas</span>'+
       '</div>'+
       '<div class="test-card" onclick="irTest(\'crc\')">'+
         '<div class="test-icon">🧠</div>'+
-        '<div class="test-nombre">CRC</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">CRC</div>' + npBadgeHtml('crc') + '</div>' +
         '<div class="test-desc">Cuestionario de Reserva Cognitiva — Escolaridad, ocupación, actividades</div>'+
         '<span class="test-tag">8 ítems · 0–25 · Rami et al. 2011</span>'+
       '</div>'+
       '<div class="test-card" onclick="irTest(\'pss\')">'+
         '<div class="test-icon">😤</div>'+
-        '<div class="test-nombre">PSS-10</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">PSS-10</div>' + npBadgeHtml('pss') + '</div>' +
         '<div class="test-desc">Escala de Estrés Percibido — Nivel de estrés del último mes</div>'+
         '<span class="test-tag">10 ítems · 0–40 · Cohen et al. 1983</span>'+
       '</div>'+
       '<div class="test-card" onclick="irTest(\'holmes\')">'+
         '<div class="test-icon">📋</div>'+
-        '<div class="test-nombre">Holmes & Rahe</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Holmes & Rahe</div>' + npBadgeHtml('holmes') + '</div>' +
         '<div class="test-desc">Escala de Reajuste Psicosocial — Eventos vitales estresantes</div>'+
         '<span class="test-tag">43 eventos · LCU · Holmes & Rahe 1967</span>'+
       '</div>'+
       '<div class="test-card" onclick="irTest(\'yesavage\')">'+
         '<div class="test-icon">👴</div>'+
-        '<div class="test-nombre">GDS-30 Yesavage</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">GDS-30 Yesavage</div>' + npBadgeHtml('yesavage') + '</div>' +
         '<div class="test-desc">Escala de Depresión Geriátrica — Adultos mayores</div>'+
         '<span class="test-tag">30 ítems · Sí/No · Yesavage et al. 1983</span>'+
       '</div>';
@@ -2983,25 +2983,25 @@ function irSector(s) {
     document.getElementById('tests-grid').innerHTML =
       '<div class="test-card" onclick="irTest(\'pcs\')">' +
         '<div class="test-icon">🔥</div>' +
-        '<div class="test-nombre">PCS</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">PCS</div>' + npBadgeHtml('pcs') + '</div>' +
         '<div class="test-desc">Escala de Catastrofización del Dolor — Rumiación, Magnificación e Indefensión</div>' +
         '<span class="test-tag">Sullivan et al. 1995 · 13 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'csq\')">' +
         '<div class="test-icon">🧩</div>' +
-        '<div class="test-nombre">CSQ</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">CSQ</div>' + npBadgeHtml('csq') + '</div>' +
         '<div class="test-desc">Cuestionario de Estrategias de Afrontamiento al Dolor — 8 subescalas</div>' +
         '<span class="test-tag">Rosenstiel & Keefe 1983 · 39 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'pbq\')">' +
         '<div class="test-icon">🚶</div>' +
-        '<div class="test-nombre">PBQ</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">PBQ</div>' + npBadgeHtml('pbq') + '</div>' +
         '<div class="test-desc">Cuestionario de Conductas de Dolor — Queja verbal/no verbal y evitación</div>' +
         '<span class="test-tag">Appelbaum et al. 1988 · 16 ítems</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'bpi\')">' +
         '<div class="test-icon">📊</div>' +
-        '<div class="test-nombre">BPI</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">BPI</div>' + npBadgeHtml('bpi') + '</div>' +
         '<div class="test-desc">Inventario Breve de Dolor — Índice de Intensidad e Interferencia funcional</div>' +
         '<span class="test-tag">Cleeland & Ryan 1994 · ítems 3–6 y 9A–9G</span>' +
       '</div>';
@@ -3012,82 +3012,82 @@ function irSector(s) {
       '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:4px 0 2px;padding-left:4px;">TDAH</div>' +
       '<div class="test-card" onclick="irTest(\'asrs\')">' +
         '<div class="test-icon">⚡</div>' +
-        '<div class="test-nombre">ASRS-V1.1</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">ASRS-V1.1</div>' + npBadgeHtml('asrs') + '</div>' +
         '<div class="test-desc">Escala de Autodetección de TDAH en Adultos — Sección A (screener) + Sección B (perfil completo)</div>' +
         '<span class="test-tag">Kessler et al. 2005 · OMS</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'wurs\')">'+
         '<div class="test-icon">🧒</div>'+
-        '<div class="test-nombre">WURS-25</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">WURS-25</div>' + npBadgeHtml('wurs') + '</div>' +
         '<div class="test-desc">Escala de Wender-Utah — Síntomas retrospectivos de TDAH en la infancia</div>'+
         '<span class="test-tag">Ward et al. 1993 · Scandar 2021 Argentina</span>'+
       '</div>' +
       '<div class="test-card" onclick="irTest(\'dex\')">'+
-        '<div class="test-nombre">DEX</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">DEX</div>' + npBadgeHtml('dex') + '</div>' +
         '<div class="test-desc">Cuestionario Disejecutivo · Síntomas del síndrome disejecutivo · Autoadministrado o informante</div>'+
         '<span class="test-tag">Wilson et al. 1999 · Querejeta et al. 2015 · Argentina</span>'+
       '</div>'+
       '<div class="test-card" onclick="irTest(\'eava\')">'+
         '<div class="test-icon">📝</div>'+
-        '<div class="test-nombre">EAVA</div>'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">EAVA</div>' + npBadgeHtml('eava') + '</div>' +
         '<div class="test-desc">Escala de Autovaloración de TDAH en Adultos — Parte A (inatención) + Parte B (hiperactividad/impulsividad)</div>'+
         '<span class="test-tag">18 ítems · 0–36 c/u · DSM-5</span>'+
       '</div>' +
       '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 2px;padding-left:4px;">TEA · Espectro autista</div>' +
       '<div class="test-card" onclick="irTest(\'aq\')">' +
         '<div class="test-icon">🧩</div>' +
-        '<div class="test-nombre">AQ · Cociente del Espectro Autista</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">AQ · Cociente del Espectro Autista</div>' + npBadgeHtml('aq') + '</div>' +
         '<div class="test-desc">50 ítems · Autoadministrado · Detección de rasgos del espectro autista en adultos</div>' +
         '<span class="test-tag">Baron-Cohen et al.</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'aq10\')">' +
-        '<div class="test-nombre">AQ-10</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">AQ-10</div>' + npBadgeHtml('aq10') + '</div>' +
         '<div class="test-desc">Cribado breve · 10 ítems · Derivación si puntaje 6–10</div>' +
         '<span class="test-tag">Neuropsicología Latinoamericana 2020</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'eq\')">' +
-        '<div class="test-nombre">EQ · Coeficiente de Empatía</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">EQ · Coeficiente de Empatía</div>' + npBadgeHtml('eq') + '</div>' +
         '<div class="test-desc">60 ítems · Empatía cognitiva y afectiva · Complemento del AQ</div>' +
         '<span class="test-tag">Baron-Cohen et al.</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'ea\')">' +
-        '<div class="test-nombre">EA · Escala Autónoma Asperger</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">EA · Escala Autónoma Asperger</div>' + npBadgeHtml('ea') + '</div>' +
         '<div class="test-desc">18 ítems · Informante · Corte ≥36 / promedio ≥2</div>' +
         '<span class="test-tag">Acompañante</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'scq\')">' +
-        '<div class="test-nombre">SCQ · Forma A</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">SCQ · Forma A</div>' + npBadgeHtml('scq') + '</div>' +
         '<div class="test-desc">Cuestionario de Comunicación Social · Informante · Corte ≥15</div>' +
         '<span class="test-tag">Rutter et al. · DC · IS · CRR</span>' +
       '</div>' +
       '<div style="grid-column:1/-1;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:14px 0 2px;padding-left:4px;">Dislexia</div>' +
       '<div class="test-card" onclick="irTest(\'dislex1\')">' +
         '<div class="test-icon">📖</div>' +
-        '<div class="test-nombre">Cuest. Dislexia Adultos</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Cuest. Dislexia Adultos</div>' + npBadgeHtml('dislex1') + '</div>' +
         '<div class="test-desc">Breve cuestionario de 10 ítems para valorar dislexia en adultos</div>' +
         '<span class="test-tag">10 ítems · Checklist</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'dislex2\')">' +
         '<div class="test-icon">✅</div>' +
-        '<div class="test-nombre">Lista Revisada Dislexia</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Lista Revisada Dislexia</div>' + npBadgeHtml('dislex2') + '</div>' +
         '<div class="test-desc">Lista revisada de 20 ítems Sí/No con indicadores importantes marcados</div>' +
         '<span class="test-tag">20 ítems · Sí/No · (*) indicadores</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'dislex3\')">' +
         '<div class="test-icon">🔤</div>' +
-        '<div class="test-nombre">Identificación Palabras</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Identificación Palabras</div>' + npBadgeHtml('dislex3') + '</div>' +
         '<div class="test-desc">Identificación de Palabras con Sentido — PB y falsos positivos</div>' +
         '<span class="test-tag">PB/52 · Falsos positivos</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'tecle\')">' +
         '<div class="test-icon">📊</div>' +
-        '<div class="test-nombre">TECLE</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">TECLE</div>' + npBadgeHtml('tecle') + '</div>' +
         '<div class="test-desc">Test de Competencia Lectora — Baremo por edad y escolaridad · Z automático</div>' +
         '<span class="test-tag">Baremo argentino · Z score</span>' +
       '</div>' +
       '<div class="test-card" onclick="irTest(\'dislex5\')">' +
         '<div class="test-icon">⏱</div>' +
-        '<div class="test-nombre">Lectura Palabras y PP</div>' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;"><div class="test-nombre" style="margin:0;">Lectura Palabras y PP</div>' + npBadgeHtml('dislex5') + '</div>' +
         '<div class="test-desc">Lectura de Palabras y Pseudopalabras — Tiempos por columna</div>' +
         '<span class="test-tag">6 columnas · Tiempos en seg</span>' +
       '</div>';
