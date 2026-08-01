@@ -9308,8 +9308,55 @@ var SCL_NORMS = {
   adol_M:{SOM:{M:0.42,DS:0.47},OBS:{M:0.79,DS:0.65},SI:{M:0.58,DS:0.61},DEP:{M:0.54,DS:0.56},ANS:{M:0.41,DS:0.48},HOS:{M:0.47,DS:0.54},FOB:{M:0.21,DS:0.39},PAR:{M:0.60,DS:0.60},PSI:{M:0.32,DS:0.43},IGS:{M:0.49,DS:0.46},TSP:{M:28.9,DS:19.2},IMSP:{M:1.40,DS:0.66}},
   adol_F:{SOM:{M:0.60,DS:0.59},OBS:{M:0.86,DS:0.68},SI:{M:0.77,DS:0.69},DEP:{M:0.73,DS:0.66},ANS:{M:0.53,DS:0.55},HOS:{M:0.37,DS:0.46},FOB:{M:0.38,DS:0.55},PAR:{M:0.59,DS:0.59},PSI:{M:0.34,DS:0.44},IGS:{M:0.61,DS:0.53},TSP:{M:35.6,DS:21.6},IMSP:{M:1.41,DS:0.58}}
 };
+// Baremo Casullo & Pérez (2008) — tabla de percentiles reales por punto de T (no es una distribución normal,
+// una transformación lineal Z sobreestima la severidad en la cola alta). Solo hay tabla verificada para adultos;
+// para adolescentes se mantiene el fallback con fórmula lineal (SCL_NORMS) hasta confirmar esos valores.
+var SCL_T_POINTS = [30,35,40,45,50,55,60,63,65,70,75,80];
+var SCL_TABLE = {
+  adulto_M: {
+    SOM:[0,0,0.08,0.25,0.42,0.75,1.08,1.25,1.42,1.75,2.31,2.5],
+    OBS:[0,0.2,0.3,0.5,0.8,1.3,1.7,1.9,2.2,2.6,3.4,3.6],
+    SI:[0,0,0.11,0.33,0.56,0.89,1.33,1.56,1.67,2.38,3,3.22],
+    DEP:[0,0.08,0.23,0.38,0.69,1.02,1.38,1.62,1.77,2.42,2.88,3.15],
+    ANS:[0,0.1,0.2,0.4,0.6,0.9,1.3,1.6,1.7,2.28,2.67,2.7],
+    HOS:[0,0,0.17,0.33,0.67,1,1.33,1.67,1.83,2.57,3.17,3.83],
+    FOB:[0,0,0,0,0.14,0.29,0.57,0.86,1,1.43,1.88,2.71],
+    PAR:[0,0,0.17,0.33,0.67,1.17,1.5,1.83,2.07,2.67,2.95,3.17],
+    PSI:[0,0,0,0.2,0.3,0.5,0.9,1.2,1.4,1.74,2.17,2.3],
+    IGS:[0.11,0.17,0.29,0.41,0.61,0.88,1.1,1.32,1.49,1.84,2.17,2.22],
+    TSP:[5.6,10,16,23.8,32,41.2,52,57,61,75,79.72,85],
+    IMSP:[1.05,1.22,1.36,1.56,1.75,2,2.25,2.4,2.53,2.91,3.3,3.65]
+  },
+  adulto_F: {
+    SOM:[0,0.17,0.25,0.42,0.75,1,1.49,1.83,2,2.36,2.87,3],
+    OBS:[0,0.2,0.4,0.7,1,1.4,1.8,2.1,2.2,2.9,3.41,3.5],
+    SI:[0,0.11,0.22,0.44,0.67,1.11,1.44,1.67,1.89,2.6,3,3],
+    DEP:[0.05,0.23,0.38,0.62,0.85,1.23,1.77,2,2.23,2.8,3.31,3.69],
+    ANS:[0,0.2,0.3,0.6,0.8,1.2,1.6,1.8,2.13,2.5,3.04,3.1],
+    HOS:[0,0,0.17,0.33,0.67,1,1.5,1.67,1.83,2.56,3.17,3.33],
+    FOB:[0,0,0,0,0.29,0.57,0.86,1.14,1.29,2,2.63,3.14],
+    PAR:[0,0,0.17,0.33,0.67,1.17,1.67,2,2.17,3,3.78,4],
+    PSI:[0,0,0.1,0.2,0.4,0.7,1,1.1,1.3,1.97,2.57,2.7],
+    IGS:[0.15,0.28,0.37,0.52,0.73,1.04,1.36,1.62,1.74,2.18,2.46,2.54],
+    TSP:[9,15,21.12,29,37,47,57,62,66,74,77.71,82],
+    IMSP:[1.12,1.25,1.43,1.59,1.85,2.12,2.41,2.53,2.67,2.99,3.15,3.27]
+  }
+};
+function sclTableLookupT(bruto, tabla) {
+  // No es interpolación: el baremo se lee por el punto de tabla más cercano al bruto
+  // (verificado contra 7 celdas de referencia — con interpolación lineal no coincidía).
+  var bestT = SCL_T_POINTS[0], bestDist = Infinity;
+  for (var i = 0; i < tabla.length; i++) {
+    var d = Math.abs(tabla[i] - bruto);
+    if (d < bestDist) { bestDist = d; bestT = SCL_T_POINTS[i]; }
+  }
+  return bestT;
+}
 function brutoAT_SCL(avg, grupo, sexo, dim) {
-  var key = grupo+'_'+(sexo==='F'?'F':'M');
+  var grupoKey = grupo === 'adolescente' ? 'adol' : grupo;
+  var key = grupoKey + '_' + (sexo === 'F' ? 'F' : 'M');
+  var tabla = SCL_TABLE[key] && SCL_TABLE[key][dim];
+  if (tabla) return sclTableLookupT(avg, tabla);
   var norms = SCL_NORMS[key];
   if(!norms||!norms[dim]) return 50;
   var z = (avg - norms[dim].M) / norms[dim].DS;
@@ -9334,14 +9381,17 @@ function calcularScl90(){
   }
   var dimKeys=['SOM','OBS','SI','DEP','ANS','HOS','FOB','PAR','PSI'];
   var dimResults={};
-  var totalSum=0,totalResp=0,totalPositivos=0;
   dimKeys.forEach(function(dim){
     var items=SCL_DIMS[dim];var sum=0;var n=0;
-    items.forEach(function(i){if(vals[i]!==null){sum+=vals[i];n++;if(vals[i]>0)totalPositivos++;}});
+    items.forEach(function(i){if(vals[i]!==null){sum+=vals[i];n++;}});
     var avg=n>0?sum/n:0;
     dimResults[dim]={sum:sum,n:n,avg:avg};
-    totalSum+=sum;totalResp+=n;
   });
+  // IGS/TSP/IMSP se calculan sobre los 90 ítems (no solo los 83 que pertenecen a alguna dimensión primaria).
+  var totalSum=0,totalResp=0,totalPositivos=0;
+  for(var iAll=1;iAll<=90;iAll++){
+    if(vals[iAll]!==null){totalSum+=vals[iAll];totalResp++;if(vals[iAll]>0)totalPositivos++;}
+  }
   var IGS=totalResp>0?totalSum/totalResp:0;
   var TSP=totalPositivos;
   var IMSP=TSP>0?totalSum/TSP:0;
