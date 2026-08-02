@@ -6000,24 +6000,17 @@ var WAIS4_CLA = [
 
 
 // WMS-III · LeNu (Secuencia Número-Letra) — Apéndice D Tablas D.1–D.6.
-// Z directo sobre PB: Z = (PB − M) / DS · M = PD en Pe 10 · DS = 3 (DT estándar WMS-III).
+// Z se calcula sobre el Pe, no sobre el PB directo: Z = (Pe − 10) / 3 (M=10, DS=3 es la
+// media/DS estándar de cualquier Puntaje Escalar Wechsler, no del puntaje bruto).
 var LENU_GRUPOS = ['16–19','20–34','35–54','55–65','66–73','74+'];
-var LENU_BAR = [
-  {m:11, ds:3},
-  {m:11, ds:3},
-  {m:10, ds:3},
-  {m:8, ds:3},
-  {m:6, ds:3},
-  {m:4, ds:3}
-];
-// [PE1..PE19] = [minPB, maxPB] por grupo etario WMS-III (índice 0–5).
+// [PE1..PE19] = [minPB, maxPB] por grupo etario WMS-III (índice 0–5). Transcripto de Tablas D.1–D.6.
 var LENU_PB = [
   [null,null,[0,6],[7,7],null,[8,8],null,[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],null,[16,17],[18,18],[19,20],[21,21]],
-  [null,null,[0,5],[6,6],[7,7],[8,8],null,[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],[19,19],[20,21]],
+  [null,[0,5],[6,6],[7,7],[8,8],[9,9],null,[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16],[17,17],[18,18],[19,19],[20,21],null],
   [null,null,[0,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,18],[19,19],[20,21],null],
-  [null,[0,0],[1,2],[3,3],null,[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],null,[10,10],[11,11],[12,12],[13,14],[15,16],[17,21],null],
-  [null,null,null,[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],null,[8,8],null,[9,9],[10,10],[11,12],[13,21]],
-  [null,null,null,null,[0,0],[1,1],null,[2,2],[3,3],[4,4],[5,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,21],null]
+  [null,[0,0],[1,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],null,[10,10],[11,11],null,[12,12],[13,14],[15,16],[17,21],null],
+  [null,null,null,[0,0],[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,12],[13,21],null,null,null],
+  [null,null,null,[0,0],[1,1],[2,2],[3,3],[4,4],[5,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,21],null,null,null]
 ];
 
 function waisivGetSlnGi() {
@@ -6039,9 +6032,9 @@ function lenuPBtoPE(pb, gi) {
 }
 
 function lenuCalcZ(pb, gi) {
-  if (pb === null || pb === undefined || isNaN(pb) || gi < 0 || gi >= LENU_BAR.length) return null;
-  var bar = LENU_BAR[gi];
-  return parseFloat(((pb - bar.m) / bar.ds).toFixed(2));
+  var pe = lenuPBtoPE(pb, gi);
+  if (pe === null) return null;
+  return parseFloat(((pe - 10) / 3).toFixed(2));
 }
 
 function wais4GetGrupo(edad) {
@@ -6124,12 +6117,11 @@ function waisivActualizar() {
     if(slnPb===''||slnPb===null||isNaN(parseFloat(slnPb))||lgi<0){slnRes.innerHTML='';}
     else{
       var pbNum=parseFloat(slnPb);
-      var bar=LENU_BAR[lgi];
       var z=lenuCalcZ(pbNum,lgi);
       var pe=lenuPBtoPE(pbNum,lgi);
       var zCol=z<=-2?'#c0392b':z<=-1?'#c0602b':z>=1?'#1D9E75':'#555';
       var peTxt=pe!==null?' · Pe: <strong>'+pe+'</strong>':'';
-      slnRes.innerHTML='WMS '+LENU_GRUPOS[lgi]+': M=<strong>'+bar.m+'</strong> · DS=<strong>'+bar.ds+'</strong>'+peTxt+' · Z: <strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
+      slnRes.innerHTML='WMS '+LENU_GRUPOS[lgi]+': PB=<strong>'+pbNum+'</strong>'+peTxt+' · Z: <strong style="color:'+zCol+'">'+(z>=0?'+':'')+z+'</strong>';
     }
   }
 }
@@ -6161,11 +6153,10 @@ function guardarWaisiv() {
     var lgi=waisivGetSlnGi();
     if(lgi<0){toast('Seleccioná el grupo etario WMS-III para Secuencia Número-Letra.','error');return;}
     var slnPb=parseFloat(slnVal);
-    var bar=LENU_BAR[lgi];
     var pe=lenuPBtoPE(slnPb,lgi);
     var z=lenuCalcZ(slnPb,lgi);
-    dat.sln_pb=slnPb;dat.sln_pe=pe;dat.sln_z=z;dat.sln_m=bar.m;dat.sln_ds=bar.ds;dat.sln_gi=lgi;dat.sln_grupo=LENU_GRUPOS[lgi];
-    if(z!==null)interp.push('SLN (WMS-III LeNu, '+LENU_GRUPOS[lgi]+'): PB='+slnPb+' · M='+bar.m+' · DS='+bar.ds+' · Z='+(z>=0?'+':'')+z);
+    dat.sln_pb=slnPb;dat.sln_pe=pe;dat.sln_z=z;dat.sln_gi=lgi;dat.sln_grupo=LENU_GRUPOS[lgi];
+    if(z!==null)interp.push('SLN (WMS-III LeNu, '+LENU_GRUPOS[lgi]+'): PB='+slnPb+' → Pe='+pe+' → Z='+(z>=0?'+':'')+z);
   }
   var zPpal=dat.rd_z!=null?dat.rd_z:(dat.cla_z!=null?dat.cla_z:(dat.sln_z!=null?dat.sln_z:null));
   // Mostrar resultado antes de guardar
@@ -13115,7 +13106,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         } else if(tn==='WAIS-IV'){
           if(d.rd_pb!=null)add('WAIS-IV · Ret. Dígitos',d.rd_pb,10,3,d.rd_z,null);
           if(d.cla_pb!=null)add('WAIS-IV · Claves',d.cla_pb,10,3,d.cla_z,null);
-          if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra (WMS-III LeNu)',d.sln_pb,d.sln_m!=null?d.sln_m:null,d.sln_ds!=null?d.sln_ds:null,d.sln_z,d.sln_grupo||null);
+          if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra (WMS-III LeNu)',d.sln_pb,10,3,d.sln_z,d.sln_grupo||null);
         } else if(tn==='Stroop'){
           if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
           if(d.zC!=null) add('Stroop — Color',d.c!=null?d.c:d.cCorr,50,10,d.zC,null);
