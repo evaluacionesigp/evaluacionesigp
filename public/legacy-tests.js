@@ -13597,19 +13597,17 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var npiqTotal = fam.npiqTotal!=null ? fam.npiqTotal : (fam.npiq_total!=null?fam.npiq_total:0);
     var npiqSig = npiqTotal>0 ? 'Significativo' : 'No significativo';
     var npiqSint = '—';
-    var NPIQ_LABELS = {delirios:'Delirios',alucin:'Alucinaciones',agitacion:'Agitación',depresion:'Depresión/Disforia',ansiedad:'Ansiedad',euforia:'Euforia',apatia:'Apatía',desinhib:'Desinhibición',irritab:'Irritabilidad',motora:'Conducta Motora',sueno:'Alt. Sueño',apetito:'Alt. Apetito'};
     var GRAV_LBL = ['','Leve','Moderado','Severo'];
     if(fam.npiq&&typeof fam.npiq==='object'){
       var sintomas=[];
-      Object.keys(fam.npiq).forEach(function(k){
-        var v=fam.npiq[k];
+      FAM_NPIQ.forEach(function(it){
+        var v=fam.npiq[it.id];
         if(v&&v>0){
-          var lbl=NPIQ_LABELS[k]||k;
           var grav=GRAV_LBL[v]||'';
-          sintomas.push(lbl+(grav?' ('+grav+')':''));
+          sintomas.push(it.label+(it.prompt?': '+it.prompt:'')+(grav?' ('+grav+')':''));
         }
       });
-      npiqSint = sintomas.length ? sintomas.join(' · ') : '—';
+      npiqSint = sintomas.length ? sintomas.join(' ; ') : '—';
     }
     famRows.push(_wRow([famCell('Inventario neuropsiquiátrico NPI-Q',COL_FAM[0],'F2F2F2'),famCell(npiqSig,COL_FAM[1],'F2F2F2',true),famCell(npiqSint,COL_FAM[2],'F2F2F2')]));
     
@@ -14276,144 +14274,144 @@ var FAM_NPIQ = [
   {id:'apetito',   label:'Cambios en el apetito', prompt:'Cambios en apetito, peso o alimentación.'}
 ];
 var FAM_AD8 = [
-  {id:'ad8_1', n:1, label:'Dificultad para emitir juicios o tomar decisiones correctas', wordReport:'Dificultad emitir juicios'},
-  {id:'ad8_2', n:2, label:'Menor interés en hobbies y pasatiempos', wordReport:'Menor interés hobbies'},
-  {id:'ad8_3', n:3, label:'Repite las preguntas, comentarios o cosas que cuenta', wordReport:'Repite preguntas comentarios'},
-  {id:'ad8_4', n:4, label:'Dificultad para aprender a usar aparatos o dispositivos', wordReport:'Dificultad aparatos dispositivos'},
-  {id:'ad8_5', n:5, label:'Olvidar el mes y el año en que se encuentra', wordReport:'Olvida mes y año'},
-  {id:'ad8_6', n:6, label:'Dificultad en manejo de asuntos financieros complejos', wordReport:'Dificultad finanzas complejas'},
-  {id:'ad8_7', n:7, label:'Dificultad para recordar citas y cosas que tiene que hacer', wordReport:'Dificultad recordar citas'},
-  {id:'ad8_8', n:8, label:'Problemas recurrentes de memoria y razonamiento', wordReport:'Problemas memoria razonamiento'}
+  {id:'ad8_1', n:1, label:'Dificultad para emitir juicios o tomar decisiones correctas'},
+  {id:'ad8_2', n:2, label:'Menor interés en hobbies y pasatiempos'},
+  {id:'ad8_3', n:3, label:'Repite las preguntas, comentarios o cosas que cuenta'},
+  {id:'ad8_4', n:4, label:'Dificultad para aprender a usar aparatos o dispositivos'},
+  {id:'ad8_5', n:5, label:'Olvidar el mes y el año en que se encuentra'},
+  {id:'ad8_6', n:6, label:'Dificultad en manejo de asuntos financieros complejos'},
+  {id:'ad8_7', n:7, label:'Dificultad para recordar citas y cosas que tiene que hacer'},
+  {id:'ad8_8', n:8, label:'Problemas recurrentes de memoria y razonamiento'}
 ];
 var FAM_AVDB = [
-  {id:'identif', label:'A) Identificación personal', wordReport:'Identificación personal',
+  {id:'identif', label:'A) Identificación personal',
     options:[
-      {v:0,t:'0 · Datos correctos siempre'},
-      {v:1,t:'1 · Ocasional duda en algún dato'},
-      {v:2,t:'2 · Solo algún dato personal'},
-      {v:3,t:'3 · Duda datos personales'}
+      {v:0,t:'0 · Sabe y dice correctamente su nombre, DNI, dirección y teléfono en toda circunstancia.'},
+      {v:1,t:'1 · Sabe bien su nombre, DNI, dirección y teléfono, aunque en ocasión duda sobre algún dato.'},
+      {v:2,t:'2 · Sabe su nombre y solo podría decir algún dato personal (DNI, dirección y/o teléfono).'},
+      {v:3,t:'3 · Con frecuencia duda o se equivoca al decir sus datos personales (nombre, DNI, dirección y/o teléfono).'}
     ]},
-  {id:'aseo', label:'B) Aseo personal', wordReport:'Aseo personal',
+  {id:'aseo', label:'B) Aseo personal',
     options:[
-      {v:0,t:'0 · Se asea sin ayuda'},
-      {v:1,t:'1 · Asea bien, hay que indicarle'},
-      {v:2,t:'2 · Requiere indicación o ayuda parcial'},
-      {v:3,t:'3 · Ayuda frecuente para asearse'}
+      {v:0,t:'0 · Se baña y asea correctamente sin recibir ningún tipo de ayuda y sin que se lo indiquen.'},
+      {v:1,t:'1 · Se baña o asea correctamente, pero hay que indicarle que lo haga en distintas ocasiones.'},
+      {v:2,t:'2 · Debe indicársele que se asee o requiere ayuda para asearse alguna parte del cuerpo.'},
+      {v:3,t:'3 · Recibe ayuda frecuentemente para bañarse o asearse.'}
     ]},
-  {id:'vestirse', label:'C) Vestirse apropiadamente', wordReport:'Vestirse apropiadamente',
+  {id:'vestirse', label:'C) Vestirse apropiadamente',
     options:[
-      {v:0,t:'0 · Elige ropa y se viste solo'},
-      {v:1,t:'1 · Necesita indicación de ropa'},
-      {v:2,t:'2 · Ayuda para elegir o vestirse'},
-      {v:3,t:'3 · Le eligen ropa o visten casi completo'}
+      {v:0,t:'0 · Elige la ropa interior y exterior y se viste apropiadamente.'},
+      {v:1,t:'1 · Necesita que se le indique la ropa que debe ponerse, pero se la pone completamente solo.'},
+      {v:2,t:'2 · Necesita ayuda para elegir la ropa y/o para vestirse parcialmente.'},
+      {v:3,t:'3 · Necesita que le elijan la ropa o que le ayuden a vestirse casi completamente.'}
     ]},
-  {id:'continen', label:'F) Continencia', wordReport:'Continencia esfínteres',
+  {id:'continen', label:'F) Continencia',
     options:[
-      {v:0,t:'0 · Control esfinteriano completo'},
-      {v:1,t:'1 · Dificultad ocasional nocturna'},
-      {v:2,t:'2 · Accidentes ocasionales diurnos'},
-      {v:3,t:'3 · Ayuda para esfínteres'}
+      {v:0,t:'0 · Controla la micción, la defecación y emisión de gases por sí mismo completamente.'},
+      {v:1,t:'1 · Tiene dificultad para controlarse ocasionalmente por las noches.'},
+      {v:2,t:'2 · Tiene «accidentes» ocasionalmente durante el día.'},
+      {v:3,t:'3 · Le indican o lo ayudan cuando debe controlar los esfínteres.'}
     ]}
 ];
 var FAM_AVDI = [
-  {id:'telefono', label:'A) Capacidad para usar el teléfono', wordReport:'Uso del teléfono',
+  {id:'telefono', label:'A) Capacidad para usar el teléfono',
     options:[
-      {v:0,t:'0 · Usa teléfono con independencia'},
-      {v:1,t:'1 · Marca números conocidos'},
-      {v:2,t:'2 · Contesta, no marca'},
-      {v:3,t:'3 · No usa el teléfono'}
+      {v:0,t:'0 · Utiliza el teléfono por iniciativa propia, busca y marca los números, etc.'},
+      {v:1,t:'1 · Marca unos cuantos números conocidos.'},
+      {v:2,t:'2 · Contesta el teléfono, pero no marca.'},
+      {v:3,t:'3 · No usa el teléfono en absoluto.'}
     ]},
-  {id:'compras', label:'B) Ir de compras', wordReport:'Ir de compras',
+  {id:'compras', label:'B) Ir de compras',
     options:[
-      {v:0,t:'0 · Compras independientes'},
-      {v:1,t:'1 · Compras pequeñas solo'},
-      {v:2,t:'2 · Necesita compañía'},
-      {v:3,t:'3 · Incapaz de comprar'}
+      {v:0,t:'0 · Realiza todas las compras necesarias con independencia.'},
+      {v:1,t:'1 · Compra con independencia pequeñas cosas.'},
+      {v:2,t:'2 · Necesita compañía para realizar cualquier compra.'},
+      {v:3,t:'3 · Completamente incapaz de ir de compras.'}
     ]},
-  {id:'comida', label:'C) Preparación de la comida', wordReport:'Preparación comida',
+  {id:'comida', label:'C) Preparación de la comida',
     options:[
-      {v:0,t:'0 · Planea y cocina solo'},
-      {v:1,t:'1 · Cocina con ingredientes dados'},
-      {v:2,t:'2 · Calienta o prepara parcialmente'},
-      {v:3,t:'3 · Necesita que le preparen comida'}
+      {v:0,t:'0 · Planea, prepara y sirve las comidas adecuadas con independencia.'},
+      {v:1,t:'1 · Prepara las comidas adecuadas si se le dan los ingredientes; no recuerda los ingredientes o pasos para hacer una receta.'},
+      {v:2,t:'2 · Calienta, sirve y prepara comidas o las prepara pero no mantiene dieta adecuada.'},
+      {v:3,t:'3 · Necesita que se le prepare y sirva la comida.'}
     ]},
-  {id:'transp', label:'F) Medio de transporte', wordReport:'Medio de transporte',
+  {id:'transp', label:'F) Medio de transporte',
     options:[
-      {v:0,t:'0 · Transporte público o maneja'},
-      {v:1,t:'1 · Organiza taxi, no otros medios'},
-      {v:2,t:'2 · Transporte público acompañado'},
-      {v:3,t:'3 · Solo taxi o auto con ayuda'},
-      {v:4,t:'4 · No viaja'}
+      {v:0,t:'0 · Viaja solo en transporte público o conduce su propio coche.'},
+      {v:1,t:'1 · Capaz de organizar su transporte utilizando taxi, pero no usa otros transportes públicos.'},
+      {v:2,t:'2 · Viaja en transporte público si le acompaña otra persona.'},
+      {v:3,t:'3 · Sólo viaja en taxi o automóvil con ayuda.'},
+      {v:4,t:'4 · No viaja en absoluto.'}
     ]},
-  {id:'medic', label:'G) Responsabilidad sobre la medicación', wordReport:'Responsabilidad medicación',
+  {id:'medic', label:'G) Responsabilidad sobre la medicación',
     options:[
-      {v:0,t:'0 · Medicación autónoma'},
-      {v:1,t:'1 · Toma si está preparada'},
-      {v:2,t:'2 · No se responsabiliza'}
+      {v:0,t:'0 · Es responsable en el uso de la medicación (dosis correctas, horas correctas).'},
+      {v:1,t:'1 · Toma la medicación si se le prepara con anticipación en dosis separadas.'},
+      {v:2,t:'2 · No es capaz de responsabilizarse de su propia medicación.'}
     ]},
-  {id:'dinero', label:'H) Capacidad de utilizar el dinero', wordReport:'Uso del dinero',
+  {id:'dinero', label:'H) Capacidad de utilizar el dinero',
     options:[
-      {v:0,t:'0 · Finanzas independientes'},
-      {v:1,t:'1 · Gastos diarios, ayuda banco'},
-      {v:2,t:'2 · Incapaz de manejar dinero'}
+      {v:0,t:'0 · Maneja los asuntos financieros con independencia (presupuesta, rellena cheques, paga recibos, etc).'},
+      {v:1,t:'1 · Maneja los gastos cotidianos, pero necesita ayuda para ir al banco, grandes gastos; comete errores en el manejo del dinero (entregar vueltos, confundir billetes).'},
+      {v:2,t:'2 · Incapaz de manejar dinero.'}
     ]}
 ];
 var FAM_AVDE = [
-  {id:'inform', label:'A) Se mantiene informado', wordReport:'Se mantiene informado',
+  {id:'inform', label:'A) Se mantiene informado',
     options:[
-      {v:0,t:'0 · Informado de varios temas'},
-      {v:1,t:'1 · Solo uno o dos temas'},
-      {v:2,t:'2 · Depende que le informen'},
-      {v:3,t:'3 · No se informa'}
+      {v:0,t:'0 · Se mantiene informado de distintos temas (política, deporte, realidad, familia, cultura, temas particulares etc.)'},
+      {v:1,t:'1 · Solo se informa de uno o dos temas de su interés a través de los mismos medios o personas.'},
+      {v:2,t:'2 · No se informa mayormente de las cosas, depende que le digan lo que está sucediendo.'},
+      {v:3,t:'3 · No se informa de ningún tema o lo hace erráticamente con un medio casual.'}
     ]},
-  {id:'social', label:'B) Contactos socio afectivos', wordReport:'Contactos socio afectivos',
+  {id:'social', label:'B) Contactos socio afectivos',
     options:[
-      {v:0,t:'0 · Vincula con satisfacción'},
-      {v:1,t:'1 · Relaciona para no aislarse'},
-      {v:2,t:'2 · Dificultad con la gente'},
-      {v:3,t:'3 · No desea estar con gente'}
+      {v:0,t:'0 · Se vincula con gente, familiares o visita amigos o compañeros con satisfacción.'},
+      {v:1,t:'1 · Se relaciona con alguna gente o visita a alguien para no permanecer aislado.'},
+      {v:2,t:'2 · No encuentra satisfacción o tiene dificultad para estar con gente.'},
+      {v:3,t:'3 · No desea estar con gente o tiene problemas frecuentes con las personas.'}
     ]},
-  {id:'recreat', label:'C) Actividades recreativas', wordReport:'Actividades recreativas',
+  {id:'recreat', label:'C) Actividades recreativas',
     options:[
-      {v:0,t:'0 · Recrea con frecuencia'},
-      {v:1,t:'1 · Recrea si lo acompañan'},
-      {v:2,t:'2 · Errático en recreación'},
-      {v:3,t:'3 · No participa recreativamente'}
+      {v:0,t:'0 · Realiza actividades recreativas con frecuencia (cine, viajes, juegos etc.)'},
+      {v:1,t:'1 · Realiza actividades recreativas cuando lo acompañan u otros toman la iniciativa.'},
+      {v:2,t:'2 · Es errático para realizar o acompañar en alguna actividad recreativa.'},
+      {v:3,t:'3 · No puede generar o participar de una actividad recreativa.'}
     ]},
-  {id:'autono', label:'D) Autonomía e independencia', wordReport:'Autonomía e independencia',
+  {id:'autono', label:'D) Autonomía e independencia',
     options:[
-      {v:0,t:'0 · Autonomía general'},
-      {v:1,t:'1 · Ayuda o permisos eventuales'},
-      {v:2,t:'2 · Apoyo frecuente'},
-      {v:3,t:'3 · Depende de otros'}
+      {v:0,t:'0 · En general, puede manejarse con autonomía o independencia en sus actividades diarias.'},
+      {v:1,t:'1 · Requiere de eventual ayuda, permisos o concesiones para manejarse en sus actividades diarias.'},
+      {v:2,t:'2 · Con frecuencia necesita del apoyo o colaboración de los demás para realizar sus cosas.'},
+      {v:3,t:'3 · En general, depende de otras personas para realizar sus actividades cotidianas.'}
     ]},
-  {id:'planes', label:'E) Formula planes de futuro', wordReport:'Planes de futuro',
+  {id:'planes', label:'E) Formula planes de futuro',
     options:[
-      {v:0,t:'0 · Planea y actúa en consecuencia'},
-      {v:1,t:'1 · Planea, poca movilización'},
-      {v:2,t:'2 · Escasos planes'},
-      {v:3,t:'3 · Sin planes ni proyectos'}
+      {v:0,t:'0 · Planea o proyecta hacer cosas y muestra acciones o decisiones en función de los mismos.'},
+      {v:1,t:'1 · Planea o proyecta hacer cosas, pero no se moviliza adecuadamente en función de los mismos.'},
+      {v:2,t:'2 · Escasamente tiene planes o proyecta hacer cosas, espera que otros le indiquen.'},
+      {v:3,t:'3 · No tiene mayores planes ni proyectos. Pareciera que vive solo el presente.'}
     ]},
-  {id:'responsab', label:'F) Responsabilidad y confianza', wordReport:'Responsabilidad y confianza',
+  {id:'responsab', label:'F) Responsabilidad y confianza',
     options:[
-      {v:0,t:'0 · Muy responsable'},
-      {v:1,t:'1 · Responsable si controlan'},
-      {v:2,t:'2 · Poca responsabilidad'},
-      {v:3,t:'3 · No inspira confianza'}
+      {v:0,t:'0 · Es muy responsable en lo que hace. Cumple con sus deberes o inspira confianza.'},
+      {v:1,t:'1 · Es responsable cuando se lo exigen o controlan, pero inspira confianza.'},
+      {v:2,t:'2 · No es muy responsable y no inspira tanta confianza. Hay que controlarlo con frecuencia.'},
+      {v:3,t:'3 · No es capaz mayormente de dar a conocer lo que opina o lo que piensa, o lo hace erráticamente.'}
     ]},
-  {id:'opinion', label:'G) Expresión de opiniones comprometidas', wordReport:'Expresión de opiniones',
+  {id:'opinion', label:'G) Expresión de opiniones comprometidas',
     options:[
-      {v:0,t:'0 · Opina y discute bien'},
-      {v:1,t:'1 · Opina en ciertas circunstancias'},
-      {v:2,t:'2 · Dificultad para opinar'},
-      {v:3,t:'3 · No expresa opinión'}
+      {v:0,t:'0 · Con frecuencia opina, expresa comentarios o discute de buen modo con las personas en general.'},
+      {v:1,t:'1 · Sólo en ciertas circunstancias es capaz de expresar su opinión y/o discute de mal modo.'},
+      {v:2,t:'2 · Le resulta difícil opinar o hacer comentarios, o discute de mal modo con las personas en general.'},
+      {v:3,t:'3 · No es capaz mayormente de dar a conocer lo que opina o lo que piensa, o lo hace erráticamente.'}
     ]},
-  {id:'aprende', label:'H) Aprende cosas nuevas', wordReport:'Aprende cosas nuevas',
+  {id:'aprende', label:'H) Aprende cosas nuevas (manualidades, estudio, lectura, juego de cartas, cocina, reparaciones etc.)',
     options:[
-      {v:0,t:'0 · Aprende nuevas actividades'},
-      {v:1,t:'1 · Habilidades limitadas'},
-      {v:2,t:'2 · No intenta aprender'},
-      {v:3,t:'3 · Dificultad para aprender'}
+      {v:0,t:'0 · Muestra habilidades para hacer o trabajar algo en especial o para aprender nuevas actividades.'},
+      {v:1,t:'1 · Hace uso de habilidades limitadas o tiene dificultad para aprender alguna actividad nueva.'},
+      {v:2,t:'2 · No emplea mayores habilidades actualmente. Tampoco intenta aprender nada nuevo.'},
+      {v:3,t:'3 · Le resulta difícil mostrar alguna habilidad para hacer algo o aprender algo nuevo.'}
     ]}
 ];
 
@@ -14440,7 +14438,10 @@ function famReporteSintomasAvd(obj, items) {
   if (!obj || typeof obj !== 'object') return '—';
   var partes = [];
   items.forEach(function(it) {
-    if (famAvdItemSignificativo(obj[it.id])) partes.push(it.wordReport || it.label);
+    var v = obj[it.id];
+    if (!famAvdItemSignificativo(v)) return;
+    var opt = (it.options || []).filter(function(o){ return String(o.v) === String(parseInt(v, 10)); })[0];
+    partes.push(opt ? opt.t.replace(/^\d+\s*·\s*/, '') : it.label);
   });
   return partes.length ? partes.join(' ; ') : '—';
 }
@@ -14449,7 +14450,7 @@ function famReporteSintomasAd8(ad8Obj) {
   if (!ad8Obj || typeof ad8Obj !== 'object') return '—';
   var partes = [];
   FAM_AD8.forEach(function(it) {
-    if (ad8Obj[it.id] === 'si') partes.push(it.wordReport || it.label);
+    if (ad8Obj[it.id] === 'si') partes.push(it.label);
   });
   return partes.length ? partes.join(' ; ') : '—';
 }
