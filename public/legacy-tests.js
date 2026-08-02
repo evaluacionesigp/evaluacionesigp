@@ -2195,7 +2195,7 @@ function zNormMeta(z, invertirZ) {
   if (invertirZ) zf = -zf;
   if (zf >= 1.5) return { label: 'Superior', color: '#1565c0' };
   if (zf > -1.0) return { label: 'Normal', color: '#2e7a4f' };
-  if (zf > -1.5) return { label: 'Límite inferior normativo', color: '#6f6f69' };
+  if (zf > -1.33) return { label: 'Límite inferior normativo', color: '#6f6f69' };
   if (zf > -2.0) return { label: 'Dificultad leve', color: '#7a5c00' };
   if (zf > -2.5) return { label: 'Dificultad moderada', color: '#a04000' };
   return { label: 'Dificultad elevada', color: '#a00000' };
