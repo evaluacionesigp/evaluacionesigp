@@ -14173,9 +14173,9 @@ function renderPerfilZ() {
           filas.push({ lbl: td[0], z: z, glosario: td[2], invertirZ: td[3] });
         });
       } else if (tn === 'WAIS-IV') {
-        if (d.rd_z  != null) filas.push({lbl:'WAIS · Dígitos', z: d.rd_z});
-        if (d.cla_z != null) filas.push({lbl:'WAIS · Claves', z: d.cla_z});
-        if (d.sln_z != null) filas.push({lbl:'WAIS · Nro-Letra', z: d.sln_z});
+        if (d.rd_z  != null) filas.push({lbl:'WAIS-IV · Ret. Dígitos', z: d.rd_z});
+        if (d.cla_z != null) filas.push({lbl:'WAIS-IV · Claves', z: d.cla_z});
+        if (d.sln_z != null) filas.push({lbl:'WAIS-IV · Sec. Nro-Letra (WMS-III LeNu)', z: d.sln_z});
       } else if (tn === 'WMS-III LoEs') {
         if (d.z != null || r.puntaje_z != null) filas.push({lbl:'WMS III - Memoria de trabajo', z: d.z != null ? d.z : r.puntaje_z, glosario: 'WMS-III LoEs'});
       } else if (tn === 'WAIS-IV Perfil') {
