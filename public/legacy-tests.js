@@ -13335,6 +13335,12 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     });
   }
 
+  // ── Formatear fecha ISO (YYYY-MM-DD) a formato latinoamericano DD/MM/YYYY ──
+  function fmtFechaLatam(iso){
+    var m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? (m[3]+'/'+m[2]+'/'+m[1]) : (iso||'');
+  }
+
   // ── Tabla datos personales ──
   function dpRow(lbl,val){
     return _wRow([
@@ -13359,8 +13365,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   body+=_wTable([
     dpRow('Apellido y Nombre', pacNombre),
     dpRow('Edad',              pacEdad),
-    dpRow('Fecha de Nacimiento', pacFnac),
-    dpRow('Fecha de Evaluación', inf.fecha_evaluacion||fechaEval),
+    dpRow('Fecha de Nacimiento', fmtFechaLatam(pacFnac)),
+    dpRow('Fecha de Evaluación', fmtFechaLatam(inf.fecha_evaluacion||fechaEval)),
     dpRow('DNI',               inf.dni||pacDNI||'—'),
     dpRow('Educación',         pacEscol),
     dpRow('Ocupación',         inf.ocupacion||pacOcup),
