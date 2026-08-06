@@ -10038,6 +10038,11 @@ function abrirInforme() {
   if (panel) { panel.style.display = 'none'; }
   var icon = document.getElementById('perfil-z-toggle-icon');
   if (icon) { icon.style.transform = 'rotate(0deg)'; }
+  // Cerrar el panel de cuestionarios familiares si estaba abierto (se re-renderizará al abrir)
+  var famPanel = document.getElementById('familiar-preview-panel');
+  if (famPanel) { famPanel.style.display = 'none'; }
+  var famIcon = document.getElementById('familiar-preview-toggle-icon');
+  if (famIcon) { famIcon.style.transform = 'rotate(0deg)'; }
   var pac = PACIENTES.find(function(p){ return p.id === pacId; });
   var nombre = pac ? pac.nombre : '—';
   document.getElementById('informe-pac-nombre').textContent = nombre;
@@ -14253,6 +14258,97 @@ function renderPerfilZ() {
   }
 
   tabla.innerHTML = html;
+}
+
+function toggleFamiliarPreview() {
+  var panel = document.getElementById('familiar-preview-panel');
+  var icon  = document.getElementById('familiar-preview-toggle-icon');
+  if (!panel) return;
+  var open = panel.style.display === 'block';
+  panel.style.display = open ? 'none' : 'block';
+  icon.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (!open) renderFamiliarPreview();
+}
+
+function _famPreviewBadge(txt) {
+  if (!txt || txt === '—') return '<span style="color:var(--muted);">—</span>';
+  var esSig = /^Significativo/.test(txt);
+  var bg = esSig ? '#fad8d8' : '#e8f4e0';
+  var col = esSig ? '#a00000' : '#2e7a4f';
+  return '<span style="font-weight:700;font-size:0.72rem;color:' + col + ';background:' + bg + ';padding:1px 7px;border-radius:4px;white-space:nowrap;display:inline-block;">' + txt + '</span>';
+}
+
+function renderFamiliarPreview() {
+  var cont = document.getElementById('familiar-preview-tabla');
+  if (!cont) return;
+
+  var pacId = window._informePacId || null;
+  var resultados = pacId
+    ? (RESULTADOS || []).filter(function(r){ return String(r.paciente_id) === String(pacId) && r.test === 'Cuestionarios Familiares'; })
+    : [];
+
+  if (!resultados.length) {
+    cont.innerHTML = '<div style="color:var(--muted);font-style:italic;padding:10px 0;font-size:0.82rem;">No hay cuestionarios familiares cargados para este paciente aún.</div>';
+    return;
+  }
+
+  var fam = resultados[resultados.length - 1].datos || {};
+  var GRAV_LBL = ['', 'Leve', 'Moderado', 'Severo'];
+
+  // NPI-Q (misma lógica que en el Word)
+  var npiqTotal = fam.npiqTotal != null ? fam.npiqTotal : (fam.npiq_total != null ? fam.npiq_total : 0);
+  var npiqSig = npiqTotal > 0 ? 'Significativo' : 'No significativo';
+  var npiqSint = '—';
+  if (fam.npiq && typeof fam.npiq === 'object') {
+    var sintomasNpiq = [];
+    FAM_NPIQ.forEach(function(it) {
+      var v = fam.npiq[it.id];
+      if (v && v > 0) {
+        var grav = GRAV_LBL[v] || '';
+        sintomasNpiq.push(it.label + (grav ? ' (' + grav + ')' : ''));
+      }
+    });
+    npiqSint = sintomasNpiq.length ? sintomasNpiq.join(' ; ') : '—';
+  }
+
+  // AVD Básicas / Instrumentales / Expansivas
+  var avdbSigRaw = famAvdHaySignificativo(fam.avdb, FAM_AVDB);
+  var avdbSig = avdbSigRaw === null ? '—' : (avdbSigRaw ? 'Significativo' : 'No significativo');
+  var avdiSigRaw = famAvdHaySignificativo(fam.avdi, FAM_AVDI);
+  var avdiSig = avdiSigRaw === null ? '—' : (avdiSigRaw ? 'Significativo' : 'No significativo');
+  var avdeSigRaw = famAvdHaySignificativo(fam.avde, FAM_AVDE);
+  var avdeSig = avdeSigRaw === null ? '—' : (avdeSigRaw ? 'Significativo' : 'No significativo');
+
+  // AD8-ARG
+  var ad8Val = fam.ad8Total != null ? fam.ad8Total : (fam.ad8_total != null ? fam.ad8_total : null);
+  var ad8Sig = ad8Val != null ? (ad8Val >= 2 ? 'Significativo (' + ad8Val + '/8)' : 'No significativo (' + ad8Val + '/8)') : '—';
+
+  var filas = [
+    ['Inventario neuropsiquiátrico (NPI-Q)', npiqSig, npiqSint],
+    ['Escala de AVD Básicas', avdbSig, famReporteSintomasAvd(fam.avdb, FAM_AVDB)],
+    ['Escala de AVD Instrumentales', avdiSig, famReporteSintomasAvd(fam.avdi, FAM_AVDI)],
+    ['Escala de AVD Expansivas', avdeSig, famReporteSintomasAvd(fam.avde, FAM_AVDE)],
+    ['Cuestionario del Informante (AD8-ARG)', ad8Sig, famReporteSintomasAd8(fam.ad8)],
+  ];
+
+  var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.74rem;">';
+  html += '<thead><tr>' +
+    '<th style="text-align:left;padding:4px 8px;font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);">Test</th>' +
+    '<th style="text-align:center;padding:4px 8px;font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);white-space:nowrap;">Resultado</th>' +
+    '<th style="text-align:left;padding:4px 8px;font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border);">Síntomas / especificación</th>' +
+    '</tr></thead><tbody>';
+
+  filas.forEach(function(f, i) {
+    var bg = i % 2 === 0 ? 'var(--surface2)' : 'transparent';
+    html += '<tr style="background:' + bg + ';">' +
+      '<td style="padding:4px 8px;font-weight:600;color:var(--text);vertical-align:top;">' + f[0] + '</td>' +
+      '<td style="padding:4px 8px;text-align:center;vertical-align:top;">' + _famPreviewBadge(f[1]) + '</td>' +
+      '<td style="padding:4px 8px;color:var(--text);line-height:1.4;">' + f[2] + '</td>' +
+      '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  cont.innerHTML = html;
 }
 
 // ══ CUESTIONARIOS FAMILIARES (protocolo CIATEC / González Palau) ═══════════════
