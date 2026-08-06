@@ -12779,6 +12779,12 @@ function _zGrillaRows(label, pb, m, ds, z, nota, isEven, isSubhdr, interpCustom,
     var zClamp = Math.max(-3, Math.min(3, parseFloat(z)));
     var best = 0, bestDist = Infinity;
     ZCOLS.forEach(function(v,i){ var d=Math.abs(v-zClamp); if(d<bestDist){bestDist=d;best=i;}});
+    // La banda "Dificultad moderada" (-2.5 a -1.6) queda muy cerca de la columna -1.5
+    // (compartida con "Dificultad leve") y de la -2.5 (compartida con "Dificultad elevada").
+    // Se fuerza siempre a la columna -2 para que la X quede visualmente separada de ambas.
+    if (zNormMeta(parseFloat(z), false).label === 'Dificultad moderada') {
+      best = ZCOLS.indexOf(-2);
+    }
     markedCol = best;
   }
 
