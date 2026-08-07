@@ -13892,6 +13892,229 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   toast('Informe Word generado ✓','success');
 }
 
+// ══ EXPORT INVESTIGACIÓN (.xlsx) ═════════════════════════════════════════════
+// Mismos dominios que la grilla del informe Word (ver función de arriba),
+// renombrando "Cognitivo global" → "Screening" para alinear con el pedido.
+// Cuando un test aparece en más de un dominio (p.ej. TMT A-B en Atención y en
+// Funciones ejecutivas) se usa el primero encontrado; lo que no matchea
+// ningún dominio va a "Otros" para que ningún test administrado se pierda.
+var EXPORT_DOMINIOS = {
+  'Screening':            ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
+  'Atención':             ['TMT A-B','WAIS-IV','D2','SDMT-escrita','SDMT-oral','BTA'],
+  'Memoria':              ['Rey Verbal','TAVEC','BEM 144 Signoret'],
+  'Funciones ejecutivas': ['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio','TMT A-B'],
+  'Lenguaje':             ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
+  'Visoconstructivo':     ['Figura Rey'],
+};
+var EXPORT_DOMINIO_POR_TEST = (function() {
+  var mapa = {};
+  Object.keys(EXPORT_DOMINIOS).forEach(function(dom) {
+    EXPORT_DOMINIOS[dom].forEach(function(test) { if (!mapa[test]) mapa[test] = dom; });
+  });
+  return mapa;
+})();
+function dominioDeTest(test) { return EXPORT_DOMINIO_POR_TEST[test] || 'Otros'; }
+
+// Pagina con el header Range de PostgREST para no depender del cap de 1000
+// filas por request (y no reusar RESULTADOS, que en la app vive capado a 200).
+function fetchTodosPaginado(path, token) {
+  var PAGE = 1000;
+  function siguientePagina(desde, acumulado) {
+    var hasta = desde + PAGE - 1;
+    return supaFetch(path, 'GET', null, token, { Range: desde + '-' + hasta })
+      .then(function(r) { return r.json(); })
+      .then(function(pagina) {
+        pagina = Array.isArray(pagina) ? pagina : [];
+        acumulado = acumulado.concat(pagina);
+        if (pagina.length < PAGE) return acumulado;
+        return siguientePagina(desde + PAGE, acumulado);
+      });
+  }
+  return siguientePagina(0, []);
+}
+
+function abrirExportInvestigacion() {
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML =
+    '<div style="background:var(--surface);border-radius:14px;padding:28px 32px;min-width:320px;max-width:420px;width:92%;box-shadow:0 8px 32px rgba(45,92,34,0.18);">' +
+    '<div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">Exportar base de datos de investigación</div>' +
+    '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">Genera un Excel con todos los pacientes que dieron consentimiento de investigación.</div>' +
+    '<div class="field"><label>Contraseña</label><input type="password" id="export-inv-pass" autocomplete="off"></div>' +
+    '<div id="export-inv-error" style="display:none;color:#a82828;font-size:0.82rem;margin-top:6px;">Contraseña incorrecta.</div>' +
+    '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">' +
+    '<button class="btn-secondary" id="export-inv-cancel">Cancelar</button>' +
+    '<button class="btn-primary" id="export-inv-confirmar">Exportar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+  var cerrar = function() { if (document.body.contains(modal)) document.body.removeChild(modal); };
+  modal.querySelector('#export-inv-cancel').onclick = cerrar;
+  modal.addEventListener('click', function(e) { if (e.target === modal) cerrar(); });
+  var passEl = modal.querySelector('#export-inv-pass');
+  var errEl = modal.querySelector('#export-inv-error');
+  var btnEl = modal.querySelector('#export-inv-confirmar');
+  passEl.focus();
+  var intentar = function() {
+    if (passEl.value !== 'FC5J6ev.9e7') { errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    btnEl.disabled = true;
+    btnEl.textContent = 'Generando…';
+    generarExcelInvestigacion().then(function(huboDatos) {
+      btnEl.disabled = false;
+      btnEl.textContent = 'Exportar';
+      if (huboDatos) cerrar();
+    }).catch(function(err) {
+      btnEl.disabled = false;
+      btnEl.textContent = 'Exportar';
+      catchGuardarError(err);
+    });
+  };
+  btnEl.onclick = intentar;
+  passEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') intentar(); });
+}
+
+// Devuelve una Promise<boolean>: true si se generó y descargó el archivo.
+function generarExcelInvestigacion() {
+  return fetchTodosPaginado(
+    '/rest/v1/psico_pacientes?select=id,nombre,fecha_nacimiento,escolaridad&consentimiento_investigacion=eq.true',
+    SESSION.access_token
+  ).then(function(pacientesConsentidos) {
+    if (!pacientesConsentidos.length) {
+      toast('Ningún paciente tiene consentimiento de investigación todavía.', 'error');
+      return false;
+    }
+    var pacPorId = {};
+    pacientesConsentidos.forEach(function(p) { pacPorId[String(p.id)] = p; });
+    // Se trae TODO psico_resultados (sin filtro paciente_id=in.(...) en la URL, para
+    // no toparse con el límite de largo de URL si hay muchos pacientes consentidos)
+    // y se filtra acá adentro quedándose solo con los consentidos.
+    return fetchTodosPaginado(
+      '/rest/v1/psico_resultados?select=paciente_id,test,fecha,puntaje_z,categoria&order=paciente_id,fecha',
+      SESSION.access_token
+    ).then(function(resultados) {
+      var filas = [];
+      resultados.forEach(function(r) {
+        var pac = pacPorId[String(r.paciente_id)];
+        if (!pac) return;
+        filas.push({
+          nombre: pac.nombre || '',
+          fecha_nacimiento: pac.fecha_nacimiento || '',
+          edad: pac.fecha_nacimiento ? calcularEdad(pac.fecha_nacimiento) : '',
+          escolaridad: pac.escolaridad || '',
+          fecha_evaluacion: r.fecha || '',
+          test: r.test || '',
+          dominio: dominioDeTest(r.test),
+          puntaje_z: (r.puntaje_z === null || r.puntaje_z === undefined) ? '' : r.puntaje_z,
+          categoria: r.categoria || ''
+        });
+      });
+      descargarExcelInvestigacion(filas);
+      toast('✓ Excel generado (' + filas.length + ' evaluaciones de ' + pacientesConsentidos.length + ' pacientes)', 'success');
+      return true;
+    });
+  });
+}
+
+// ── Generador de .xlsx mínimo (mismo contenedor ZIP que el .docx de arriba,
+// reusando _makeZip/_crc32; sin sharedStrings, strings inline por celda) ──
+function _xlsxEscape(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+}
+function _xlsxColLetra(i) {
+  var s = '', n = i + 1;
+  while (n > 0) { var rem = (n - 1) % 26; s = String.fromCharCode(65 + rem) + s; n = Math.floor((n - 1) / 26); }
+  return s;
+}
+function _xlsxFilaXml(valores, filaNum) {
+  var celdas = valores.map(function(val, i) {
+    var ref = _xlsxColLetra(i) + filaNum;
+    if (val.num) {
+      var n = (val.v === '' || val.v === null || val.v === undefined || isNaN(parseFloat(val.v))) ? null : parseFloat(val.v);
+      return n === null ? '<c r="' + ref + '"/>' : '<c r="' + ref + '"><v>' + n + '</v></c>';
+    }
+    return '<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + _xlsxEscape(val.v) + '</t></is></c>';
+  }).join('');
+  return '<row r="' + filaNum + '">' + celdas + '</row>';
+}
+function descargarExcelInvestigacion(filas) {
+  var enc = new TextEncoder();
+  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Test','Dominio cognitivo','Puntaje Z','Categoría'];
+  var filasXml = _xlsxFilaXml(headers.map(function(h){ return { v: h, num: false }; }), 1);
+  filas.forEach(function(f, i) {
+    var valores = [
+      { v: f.nombre, num: false },
+      { v: f.fecha_nacimiento, num: false },
+      { v: f.edad, num: true },
+      { v: f.escolaridad, num: false },
+      { v: f.fecha_evaluacion, num: false },
+      { v: f.test, num: false },
+      { v: f.dominio, num: false },
+      { v: f.puntaje_z, num: true },
+      { v: f.categoria, num: false }
+    ];
+    filasXml += _xlsxFilaXml(valores, i + 2);
+  });
+
+  var sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<sheetData>' + filasXml + '</sheetData>' +
+    '</worksheet>';
+
+  var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+    '</Types>';
+
+  var topRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+    '</Relationships>';
+
+  var workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+    '<sheets><sheet name="Investigación" sheetId="1" r:id="rId1"/></sheets>' +
+    '</workbook>';
+
+  var workbookRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '</Relationships>';
+
+  var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>' +
+    '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>' +
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>' +
+    '</styleSheet>';
+
+  var zipEntries = [
+    { name: '[Content_Types].xml',        data: enc.encode(contentTypes) },
+    { name: '_rels/.rels',                data: enc.encode(topRels) },
+    { name: 'xl/workbook.xml',            data: enc.encode(workbookXml) },
+    { name: 'xl/_rels/workbook.xml.rels', data: enc.encode(workbookRels) },
+    { name: 'xl/styles.xml',              data: enc.encode(stylesXml) },
+    { name: 'xl/worksheets/sheet1.xml',   data: enc.encode(sheetXml) }
+  ];
+  var zipData = _makeZip(zipEntries);
+  var blob = new Blob([zipData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'Investigacion_IGP_' + new Date().toISOString().split('T')[0] + '.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+}
+
 // ══ TAVEC · Test de Aprendizaje Verbal España-Complutense ════════════════════
 // Baremos: Benedet & Alejandre (1998) — 7 grupos de edad, N=1015
 // Variables incluidas: V1,V2,V3,V4,V8,V9,V10,V11,V20,V21,V22,V23,V24,V25
