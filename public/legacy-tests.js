@@ -28,11 +28,12 @@ function cargarResultados() {
 function renderPacientesInicio() {
   var el = document.getElementById('inicio-pacientes-lista');
   if (!el) return;
-  if (!PACIENTES.length) {
+  var activos = PACIENTES.filter(function(p){ return !p.archivado; });
+  if (!activos.length) {
     el.innerHTML = '<div class="empty-state" style="padding:12px 0;"><div class="empty-txt">No hay pacientes registrados.</div></div>';
     return;
   }
-  el.innerHTML = PACIENTES.map(function(p) {
+  el.innerHTML = activos.map(function(p) {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">' +
@@ -68,8 +69,9 @@ function actualizarStatsHome() {
 }
 function renderPacientes() {
   var el = document.getElementById('pacientes-lista-contenido');
-  if (!PACIENTES.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-txt">No hay pacientes registrados aún.</div></div>'; return; }
-  el.innerHTML = PACIENTES.map(function(p) {
+  var activos = PACIENTES.filter(function(p){ return !p.archivado; });
+  if (!activos.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-txt">No hay pacientes registrados aún.</div></div>'; return; }
+  el.innerHTML = activos.map(function(p) {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
     return '<div class="paciente-item">' +
@@ -548,7 +550,7 @@ function escolTecle(anios) {
 
 function llenarSelectPacientes() {
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
+    PACIENTES.filter(function(p){ return !p.archivado; }).map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   ['bdi-paciente','stai-paciente','rey-paciente','tmt-paciente','flv-paciente',
    'phq-paciente','gad-paciente','birleson-paciente','aaa-paciente','spaib-paciente','moca-paciente','mmp-paciente','ifs-paciente','crc-paciente','pss-paciente','holmes-paciente','yesavage-paciente',
    'bnt-paciente','token-paciente','waisiv-paciente','waisperfil-paciente','loes-paciente','acer-paciente','wcst-paciente','scl90-paciente','signoret-paciente','asrs-paciente','wurs-paciente','eava-paciente','dislex1-paciente','dislex2-paciente','dislex3-paciente','tecle-paciente','dislex5-paciente','aq-paciente','aq10-paciente','eq-paciente','ea-paciente','scq-paciente','dex-paciente','reloj-paciente','mbi-paciente',
@@ -600,6 +602,13 @@ function abrirModalPac(id) {
   if (p.escolaridad) info += '<b>Escolaridad:</b> ' + escHtml(p.escolaridad) + '<br>';
   if (p.notas) info += '<b>Notas:</b> ' + escHtml(p.notas);
   document.getElementById('modal-pac-info').innerHTML = info || 'Sin datos adicionales.';
+  var consentEl = document.getElementById('modal-pac-consentimiento');
+  if (consentEl) {
+    consentEl.checked = !!p.consentimiento_investigacion;
+    consentEl.onchange = function() { toggleConsentimientoInvestigacion(p.id, consentEl.checked); };
+  }
+  var archivarEl = document.getElementById('modal-pac-archivar');
+  if (archivarEl) archivarEl.onclick = function() { archivarPaciente(p.id, p.nombre); };
   document.getElementById('modal-pac').classList.add('active');
 }
 function evaluarPacienteDesdeModal() {
@@ -607,6 +616,33 @@ function evaluarPacienteDesdeModal() {
   irVista('inicio');
 }
 function cerrarModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// Guardado al instante: se dispara con cada click del checkbox, sin botón "Guardar" aparte.
+function toggleConsentimientoInvestigacion(id, checked) {
+  supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'PATCH', { consentimiento_investigacion: checked }, SESSION.access_token)
+    .then(function() {
+      var idx = PACIENTES.findIndex(function(x){ return String(x.id) === String(id); });
+      if (idx !== -1) PACIENTES[idx].consentimiento_investigacion = checked;
+      if (PAC_ACTIVO && String(PAC_ACTIVO.id) === String(id)) PAC_ACTIVO.consentimiento_investigacion = checked;
+      toast(checked ? '✓ Consentimiento registrado' : 'Consentimiento retirado', 'success');
+    }).catch(catchGuardarError);
+}
+
+function archivarPaciente(id, nombre) {
+  if (!confirm('¿Archivar a ' + nombre + '?\nDejará de aparecer en la lista de pacientes activos. Podés desarchivarlo luego desde "Archivados".')) return;
+  var updates = { archivado: true, archivado_en: new Date().toISOString() };
+  supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'PATCH', updates, SESSION.access_token)
+    .then(function() {
+      var idx = PACIENTES.findIndex(function(x){ return String(x.id) === String(id); });
+      if (idx !== -1) Object.assign(PACIENTES[idx], updates);
+      if (PAC_ACTIVO && String(PAC_ACTIVO.id) === String(id)) setPacienteActivo(null);
+      cerrarModal('modal-pac');
+      renderPacientes();
+      renderPacientesInicio();
+      llenarSelectPacientes();
+      toast('✓ Paciente archivado', 'success');
+    }).catch(catchGuardarError);
+}
 
 // ══ GLOSARIO CLÍNICO — TOOLTIP TESTS ════════════════════════════════════════
 var GLOSARIO_TESTS = {

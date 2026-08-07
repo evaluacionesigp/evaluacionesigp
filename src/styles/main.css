@@ -230,6 +230,12 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   font-size: 0.86rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
 }
 .btn-secondary:hover { border-color: var(--accent); color: var(--accentdk); }
+.btn-danger {
+  padding: 9px 18px; background: #a82828; border: none;
+  border-radius: 7px; color: white; font-family: 'Outfit', sans-serif;
+  font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.btn-danger:hover { opacity: 0.85; }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
 .card-title { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 600; color: var(--accentdk); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
