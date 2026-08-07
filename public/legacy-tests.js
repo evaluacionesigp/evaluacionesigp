@@ -115,6 +115,52 @@ function renderPacientes() {
   });
 }
 
+function renderArchivados() {
+  var el = document.getElementById('archivados-lista-contenido');
+  if (!el) return;
+  var archivados = PACIENTES.filter(function(p){ return p.archivado; });
+  if (!archivados.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🗄</div><div class="empty-txt">No hay pacientes archivados.</div></div>'; return; }
+  el.innerHTML = archivados.map(function(p) {
+    var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
+    var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
+    return '<div class="paciente-item">' +
+      '<div><div class="pac-nombre">' + escHtml(p.nombre) + '</div>' +
+      (meta ? '<div class="pac-meta">' + meta + '</div>' : '') + '</div>' +
+      '<div class="pac-acciones">' +
+      '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
+      '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-desarchivar-pac-id="' + p.id + '" data-desarchivar-pac-nombre="' + encodeURIComponent(p.nombre) + '">Desarchivar</button>' +
+      '</div></div>';
+  }).join('');
+  // Delegación Ver (reusa el mismo modal; abrirModalPac oculta "Archivar paciente" si ya está archivado)
+  el.querySelectorAll('[data-ver-pac]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      abrirModalPac(this.getAttribute('data-ver-pac'));
+    });
+  });
+  // Delegación Desarchivar
+  el.querySelectorAll('[data-desarchivar-pac-id]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      desarchivarPaciente(this.getAttribute('data-desarchivar-pac-id'), decodeURIComponent(this.getAttribute('data-desarchivar-pac-nombre')));
+    });
+  });
+}
+
+function desarchivarPaciente(id, nombre) {
+  var updates = { archivado: false, archivado_en: null };
+  supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'PATCH', updates, SESSION.access_token)
+    .then(function() {
+      var idx = PACIENTES.findIndex(function(x){ return String(x.id) === String(id); });
+      if (idx !== -1) Object.assign(PACIENTES[idx], updates);
+      renderArchivados();
+      renderPacientes();
+      renderPacientesInicio();
+      llenarSelectPacientes();
+      toast('✓ ' + nombre + ' desarchivado', 'success');
+    }).catch(catchGuardarError);
+}
+
 // El link vale 7 días desde que se genera: cada vez que se pide, se renueve el
 // vencimiento en psico_pacientes.familiar_link_expira (la función RPC pública
 // insertar_resultado_familiar rechaza envíos si ya venció).
@@ -608,7 +654,13 @@ function abrirModalPac(id) {
     consentEl.onchange = function() { toggleConsentimientoInvestigacion(p.id, consentEl.checked); };
   }
   var archivarEl = document.getElementById('modal-pac-archivar');
-  if (archivarEl) archivarEl.onclick = function() { archivarPaciente(p.id, p.nombre); };
+  if (archivarEl) {
+    archivarEl.style.display = p.archivado ? 'none' : '';
+    archivarEl.onclick = function() { archivarPaciente(p.id, p.nombre); };
+  }
+  // Un paciente archivado no aparece en los selects de test, así que "Evaluar →" sería un callejón sin salida.
+  var evaluarEl = document.getElementById('modal-pac-evaluar');
+  if (evaluarEl) evaluarEl.style.display = p.archivado ? 'none' : '';
   document.getElementById('modal-pac').classList.add('active');
 }
 function evaluarPacienteDesdeModal() {
@@ -2755,10 +2807,11 @@ function irVista(v) {
   var el = document.getElementById('vista-' + v);
   if(el) el.classList.add('active');
   document.querySelectorAll('.sidebar-section').forEach(function(el){ el.classList.remove('active'); });
-  var map = {inicio:'snav-inicio', pacientes:'snav-pacientes', historial:'snav-historial', informe:'snav-historial'};
+  var map = {inicio:'snav-inicio', pacientes:'snav-pacientes', archivados:'snav-archivados', historial:'snav-historial', informe:'snav-historial'};
   if(map[v]) { var s=document.getElementById(map[v]); if(s) s.classList.add('active'); }
   sectorActual = '';
   aplicarContextoSector();
+  if (v === 'archivados') renderArchivados();
   if (v === 'historial') {
     renderFiltroHistorial();
     HISTORIAL_ENTRADA_AUTO = !!(PAC_ACTIVO && PAC_ACTIVO.id);
