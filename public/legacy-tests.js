@@ -11787,6 +11787,11 @@ function fcrReadTipo(k) {
   return el && el.value ? el.value : null;
 }
 
+function fcrReadTiempo(k) {
+  var el = document.getElementById('fcr-tiempo-' + k);
+  return el && el.value !== '' ? parseFloat(el.value) : null;
+}
+
 function fcrSyncExactitudFields() {
   if (fcrIsManual()) {
     FCR_COND_KEYS.forEach(function(k) {
@@ -11982,6 +11987,8 @@ function limpiarFCR() {
     if (ex) { ex.value = ''; ex.dataset.userEdit = '0'; }
     var tp = document.getElementById('fcr-tipo-' + k);
     if (tp) tp.value = '';
+    var tm = document.getElementById('fcr-tiempo-' + k);
+    if (tm) tm.value = '';
   });
   var live = document.getElementById('fcr-live');
   if (live) live.innerHTML = '';
@@ -12007,11 +12014,13 @@ function calcularFCR() {
     var pb = fcrReadExactitud(k);
     if (pb === null) return;
     var tipo = fcrReadTipo(k);
+    var tiempo = k === 'copia' ? fcrReadTiempo(k) : null;
     var cz = fcrCalcZ(pb, edad, k);
     var cap = fcrCapKey(k);
     result[k] = pb;
     result['exactitud' + cap] = pb;
     if (tipo && k === 'copia') result['tipo' + cap] = tipo;
+    if (tiempo != null) result['tiempo' + cap] = tiempo;
     result['m' + cap] = cz.m;
     result['ds' + cap] = cz.ds;
     result['z' + cap] = cz.z;
@@ -12019,6 +12028,7 @@ function calcularFCR() {
     if (sc.modo === 'items') result['items' + cap] = fcrCollectItemScores(k);
     var detLbl = FCR_COND_LBL[k] + '<br><small>Exactitud · Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds;
     if (k === 'copia' && tipo) detLbl += ' · Tipo ' + tipo;
+    if (k === 'copia' && tiempo != null) detLbl += ' · Tiempo ' + tiempo + ' seg';
     detLbl += '</small>';
     detalleHtml += '<div class="detalle-item"><div class="detalle-num">' + pb + '</div><div class="detalle-lbl">' + detLbl + '</div></div>';
   });
@@ -12036,9 +12046,10 @@ function calcularFCR() {
     var cap = fcrCapKey(k);
     var normLbl = (fcrNormTable(k).M[teaIdx] != null) ? FCR_COND_LBL[k] : FCR_COND_LBL[k] + ' (sin baremo para este grupo de edad)';
     var tipoLine = (k === 'copia' && result['tipo' + cap]) ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
+    var tiempoLine = (k === 'copia' && result['tiempo' + cap] != null) ? ' · Tiempo ' + result['tiempo' + cap] + ' seg' : '';
     interp += '<p><strong>' + normLbl + ' · Exactitud (' + result[k] + '/36):</strong> M=' + (result['m' + cap] != null ? result['m' + cap] : '—') +
       ' · DS=' + (result['ds' + cap] != null ? result['ds' + cap] : '—') + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
-      ' — ' + result['interp' + cap] + tipoLine + '</p>';
+      ' — ' + result['interp' + cap] + tipoLine + tiempoLine + '</p>';
   });
   if (result.ir !== undefined) {
     interp += '<p><strong>Índice de Retención (Rec. 3 min / Copia):</strong> ' + result.ir + '% — ' +
@@ -12113,6 +12124,7 @@ function fcrRestaurarEdicion(d) {
       if (ex) { ex.value = exVal; ex.dataset.userEdit = '1'; }
     }
     if (d['tipo' + cap]) pacSetVal('fcr-tipo-' + k, d['tipo' + cap]);
+    if (d['tiempo' + cap] != null) pacSetVal('fcr-tiempo-' + k, d['tiempo' + cap]);
   });
   if (typeof fcrToggleExactitudGrid === 'function') fcrToggleExactitudGrid();
   fcrActualizar();
@@ -13099,11 +13111,14 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       'ATENCIÓN':           ['D2','WAIS-IV','SDMT-escrita','SDMT-oral','BTA','TMT A-B'],
       'LENGUAJE':           ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
       'VISOCONSTRUCTIVO':   ['Figura Rey'],
-      'MEMORIA':            ['Rey Verbal','TAVEC','BEM 144 Signoret'],
+      'MEMORIA':            ['Rey Verbal','TAVEC','Figura Rey','BEM 144 Signoret'],
       'FUNC. EJECUTIVAS':   ['FAB','TMT A-B','Stroop','BADS-Zoo','BADS-Llaves','BADS-Juicio','Test del Hotel','WCST-64','WMS-III LoEs'],
     };
     function fcrDHasCopia(d) {
       return d.copia != null || d.exactitudCopia != null;
+    }
+    function fcrDHasRecuerdo(d) {
+      return d.ri != null || d.exactitudRi != null || d.rd != null || d.exactitudRd != null;
     }
     function tmtTestInDom(tn, dom) {
       if (tn !== 'TMT A-B' || !byTest[tn]) return false;
@@ -13117,6 +13132,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
       if (tn !== 'Figura Rey') return true;
       var d = byTest[tn].datos || {};
       if (dom === 'VISOCONSTRUCTIVO') return fcrDHasCopia(d);
+      if (dom === 'MEMORIA') return fcrDHasRecuerdo(d);
       return false;
     }
     function fcrWordEmitRows(d) {
@@ -13146,6 +13162,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if (k === 'copia') {
           var tipo = d['tipo' + cap];
           if (tipo) fcrWordAddQual('Fig. Rey — Copia · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : tipo, 16);
+          var tiempo = d['tiempo' + cap];
+          if (tiempo != null) fcrWordAddQual('Fig. Rey — Copia · Tiempo (seg)', tiempo, null);
         }
       }
       return { fcrWordCond: fcrWordCond, fcrWordAddQual: fcrWordAddQual };
@@ -13216,7 +13234,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           var fcrW = fcrWordEmitRows(d);
           if (dom === 'VISOCONSTRUCTIVO') {
             fcrW.fcrWordCond('copia', 'Copia');
-            if (d.ir != null) fcrW.fcrWordAddQual('Fig. Rey — Retención %', d.ir + '%', d.ir + '%');
+          } else if (dom === 'MEMORIA' && fcrDHasRecuerdo(d)) {
+            domHdr('Memoria Visual');
+            fcrW.fcrWordCond('ri', 'Recuerdo 3 min');
+            fcrW.fcrWordCond('rd', 'Recuerdo 30 min');
           }
         } else if(tn==='BADS-Llaves'){add('BADS — Búsqueda de Llaves',d.pb,d.m,d.ds,d.z,'Pje conv. '+(d.conv!=null?d.conv:'—'));}
         else if(tn==='WMS-III LoEs'){

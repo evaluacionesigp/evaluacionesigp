@@ -77,7 +77,7 @@
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.38</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.39</div>
     </div>
   </aside>
 
@@ -2113,27 +2113,30 @@
     </div>
 
     <div id="fcr-exactitud-tipo-card" class="card">
-      <div class="card-title">Exactitud y tipo</div>
-      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo (estrategia constructiva I–VII): solo en la condición Copia.</p>
+      <div class="card-title">Exactitud, tipo y tiempo</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin:0 0 12px;">Exactitud: precisión del dibujo (0–36). Tipo (estrategia constructiva I–VII) y Tiempo (segundos): solo en la condición Copia.</p>
       <p id="fcr-exact-man-nota" style="display:none;font-size:0.82rem;color:var(--muted);margin:0 0 12px;">En carga manual, la exactitud se toma de los totales ingresados arriba.</p>
       <div id="fcr-exact-grid">
-        <div class="form-grid-3" style="margin-bottom:6px;font-size:0.72rem;font-weight:700;color:var(--muted);">
-          <div>Condición</div><div id="fcr-exact-hdr">Exactitud</div><div>Tipo</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:6px;font-size:0.72rem;font-weight:700;color:var(--muted);">
+          <div>Condición</div><div id="fcr-exact-hdr">Exactitud</div><div>Tipo</div><div>Tiempo (seg)</div>
         </div>
-        <div class="form-grid-3" style="align-items:end;margin-bottom:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;margin-bottom:8px;">
           <div style="font-size:0.82rem;padding-top:8px;">Copia</div>
           <div class="field" style="margin:0;"><input type="number" id="fcr-exact-copia" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
           <div class="field" style="margin:0;"><select id="fcr-tipo-copia"><option value="">— Tipo —</option><option value="I">I — Armazón</option><option value="II">II — Detalles en armazón</option><option value="III">III — Contorno general</option><option value="IV">IV — Yuxtaposición</option><option value="V">V — Fondo confuso</option><option value="VI">VI — Esquema familiar</option><option value="VII">VII — Garabatos</option></select></div>
+          <div class="field" style="margin:0;"><input type="number" id="fcr-tiempo-copia" min="0" step="1" placeholder="seg" oninput="fcrActualizar()"></div>
         </div>
-        <div class="form-grid-3" style="align-items:end;margin-bottom:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;margin-bottom:8px;">
           <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 3 min</div>
           <div class="field" style="margin:0;"><input type="number" id="fcr-exact-ri" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
           <div class="field" style="margin:0;display:none;" aria-hidden="true"><select id="fcr-tipo-ri" disabled><option value="">—</option></select></div>
+          <div class="field" style="margin:0;display:none;" aria-hidden="true"><input type="number" id="fcr-tiempo-ri" disabled></div>
         </div>
-        <div class="form-grid-3" style="align-items:end;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;align-items:end;">
           <div style="font-size:0.82rem;padding-top:8px;">Recuerdo 30 min</div>
           <div class="field" style="margin:0;"><input type="number" id="fcr-exact-rd" min="0" max="36" step="0.5" placeholder="0–36" oninput="this.dataset.userEdit='1';fcrActualizar()"></div>
           <div class="field" style="margin:0;display:none;" aria-hidden="true"><select id="fcr-tipo-rd" disabled><option value="">—</option></select></div>
+          <div class="field" style="margin:0;display:none;" aria-hidden="true"><input type="number" id="fcr-tiempo-rd" disabled></div>
         </div>
       </div>
     </div>
@@ -5444,7 +5447,7 @@
 
 <script src="/globals.js"></script>
 <script type="module" src="/src/main.js"></script>
-<script src="/legacy-tests.js?v=1.14.38" defer></script>
+<script src="/legacy-tests.js?v=1.14.39" defer></script>
 
 <div id="tooltip-glosario" role="tooltip" aria-hidden="true"></div>
 </body>
