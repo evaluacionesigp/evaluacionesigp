@@ -655,7 +655,8 @@ function abrirModalPac(id) {
   }
   var archivarEl = document.getElementById('modal-pac-archivar');
   if (archivarEl) {
-    archivarEl.style.display = p.archivado ? 'none' : '';
+    // Desactivado temporalmente (funcionalidad recién desplegada, en pausa hasta la reunión del jueves).
+    archivarEl.style.display = 'none';
     archivarEl.onclick = function() { archivarPaciente(p.id, p.nombre); };
   }
   // Un paciente archivado no aparece en los selects de test, así que "Evaluar →" sería un callejón sin salida.
