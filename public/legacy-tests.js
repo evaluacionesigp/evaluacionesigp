@@ -11717,6 +11717,120 @@ function fcrNormTable(cond) {
   return FCR_NORM_RI;
 }
 
+// ── Recuerdo 3 min · <45 años — Tabla A12 ROCF (Rivera et al., 2015 — NeuroRehabilitation) ──
+// Grupo etario que no tiene M/Dt clásicos: se deriva el Z a partir del percentil normativo
+// (bandas etarias finas 18-47 × nivel educativo), en vez de (PB−M)/Dt.
+var FCR_A12_RI_EDADES = ['18-22', '23-27', '28-32', '33-37', '38-42', '43-47'];
+var FCR_A12_RI_PERCENTILES = [95, 90, 85, 80, 70, 60, 50, 40, 30, 20, 15, 10, 5];
+var FCR_A12_RI_ALTA = [ // > 12 años de educación
+  [null, null, 36.0, 36.0, 36.0, 35.2],
+  [36.0, 36.0, 35.2, 34.4, 33.6, 32.8],
+  [35.2, 34.4, 33.7, 32.9, 32.1, 31.3],
+  [33.9, 33.1, 32.3, 31.6, 30.8, 30.0],
+  [31.8, 31.1, 30.3, 29.5, 28.7, 27.9],
+  [30.1, 29.3, 28.5, 27.7, 26.9, 26.1],
+  [28.5, 27.7, 26.9, 26.1, 25.3, 24.5],
+  [26.8, 26.0, 25.2, 24.4, 23.6, 22.9],
+  [25.1, 24.3, 23.5, 22.7, 21.9, 21.1],
+  [23.0, 22.2, 21.4, 20.6, 19.8, 19.0],
+  [21.7, 20.9, 20.1, 19.3, 18.5, 17.7],
+  [20.1, 19.3, 18.5, 17.7, 16.9, 16.1],
+  [17.7, 17.0, 16.2, 15.4, 14.6, 13.8]
+];
+var FCR_A12_RI_BAJA = [ // 1 a 12 años de educación
+  [35.5, 34.7, 33.9, 33.1, 32.3, 31.5],
+  [33.1, 32.3, 31.5, 30.7, 29.9, 29.2],
+  [31.6, 30.8, 30.0, 29.2, 28.4, 27.6],
+  [30.2, 29.5, 28.7, 27.9, 27.1, 26.3],
+  [28.2, 27.4, 26.6, 25.8, 25.0, 24.2],
+  [26.4, 25.6, 24.8, 24.0, 23.2, 22.4],
+  [24.8, 24.0, 23.2, 22.4, 21.6, 20.8],
+  [23.1, 22.3, 21.5, 20.8, 20.0, 19.2],
+  [21.4, 20.6, 19.8, 19.0, 18.2, 17.4],
+  [19.3, 18.5, 17.7, 16.9, 16.1, 15.3],
+  [18.0, 17.2, 16.4, 15.6, 14.8, 14.0],
+  [16.4, 15.6, 14.8, 14.0, 13.2, 12.5],
+  [14.1, 13.3, 12.5, 11.7, 10.9, 10.1]
+];
+// Percentil → Z (tabla normal estándar), ordenada de mayor a menor percentil
+var FCR_PERCENTIL_A_Z = [
+  [99, 2.33], [95, 1.65], [90, 1.28], [85, 1.04], [80, 0.84], [75, 0.67],
+  [70, 0.52], [60, 0.25], [50, 0.00], [40, -0.25], [30, -0.52], [25, -0.67],
+  [20, -0.84], [15, -1.04], [10, -1.28], [5, -1.65], [1, -2.33]
+];
+
+function fcrA12EdadIdx(edad) {
+  if (edad == null || edad < 18) return null;
+  if (edad <= 22) return 0;
+  if (edad <= 27) return 1;
+  if (edad <= 32) return 2;
+  if (edad <= 37) return 3;
+  if (edad <= 42) return 4;
+  if (edad <= 47) return 5;
+  return null;
+}
+
+// Interpola linealmente entre las dos filas de percentil que encierran el puntaje bruto.
+function fcrA12BuscarPercentil(pb, edadIdx, tabla) {
+  if (pb == null || edadIdx == null) return null;
+  var pcs = FCR_A12_RI_PERCENTILES;
+  var valores = tabla.map(function(fila) { return fila[edadIdx]; });
+  var firstIdx = 0;
+  while (firstIdx < valores.length && valores[firstIdx] == null) firstIdx++;
+  if (firstIdx >= valores.length) return null;
+  var lastIdx = valores.length - 1;
+  if (pb >= valores[firstIdx]) return pcs[firstIdx];
+  if (pb <= valores[lastIdx]) return pcs[lastIdx];
+  for (var i = firstIdx; i < lastIdx; i++) {
+    var vHi = valores[i], pcHi = pcs[i];
+    var vLo = valores[i + 1], pcLo = pcs[i + 1];
+    if (pb <= vHi && pb >= vLo) {
+      if (vHi === vLo) return pcHi;
+      var frac = (pb - vLo) / (vHi - vLo);
+      return pcLo + frac * (pcHi - pcLo);
+    }
+  }
+  return null;
+}
+
+// Interpola linealmente entre las dos filas de la tabla percentil→Z.
+function fcrPercentilAZ(pc) {
+  if (pc == null) return null;
+  var tabla = FCR_PERCENTIL_A_Z;
+  if (pc >= tabla[0][0]) return tabla[0][1];
+  var last = tabla[tabla.length - 1];
+  if (pc <= last[0]) return last[1];
+  for (var i = 0; i < tabla.length - 1; i++) {
+    var pcHi = tabla[i][0], zHi = tabla[i][1];
+    var pcLo = tabla[i + 1][0], zLo = tabla[i + 1][1];
+    if (pc <= pcHi && pc >= pcLo) {
+      if (pcHi === pcLo) return zHi;
+      var frac = (pc - pcLo) / (pcHi - pcLo);
+      return parseFloat((zLo + frac * (zHi - zLo)).toFixed(2));
+    }
+  }
+  return null;
+}
+
+// Recuerdo 3 min · <45 años: PB → percentil (Tabla A12) → Z. Sin M/Dt clásicos.
+function fcrCalcZPercentilRI(pb, edad, escolaridad) {
+  if (pb == null || edad == null || escolaridad == null || escolaridad === '') return null;
+  var edadIdx = fcrA12EdadIdx(edad);
+  if (edadIdx == null) return null;
+  var tabla = parseFloat(escolaridad) > 12 ? FCR_A12_RI_ALTA : FCR_A12_RI_BAJA;
+  var pc = fcrA12BuscarPercentil(pb, edadIdx, tabla);
+  if (pc == null) return null;
+  var z = fcrPercentilAZ(pc);
+  if (z == null) return null;
+  return {
+    z: z, pb: pb, m: null, ds: null,
+    percentil: Math.round(pc * 10) / 10,
+    metodo: 'percentil',
+    teaGi: 0, teaLbl: FCR_TEA_EDADES[0],
+    tabla: 'Recuerdo 3 min (percentil · Tabla A12, Rivera et al. 2015)'
+  };
+}
+
 function fcrTeaGrupoIdx(edad) {
   if (edad == null) return null;
   if (edad >= 70) return 3;
@@ -11736,7 +11850,11 @@ function fcrTeaNorm(edad, cond) {
   };
 }
 
-function fcrCalcZ(pb, edad, cond) {
+function fcrCalcZ(pb, edad, cond, escolaridad) {
+  if (cond === 'ri' && fcrTeaGrupoIdx(edad) === 0) {
+    var pctZ = fcrCalcZPercentilRI(pb, edad, escolaridad);
+    if (pctZ) return pctZ;
+  }
   var n = fcrTeaNorm(edad, cond);
   if (pb == null || n.m == null || n.ds == null) return Object.assign({ z: null, pb: pb }, n);
   var z = parseFloat(((pb - n.m) / n.ds).toFixed(2));
@@ -11790,6 +11908,11 @@ function fcrReadTipo(k) {
 
 function fcrReadTiempo(k) {
   var el = document.getElementById('fcr-tiempo-' + k);
+  return el && el.value !== '' ? parseFloat(el.value) : null;
+}
+
+function fcrReadEscolaridad() {
+  var el = document.getElementById('fcr-escolaridad');
   return el && el.value !== '' ? parseFloat(el.value) : null;
 }
 
@@ -11991,6 +12114,8 @@ function limpiarFCR() {
     var tm = document.getElementById('fcr-tiempo-' + k);
     if (tm) tm.value = '';
   });
+  var escol = document.getElementById('fcr-escolaridad');
+  if (escol) escol.value = '';
   var live = document.getElementById('fcr-live');
   if (live) live.innerHTML = '';
 }
@@ -12008,7 +12133,8 @@ function calcularFCR() {
 
   var sc = fcrGetScores();
   var teaIdx = fcrTeaGrupoIdx(edad);
-  var result = { edad: edad, teaGi: teaIdx, teaLbl: FCR_TEA_EDADES[teaIdx], modo: sc.modo, figura: 'A' };
+  var escolaridad = fcrReadEscolaridad();
+  var result = { edad: edad, teaGi: teaIdx, teaLbl: FCR_TEA_EDADES[teaIdx], modo: sc.modo, figura: 'A', escolaridad: escolaridad };
   var detalleHtml = '';
 
   FCR_COND_KEYS.forEach(function(k) {
@@ -12016,7 +12142,7 @@ function calcularFCR() {
     if (pb === null) return;
     var tipo = fcrReadTipo(k);
     var tiempo = k === 'copia' ? fcrReadTiempo(k) : null;
-    var cz = fcrCalcZ(pb, edad, k);
+    var cz = fcrCalcZ(pb, edad, k, escolaridad);
     var cap = fcrCapKey(k);
     result[k] = pb;
     result['exactitud' + cap] = pb;
@@ -12026,8 +12152,13 @@ function calcularFCR() {
     result['ds' + cap] = cz.ds;
     result['z' + cap] = cz.z;
     result['interp' + cap] = fcrZLabel(cz.z);
+    if (cz.metodo === 'percentil') {
+      result['metodo' + cap] = 'percentil';
+      result['percentil' + cap] = cz.percentil;
+    }
     if (sc.modo === 'items') result['items' + cap] = fcrCollectItemScores(k);
-    var detLbl = FCR_COND_LBL[k] + '<br><small>Exactitud · Z=' + (cz.z != null ? cz.z : '—') + ' · M=' + cz.m + ' · DS=' + cz.ds;
+    var detLbl = FCR_COND_LBL[k] + '<br><small>Exactitud · Z=' + (cz.z != null ? cz.z : '—') +
+      (cz.metodo === 'percentil' ? ' · Pc=' + cz.percentil : ' · M=' + cz.m + ' · DS=' + cz.ds);
     if (k === 'copia' && tipo) detLbl += ' · Tipo ' + tipo;
     if (k === 'copia' && tiempo != null) detLbl += ' · Tiempo ' + tiempo + ' seg';
     detLbl += '</small>';
@@ -12045,11 +12176,14 @@ function calcularFCR() {
   FCR_COND_KEYS.forEach(function(k) {
     if (result[k] === undefined) return;
     var cap = fcrCapKey(k);
-    var normLbl = (fcrNormTable(k).M[teaIdx] != null) ? FCR_COND_LBL[k] : FCR_COND_LBL[k] + ' (sin baremo para este grupo de edad)';
+    var esPercentil = result['metodo' + cap] === 'percentil';
+    var normLbl = (fcrNormTable(k).M[teaIdx] != null || esPercentil) ? FCR_COND_LBL[k] : FCR_COND_LBL[k] + ' (sin baremo para este grupo de edad)';
     var tipoLine = (k === 'copia' && result['tipo' + cap]) ? ' · Tipo ' + result['tipo' + cap] + (FCR_TIPOS[result['tipo' + cap]] ? ' (' + FCR_TIPOS[result['tipo' + cap]] + ')' : '') : '';
     var tiempoLine = (k === 'copia' && result['tiempo' + cap] != null) ? ' · Tiempo ' + result['tiempo' + cap] + ' seg' : '';
-    interp += '<p><strong>' + normLbl + ' · Exactitud (' + result[k] + '/36):</strong> M=' + (result['m' + cap] != null ? result['m' + cap] : '—') +
-      ' · DS=' + (result['ds' + cap] != null ? result['ds' + cap] : '—') + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
+    var mdsTxt = esPercentil
+      ? 'Percentil=' + result['percentil' + cap] + ' (Tabla A12, según escolaridad)'
+      : 'M=' + (result['m' + cap] != null ? result['m' + cap] : '—') + ' · DS=' + (result['ds' + cap] != null ? result['ds' + cap] : '—');
+    interp += '<p><strong>' + normLbl + ' · Exactitud (' + result[k] + '/36):</strong> ' + mdsTxt + ' · Z=' + (result['z' + cap] != null ? result['z' + cap] : '—') +
       ' — ' + result['interp' + cap] + tipoLine + tiempoLine + '</p>';
   });
   if (result.ir !== undefined) {
@@ -12097,6 +12231,7 @@ function fcrRestaurarEdicion(d) {
   if (!d) return;
   fcrRenderGrids();
   if (d.edad != null) pacSetVal('fcr-edad-display', d.edad + ' años');
+  if (d.escolaridad != null) pacSetVal('fcr-escolaridad', d.escolaridad);
   if (typeof fcrActualizarTeaGrupo === 'function') fcrActualizarTeaGrupo();
   var hasItems = d.itemsCopia || d.itemsRi || d.itemsRd;
   if (d.modo === 'manual' || (!hasItems && (d.copia != null || d.ri != null || d.rd != null))) {
@@ -13160,8 +13295,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if (pb == null) return;
         var wn = fcrWN(k);
         var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
-        var mW = d['m' + cap] != null ? d['m' + cap] : wn.m;
-        var dsW = d['ds' + cap] != null ? d['ds' + cap] : wn.ds;
+        var esPercentil = d['metodo' + cap] === 'percentil';
+        var mW = esPercentil ? 'Pc' : (d['m' + cap] != null ? d['m' + cap] : wn.m);
+        var dsW = esPercentil ? 'Pc' : (d['ds' + cap] != null ? d['ds' + cap] : wn.ds);
         var interpW = (mW == null || dsW == null) ? 'Sin baremo para este grupo de edad' : d['interp' + cap];
         fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, mW, dsW, zW, interpW);
         if (k === 'copia') {
