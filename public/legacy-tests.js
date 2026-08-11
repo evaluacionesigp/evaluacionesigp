@@ -13039,10 +13039,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'Mini Mental Parkinson':'Mini Mental Parkinson (MMP)',
     'ACE-R':'Addenbrooke\'s Cognitive Examination — Revisado (ACE-R)',
     'WAIS-IV':'Retención de Dígitos, Claves y Sec. Número-Letra — WAIS-IV',
-    'WAIS-IV Perfil':'Escala de Inteligencia para Adultos de Wechsler — Perfil de Índices (WAIS-IV)',
+    'WAIS-IV Perfil':'Escala de Inteligencia de Wechsler para Adultos (WAIS IV)',
     'TMT A-B':'Trail Making Test (TMT-A y TMT-B)',
     'Fluencia Verbal':'Fluencia Verbal Semántica y Fonológica',
-    'Cuestionarios Familiares':'Cuestionarios Familiares (NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG)',
+    'Cuestionarios Familiares':'NPI-Q · AVD Básicas · AVD Instrumentales · AVD Expansivas · AD8-ARG',
     'BNT-60':'Test de Denominación de Boston — 60 ítems (BNT-60)',
     'BNT-12':'Test de Denominación de Boston — 12 ítems (BNT-12)',
     'Rey Verbal':'Test de Aprendizaje Auditivo-Verbal de Rey (RAVLT)',
@@ -13088,7 +13088,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     'BPI':'Inventario Breve de Dolor (BPI)'
   };
   var DOMINIOS_PRUEBAS=[
-    {label:'Screening cognitivo global',           tests:['MoCA','Mini Mental Parkinson','ACE-R','WAIS-IV Perfil']},
+    {label:'Screening cognitivo global',           tests:['MoCA','Mini Mental Parkinson','ACE-R']},
+    {label:'Capacidad Intelectual',                tests:['WAIS-IV Perfil']},
     {label:'Atención y velocidad de procesamiento',tests:['WAIS-IV','TMT A-B','D2','SDMT-escrita','SDMT-oral','BTA']},
     {label:'Lenguaje',                              tests:['Fluencia Verbal','BNT-60','BNT-12','Token Test']},
     {label:'Memoria',                               tests:['Rey Verbal','TAVEC','BEM 144 Signoret']},
@@ -13184,11 +13185,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if (t === 'TMT A-B') return tmtTestInDom(t, dom);
         return byTest[t];
       });
-      var testsZ=tests.filter(function(t){return !SCREENING_SUBESCALAS_CFG[t];});
+      var testsZ=tests.filter(function(t){return !SCREENING_SUBESCALAS_CFG[t] || t==='MoCA';});
       if(!testsZ.length)return;
       domHdr(dom);
       tests.forEach(function(tn){
-        if(SCREENING_SUBESCALAS_CFG[tn])return;
+        if(SCREENING_SUBESCALAS_CFG[tn] && tn!=='MoCA')return;
         var r=byTest[tn];var d=_parseResultDatos(r.datos);
         if(tn==='Rey Verbal'&&d.variables&&d.variables.length){
           d.variables.forEach(function(v){add(v.label,v.bruto,v.m,v.ds,v.z,null);});
@@ -13264,6 +13265,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         } else if(tn==='BNT-60'||tn==='BNT-12'){var bM=tn==='BNT-12'?(d.m!=null&&d.m!==''?d.m:11):(d.m!=null?d.m:(d.yhat!=null?d.yhat:null));var bDS=tn==='BNT-12'?(d.ds!=null&&d.ds!==''?d.ds:1.16):(d.ds!=null?d.ds:5.184);add(tn+(d.educ_label?' ('+d.educ_label+')':''),d.pb!=null&&d.pb!==''?d.pb:r.puntaje_total,bM,bDS,r.puntaje_z,null);}
         else if(tn==='Token Test'){add('Token Test',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='IFS'){add('IFS — Total',r.puntaje_total!=null?r.puntaje_total+'/30':null,d.m!=null?d.m:null,d.ds!=null?d.ds:null,r.puntaje_z,null);}
+        else if(tn==='MoCA'){add('MoCA — Total',r.puntaje_total!=null?r.puntaje_total+'/30':null,d.m!=null?d.m:null,d.ds!=null?d.ds:null,r.puntaje_z,null);}
         else if(tn==='FAB'){add('FAB — Total',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='Test del Reloj (Cacho)'){add('Test del Reloj (Cacho)',r.puntaje_total,null,null,r.puntaje_z,null);}
         else if(tn==='BTA'){add('BTA',d.puntaje,d.m,d.ds,d.z,d.pc?'Pc '+d.pc:null);}
