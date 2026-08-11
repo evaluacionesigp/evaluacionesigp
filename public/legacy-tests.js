@@ -13159,7 +13159,10 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if (pb == null) return;
         var wn = fcrWN(k);
         var zW = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, k) : d['z' + cap];
-        fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, d['m' + cap] != null ? d['m' + cap] : wn.m, d['ds' + cap] != null ? d['ds' + cap] : wn.ds, zW, d['interp' + cap]);
+        var mW = d['m' + cap] != null ? d['m' + cap] : wn.m;
+        var dsW = d['ds' + cap] != null ? d['ds' + cap] : wn.ds;
+        var interpW = (mW == null || dsW == null) ? 'Sin baremo para este grupo de edad' : d['interp' + cap];
+        fcrWordAdd('Fig. Rey — ' + lblShort + ' · Exactitud', pb, mW, dsW, zW, interpW);
         if (k === 'copia') {
           var tipo = d['tipo' + cap];
           if (tipo) fcrWordAddQual('Fig. Rey — Copia · Tipo', tipo, typeof fcrTipoLabel === 'function' ? fcrTipoLabel(tipo) : tipo, 16);
@@ -14465,7 +14468,7 @@ function renderPerfilZ() {
   var DOMINIOS = {
     'Cognitivo global':    ['MoCA','Mini Mental Parkinson','ACE-R','Test del Reloj (Cacho)'],
     'Atención':            ['TMT A-B','WAIS-IV','D2','SDMT-escrita','SDMT-oral','BTA'],
-    'Memoria':             ['Rey Verbal','TAVEC','BEM 144 Signoret'],
+    'Memoria':             ['Rey Verbal','TAVEC','Figura Rey','BEM 144 Signoret'],
     'Funciones ejecutivas':['FAB','IFS','Stroop','WCST-64','WMS-III LoEs','Test del Hotel','BADS-Zoo','BADS-Llaves','BADS-Juicio','TMT A-B'],
     'Lenguaje':            ['Token Test','BNT-60','BNT-12','Fluencia Verbal'],
     'Visoconstructivo':    ['Figura Rey'],
@@ -14555,8 +14558,15 @@ function renderPerfilZ() {
         if (idx.CON && idx.CON.z != null) filas.push({lbl:'D2 CON', z: idx.CON.z});
         if (idx.TOT && idx.TOT.z != null) filas.push({lbl:'D2 TOT', z: idx.TOT.z});
       } else if (tn === 'Figura Rey') {
-        var zFC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
-        if (zFC != null) filas.push({lbl:'Fig.Rey Copia', z: zFC});
+        if (dom === 'Visoconstructivo') {
+          var zFC = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'copia') : d.zCopia;
+          if (zFC != null) filas.push({lbl:'Fig.Rey Copia', z: zFC});
+        } else if (dom === 'Memoria') {
+          var zRiPZ = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'ri') : d.zRi;
+          if (zRiPZ != null) filas.push({lbl:'Fig.Rey Recuerdo 3 min', z: zRiPZ});
+          var zRdPZ = typeof fcrGetStoredOrCalcZ === 'function' ? fcrGetStoredOrCalcZ(d, 'rd') : d.zRd;
+          if (zRdPZ != null) filas.push({lbl:'Fig.Rey Recuerdo 30 min', z: zRdPZ});
+        }
       } else if (tn === 'BEM 144 Signoret') {
         ['rli','rld','as','rs','rc','reco'].forEach(function(k){
           var lbs = {rli:'BEM Rec.Lóg.Inm',rld:'BEM Rec.Lóg.Dif',as:'BEM Aprendizaje',rs:'BEM Rec.Serial',rc:'BEM Rec.Claves',reco:'BEM Reconocimiento'};
