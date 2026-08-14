@@ -1,4 +1,5 @@
 import { SUPA_URL, SUPA_KEY } from './core/supabase-config.js';
+import { serializeForm, applyDraftToForm } from './core/form-draft.js';
 
 // ══ CUESTIONARIOS FAMILIARES (protocolo CIATEC / González Palau) ═══════════════
 var FAM_NPIQ = [
@@ -263,6 +264,39 @@ function _getFamData() {
   };
 }
 
+// ══ BORRADOR LOCAL ═══════════════════════════════════════════════════════════
+// Mismo mecanismo que el panel principal (src/core/form-draft.js), adaptado a
+// esta página de una sola pantalla: acá el paciente sale de la URL, no de un
+// selector dentro del form.
+var FAM_DRAFT_TIMER = null;
+function famDraftKey(pacId) { return 'igp_familiar_draft_' + pacId; }
+
+function famBindDraftAutosave(pacId) {
+  var onChange = function() {
+    clearTimeout(FAM_DRAFT_TIMER);
+    FAM_DRAFT_TIMER = setTimeout(function() {
+      var datos = serializeForm(document.getElementById('pantalla-form'));
+      try { localStorage.setItem(famDraftKey(pacId), JSON.stringify(datos)); } catch (e) {}
+    }, 600);
+  };
+  document.getElementById('pantalla-form').addEventListener('input', onChange);
+  document.getElementById('pantalla-form').addEventListener('change', onChange);
+}
+
+function famRestoreDraft(pacId) {
+  var raw;
+  try { raw = localStorage.getItem(famDraftKey(pacId)); } catch (e) { return; }
+  if (!raw) return;
+  var datos;
+  try { datos = JSON.parse(raw); } catch (e) { return; }
+  if (!datos || !Object.keys(datos).length) return;
+  applyDraftToForm(document.getElementById('pantalla-form'), datos);
+}
+
+function famClearDraft(pacId) {
+  try { localStorage.removeItem(famDraftKey(pacId)); } catch (e) {}
+}
+
 function getPacienteIdUrl() {
   var params = new URLSearchParams(window.location.search);
   var id = params.get('paciente');
@@ -284,6 +318,9 @@ function enviarFamiliar() {
   msgEl.style.color = '';
 
   var d = _getFamData();
+  // Foto cruda del formulario, para poder repoblarlo si algún día se edita este
+  // resultado desde el historial (mismo mecanismo que src/core/form-draft.js).
+  d._form = serializeForm(document.getElementById('pantalla-form'));
   // Las 5 secciones están garantizadas completas por _faltantesFamiliar de arriba.
   var resumen = [
     'NPI-Q: '+ d.npiqTotal +' síntomas',
@@ -321,6 +358,7 @@ function enviarFamiliar() {
         throw new Error('HTTP ' + res.status + ' — ' + body);
       });
     }
+    famClearDraft(pacId);
     document.getElementById('pantalla-form').style.display = 'none';
     document.getElementById('pantalla-exito').style.display = 'block';
   }).catch(function(err) {
@@ -347,4 +385,6 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('familiar-fecha').value = new Date().toISOString().split('T')[0];
   document.getElementById('pantalla-form').style.display = 'block';
   _renderFamiliarGrids();
+  famRestoreDraft(pacId);
+  famBindDraftAutosave(pacId);
 });

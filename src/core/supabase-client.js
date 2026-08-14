@@ -1,7 +1,16 @@
 import { SUPA_URL, SUPA_KEY } from './supabase-config.js';
+import { clearFormDraft, serializeForm } from './form-draft.js';
 
 // ══ SUPABASE HELPER ══════════════════════════════════════════════════════════
 export function supaFetch(path, method, body, token, extraHeaders) {
+  // Guarda una foto cruda del formulario junto con el resultado, para poder
+  // repoblarlo genéricamente al editar (ver aplicarEdicionResultado en
+  // public/legacy-tests.js) sin necesitar código a mano por cada test.
+  if ((method === 'POST' || method === 'PATCH') && path.indexOf('/rest/v1/psico_resultados') === 0 && body && body.datos && typeof body.datos === 'object') {
+    var vistaParaForm = document.querySelector('.vista.active');
+    var formParaGuardar = vistaParaForm && document.getElementById(vistaParaForm.id.replace(/^vista-/, '') + '-form');
+    if (formParaGuardar) body.datos._form = serializeForm(formParaGuardar);
+  }
   if (method === 'POST' && path === '/rest/v1/psico_resultados' && window.RESULTADO_EDIT && window.RESULTADO_EDIT.id) {
     var editId = window.RESULTADO_EDIT.id;
     return supaFetch('/rest/v1/psico_resultados?id=eq.' + editId, 'PATCH', body, token, extraHeaders)
@@ -34,6 +43,10 @@ export function supaFetch(path, method, body, token, extraHeaders) {
           httpErr.userNotified = true;
           throw httpErr;
         });
+      }
+      if (res.ok && method !== 'GET' && method !== 'DELETE' && path.indexOf('/rest/v1/psico_resultados') === 0 && body && body.paciente_id) {
+        var vistaActiva = document.querySelector('.vista.active');
+        if (vistaActiva) clearFormDraft(vistaActiva.id.replace(/^vista-/, ''), body.paciente_id);
       }
       return res;
     });

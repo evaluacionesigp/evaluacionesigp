@@ -655,8 +655,7 @@ function abrirModalPac(id) {
   }
   var archivarEl = document.getElementById('modal-pac-archivar');
   if (archivarEl) {
-    // Desactivado temporalmente (funcionalidad recién desplegada, en pausa hasta la reunión del jueves).
-    archivarEl.style.display = 'none';
+    archivarEl.style.display = p.archivado ? 'none' : '';
     archivarEl.onclick = function() { archivarPaciente(p.id, p.nombre); };
   }
   // Un paciente archivado no aparece en los selects de test, así que "Evaluar →" sería un callejón sin salida.
@@ -2762,6 +2761,13 @@ function aplicarEdicionResultado(vistaId, r) {
     default:
       if (MANUAL_CAMPOS[vistaId] && r.puntaje_total != null) {
         edicionManualSimple(vistaId, r.puntaje_total);
+      } else if (d._form) {
+        // Tests sin caso a mano acá arriba: si el resultado se guardó después de
+        // sumar el autoguardado de borradores, trae una foto cruda del formulario
+        // (ver supaFetch en src/core/supabase-client.js) que se puede repoblar
+        // genéricamente. Resultados viejos no la tienen y siguen en blanco.
+        var formEdicion = document.getElementById(vistaId + '-form');
+        if (formEdicion) applyDraftToForm(formEdicion, d._form);
       }
   }
 }
@@ -3264,6 +3270,8 @@ function irTest(t) {
   } else if (window.RESULTADO_EDIT && window.RESULTADO_EDIT._vista !== t) {
     window.RESULTADO_EDIT = null;
     ocultarBannerEdicionResultado();
+  } else {
+    restoreFormDraft(t);
   }
 }
 
