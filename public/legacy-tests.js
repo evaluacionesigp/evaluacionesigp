@@ -14116,7 +14116,7 @@ function abrirExportInvestigacion() {
   modal.innerHTML =
     '<div style="background:var(--surface);border-radius:14px;padding:28px 32px;min-width:320px;max-width:420px;width:92%;box-shadow:0 8px 32px rgba(45,92,34,0.18);">' +
     '<div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px;">Exportar base de datos de investigación</div>' +
-    '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">Genera un Excel con todos los pacientes que dieron consentimiento de investigación.</div>' +
+    '<div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">Genera un Excel (una hoja por test) con todos los pacientes que dieron consentimiento de investigación.</div>' +
     '<div class="field"><label>Contraseña</label><input type="password" id="export-inv-pass" autocomplete="off"></div>' +
     '<div id="export-inv-error" style="display:none;color:#a82828;font-size:0.82rem;margin-top:6px;">Contraseña incorrecta.</div>' +
     '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">' +
@@ -14153,43 +14153,145 @@ function abrirExportInvestigacion() {
 // Devuelve una Promise<boolean>: true si se generó y descargó el archivo.
 function generarExcelInvestigacion() {
   return fetchTodosPaginado(
-    '/rest/v1/psico_pacientes?select=id,nombre,fecha_nacimiento,escolaridad&consentimiento_investigacion=eq.true',
+    '/rest/v1/psico_pacientes?select=id,nombre,fecha_nacimiento,escolaridad,archivado&consentimiento_investigacion=eq.true',
     SESSION.access_token
   ).then(function(pacientesConsentidos) {
     if (!pacientesConsentidos.length) {
       toast('Ningún paciente tiene consentimiento de investigación todavía.', 'error');
       return false;
     }
-    var pacPorId = {};
-    pacientesConsentidos.forEach(function(p) { pacPorId[String(p.id)] = p; });
+    var idsConsentidos = {};
+    pacientesConsentidos.forEach(function(p) { idsConsentidos[String(p.id)] = true; });
     // Se trae TODO psico_resultados (sin filtro paciente_id=in.(...) en la URL, para
     // no toparse con el límite de largo de URL si hay muchos pacientes consentidos)
-    // y se filtra acá adentro quedándose solo con los consentidos.
+    // y se filtra acá adentro quedándose solo con los consentidos. Se pide también
+    // puntaje_total y datos (además de puntaje_z/categoria) porque algunos tests
+    // — como TAVEC — guardan sus subvariables adentro de "datos".
     return fetchTodosPaginado(
-      '/rest/v1/psico_resultados?select=paciente_id,test,fecha,puntaje_z,categoria&order=paciente_id,fecha',
+      '/rest/v1/psico_resultados?select=paciente_id,test,fecha,puntaje_total,puntaje_z,categoria,datos&order=paciente_id,fecha',
       SESSION.access_token
-    ).then(function(resultados) {
-      var filas = [];
-      resultados.forEach(function(r) {
-        var pac = pacPorId[String(r.paciente_id)];
-        if (!pac) return;
-        filas.push({
-          nombre: pac.nombre || '',
-          fecha_nacimiento: pac.fecha_nacimiento || '',
-          edad: pac.fecha_nacimiento ? calcularEdad(pac.fecha_nacimiento) : '',
-          escolaridad: pac.escolaridad || '',
-          fecha_evaluacion: r.fecha || '',
-          test: r.test || '',
-          dominio: dominioDeTest(r.test),
-          puntaje_z: (r.puntaje_z === null || r.puntaje_z === undefined) ? '' : r.puntaje_z,
-          categoria: r.categoria || ''
-        });
-      });
-      descargarExcelInvestigacion(filas);
-      toast('✓ Excel generado (' + filas.length + ' evaluaciones de ' + pacientesConsentidos.length + ' pacientes)', 'success');
+    ).then(function(todosResultados) {
+      var resultados = todosResultados.filter(function(r) { return idsConsentidos[String(r.paciente_id)]; });
+      var hojas = construirHojasInvestigacion(pacientesConsentidos, resultados);
+      descargarExcelMultiHoja(hojas);
+      toast('✓ Excel generado (' + hojas.length + ' hojas, ' + resultados.length + ' evaluaciones de ' + pacientesConsentidos.length + ' pacientes)', 'success');
       return true;
     });
   });
+}
+
+// ── Arma las hojas del libro: "Pacientes" (datos personales) + una hoja por
+// cada test presente en los datos, para no mezclar instrumentos distintos en
+// una sola tabla gigante y dispersa. TAVEC y Cuestionarios Familiares tienen
+// desglose propio; el resto usa el genérico bruto/Z/categoría. ──
+function construirHojasInvestigacion(pacientes, resultados) {
+  var pacPorId = {};
+  pacientes.forEach(function(p) { pacPorId[String(p.id)] = p; });
+
+  var porTest = {};
+  resultados.forEach(function(r) {
+    if (!porTest[r.test]) porTest[r.test] = [];
+    porTest[r.test].push(r);
+  });
+
+  var hojas = [hojaPacientes(pacientes, resultados)];
+
+  Object.keys(porTest).sort(function(a, b) {
+    var da = dominioDeTest(a), db = dominioDeTest(b);
+    return da !== db ? da.localeCompare(db, 'es') : a.localeCompare(b, 'es');
+  }).forEach(function(test) {
+    var filasTest = porTest[test].slice().sort(function(a, b) {
+      var na = (pacPorId[String(a.paciente_id)] || {}).nombre || '';
+      var nb = (pacPorId[String(b.paciente_id)] || {}).nombre || '';
+      return na.localeCompare(nb, 'es') || (a.fecha || '').localeCompare(b.fecha || '');
+    });
+    if (test === 'TAVEC') hojas.push(hojaTavec(pacPorId, filasTest));
+    else if (test === 'Cuestionarios Familiares') hojas.push(hojaFamiliares(pacPorId, filasTest));
+    else hojas.push(hojaGenerica(test, pacPorId, filasTest));
+  });
+  return hojas;
+}
+
+function _datosComunesPaciente(pac) {
+  return [
+    { v: pac ? pac.nombre || '' : '', num: false },
+    { v: pac ? pac.fecha_nacimiento || '' : '', num: false },
+    { v: pac && pac.fecha_nacimiento ? calcularEdad(pac.fecha_nacimiento) : '', num: true },
+    { v: pac ? pac.escolaridad || '' : '', num: false }
+  ];
+}
+
+function hojaPacientes(pacientes, resultados) {
+  var cantidadPorPac = {};
+  resultados.forEach(function(r) { var k = String(r.paciente_id); cantidadPorPac[k] = (cantidadPorPac[k] || 0) + 1; });
+  var filas = pacientes.slice().sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); })
+    .map(function(p) {
+      return _datosComunesPaciente(p).concat([
+        { v: p.archivado ? 'Sí' : 'No', num: false },
+        { v: cantidadPorPac[String(p.id)] || 0, num: true }
+      ]);
+    });
+  return {
+    nombre: 'Pacientes',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Archivado','Cantidad de evaluaciones'],
+    filas: filas
+  };
+}
+
+function hojaGenerica(test, pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: r.puntaje_total, num: true },
+      { v: r.puntaje_z, num: true },
+      { v: r.categoria || '', num: false }
+    ]);
+  });
+  return {
+    nombre: test,
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Puntaje bruto','Puntaje Z','Categoría'],
+    filas: filas
+  };
+}
+
+// TAVEC_VARS_ORDER (definido más abajo, en la sección TAVEC) es [etiqueta, clave
+// del puntaje bruto en "datos", clave del Z en "datos", ...] — se reusa tal cual
+// para no duplicar la lista de las 14 subvariables.
+function hojaTavec(pacPorId, resultadosTest) {
+  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación'];
+  TAVEC_VARS_ORDER.forEach(function(v) { headers.push(v[0] + ' (bruto)'); headers.push(v[0] + ' (Z)'); });
+  headers.push('Categoría');
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    var fila = _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([{ v: r.fecha || '', num: false }]);
+    TAVEC_VARS_ORDER.forEach(function(v) {
+      fila.push({ v: d[v[1]], num: true });
+      fila.push({ v: d[v[2]], num: true });
+    });
+    fila.push({ v: r.categoria || '', num: false });
+    return fila;
+  });
+  return { nombre: 'TAVEC', headers: headers, filas: filas };
+}
+
+function hojaFamiliares(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.npiqTotal, num: true },
+      { v: d.ad8Total, num: true },
+      { v: d.avdbTotal, num: true },
+      { v: d.avdiTotal, num: true },
+      { v: d.avdeTotal, num: true },
+      { v: r.categoria || '', num: false }
+    ]);
+  });
+  return {
+    nombre: 'Cuestionarios Familiares',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','NPI-Q (síntomas)','AD8 (bruto, /8)','AVD Básicas (total)','AVD Instrumentales (total)','AVD Expansivas (total)','Descripción'],
+    filas: filas
+  };
 }
 
 // ── Generador de .xlsx mínimo (mismo contenedor ZIP que el .docx de arriba,
@@ -14215,36 +14317,48 @@ function _xlsxFilaXml(valores, filaNum) {
   }).join('');
   return '<row r="' + filaNum + '">' + celdas + '</row>';
 }
-function descargarExcelInvestigacion(filas) {
+// Nombres de hoja de Excel: máx. 31 caracteres, sin : \ / ? * [ ], sin repetidos.
+function _xlsxNombreHoja(nombre, usados) {
+  var limpio = String(nombre || 'Hoja').replace(/[:\\\/\?\*\[\]]/g, ' ').trim().slice(0, 31);
+  if (!limpio) limpio = 'Hoja';
+  var base = limpio, n = 2;
+  while (usados[limpio]) {
+    var suf = ' (' + n + ')';
+    limpio = base.slice(0, 31 - suf.length) + suf;
+    n++;
+  }
+  usados[limpio] = true;
+  return limpio;
+}
+// hojas: [{ nombre, headers: [...], filas: [[{v,num}, ...], ...] }, ...]
+function descargarExcelMultiHoja(hojas) {
   var enc = new TextEncoder();
-  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Test','Dominio cognitivo','Puntaje Z','Categoría'];
-  var filasXml = _xlsxFilaXml(headers.map(function(h){ return { v: h, num: false }; }), 1);
-  filas.forEach(function(f, i) {
-    var valores = [
-      { v: f.nombre, num: false },
-      { v: f.fecha_nacimiento, num: false },
-      { v: f.edad, num: true },
-      { v: f.escolaridad, num: false },
-      { v: f.fecha_evaluacion, num: false },
-      { v: f.test, num: false },
-      { v: f.dominio, num: false },
-      { v: f.puntaje_z, num: true },
-      { v: f.categoria, num: false }
-    ];
-    filasXml += _xlsxFilaXml(valores, i + 2);
-  });
+  var usadosNombres = {};
+  var sheetsData = [];
+  var sheetTagsXml = '', relsXml = '', contentTypesOverrides = '';
 
-  var sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-    '<sheetData>' + filasXml + '</sheetData>' +
-    '</worksheet>';
+  hojas.forEach(function(hoja, idx) {
+    var num = idx + 1;
+    var nombreHoja = _xlsxNombreHoja(hoja.nombre, usadosNombres);
+    var filasXml = _xlsxFilaXml(hoja.headers.map(function(h) { return { v: h, num: false }; }), 1);
+    hoja.filas.forEach(function(fila, i) { filasXml += _xlsxFilaXml(fila, i + 2); });
+    var sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      '<sheetData>' + filasXml + '</sheetData>' +
+      '</worksheet>';
+    sheetsData.push({ name: 'xl/worksheets/sheet' + num + '.xml', data: enc.encode(sheetXml) });
+    sheetTagsXml += '<sheet name="' + _xlsxEscape(nombreHoja) + '" sheetId="' + num + '" r:id="rId' + num + '"/>';
+    relsXml += '<Relationship Id="rId' + num + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + num + '.xml"/>';
+    contentTypesOverrides += '<Override PartName="/xl/worksheets/sheet' + num + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+  });
+  relsXml += '<Relationship Id="rId' + (hojas.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>';
 
   var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
     '<Default Extension="xml" ContentType="application/xml"/>' +
     '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
-    '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+    contentTypesOverrides +
     '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
     '</Types>';
 
@@ -14255,14 +14369,11 @@ function descargarExcelInvestigacion(filas) {
 
   var workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-    '<sheets><sheet name="Investigación" sheetId="1" r:id="rId1"/></sheets>' +
+    '<sheets>' + sheetTagsXml + '</sheets>' +
     '</workbook>';
 
   var workbookRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
-    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
-    '</Relationships>';
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + relsXml + '</Relationships>';
 
   var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
@@ -14278,9 +14389,9 @@ function descargarExcelInvestigacion(filas) {
     { name: '_rels/.rels',                data: enc.encode(topRels) },
     { name: 'xl/workbook.xml',            data: enc.encode(workbookXml) },
     { name: 'xl/_rels/workbook.xml.rels', data: enc.encode(workbookRels) },
-    { name: 'xl/styles.xml',              data: enc.encode(stylesXml) },
-    { name: 'xl/worksheets/sheet1.xml',   data: enc.encode(sheetXml) }
-  ];
+    { name: 'xl/styles.xml',              data: enc.encode(stylesXml) }
+  ].concat(sheetsData);
+
   var zipData = _makeZip(zipEntries);
   var blob = new Blob([zipData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   var url = URL.createObjectURL(blob);
