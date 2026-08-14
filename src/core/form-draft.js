@@ -26,6 +26,10 @@ export function serializeForm(container) {
       if (el.id) datos['chk:' + el.id] = el.checked;
     } else if (el.id) {
       datos['val:' + el.id] = el.value;
+    } else if (el.name) {
+      // Algunos <select> (ej. las escalas AVD del cuestionario familiar) solo
+      // tienen name, no id — sin este caso quedaban afuera en silencio.
+      datos['name:' + el.name] = el.value;
     }
   });
   return datos;
@@ -43,6 +47,9 @@ export function applyDraftToForm(container, datos) {
     } else if (key.indexOf('val:') === 0) {
       var el = document.getElementById(key.slice(4));
       if (el) el.value = datos[key];
+    } else if (key.indexOf('name:') === 0) {
+      var byName = container.querySelector('[name="' + CSS.escape(key.slice(5)) + '"]');
+      if (byName) byName.value = datos[key];
     }
   });
 }
