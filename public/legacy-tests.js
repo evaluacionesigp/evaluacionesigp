@@ -282,7 +282,7 @@ function actualizarTopbarPaciente() {
   var label = document.getElementById('topbar-paciente-label');
   var sel = document.getElementById('topbar-paciente-select');
   var opciones = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
+    PACIENTES.filter(function(p){ return !p.archivado; }).map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   if (sel) {
     sel.innerHTML = opciones;
     if (PAC_ACTIVO) {
@@ -3952,7 +3952,7 @@ function iniciarRey() {
 
 function llenarSelectRey() {
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
+    PACIENTES.filter(function(p){ return !p.archivado; }).map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('rey-paciente').innerHTML = opts;
 }
 
@@ -4337,7 +4337,7 @@ function iniciarTMT() {
   document.getElementById('tmt-resultado').style.display = 'none';
   tmtActualizarForm();
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
+    PACIENTES.filter(function(p){ return !p.archivado; }).map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('tmt-paciente').innerHTML = opts;
 }
 
@@ -4632,7 +4632,7 @@ function iniciarFLV() {
   document.getElementById('flv-form').style.display = 'block';
   document.getElementById('flv-resultado').style.display = 'none';
   var opts = '<option value="">— Seleccionar paciente —</option>' +
-    PACIENTES.map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
+    PACIENTES.filter(function(p){ return !p.archivado; }).map(function(p){ return '<option value="' + p.id + '">' + escHtml(p.nombre) + '</option>'; }).join('');
   document.getElementById('flv-paciente').innerHTML = opts;
 }
 
