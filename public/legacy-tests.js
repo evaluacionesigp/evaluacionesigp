@@ -64,8 +64,12 @@ function renderPacientesInicio() {
 function actualizarStatsHome() {
   var sp = document.getElementById('stat-pacientes');
   var se = document.getElementById('stat-evaluaciones');
-  if(sp) sp.textContent = PACIENTES.length;
-  if(se) se.textContent = RESULTADOS.length;
+  // Mismo criterio que "Pacientes" y los selects de test: no contar archivados,
+  // para que el conteo de Inicio no mezcle activos con archivados.
+  var idsActivos = {};
+  var activos = PACIENTES.filter(function(p) { if (!p.archivado) idsActivos[String(p.id)] = true; return !p.archivado; });
+  if(sp) sp.textContent = activos.length;
+  if(se) se.textContent = RESULTADOS.filter(function(r) { return idsActivos[String(r.paciente_id)]; }).length;
 }
 function renderPacientes() {
   var el = document.getElementById('pacientes-lista-contenido');
@@ -157,6 +161,7 @@ function desarchivarPaciente(id, nombre) {
       renderPacientes();
       renderPacientesInicio();
       llenarSelectPacientes();
+      actualizarStatsHome();
       toast('✓ ' + nombre + ' desarchivado', 'success');
     }).catch(catchGuardarError);
 }
@@ -692,6 +697,7 @@ function archivarPaciente(id, nombre) {
       renderPacientes();
       renderPacientesInicio();
       llenarSelectPacientes();
+      actualizarStatsHome();
       toast('✓ Paciente archivado', 'success');
     }).catch(catchGuardarError);
 }
