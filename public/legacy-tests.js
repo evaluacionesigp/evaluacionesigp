@@ -131,6 +131,9 @@ function renderArchivados() {
       '<div><div class="pac-nombre">' + escHtml(p.nombre) + '</div>' +
       (meta ? '<div class="pac-meta">' + meta + '</div>' : '') + '</div>' +
       '<div class="pac-acciones">' +
+      '<label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--muted);cursor:pointer;" title="Incluye a este paciente en el export de base de datos de investigación">' +
+      '<input type="checkbox" data-consentimiento-pac-id="' + p.id + '" style="accent-color:var(--accent);width:15px;height:15px;"' + (p.consentimiento_investigacion ? ' checked' : '') + '>' +
+      'Consentimiento investigación</label>' +
       '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-desarchivar-pac-id="' + p.id + '" data-desarchivar-pac-nombre="' + encodeURIComponent(p.nombre) + '">Desarchivar</button>' +
       '</div></div>';
@@ -147,6 +150,17 @@ function renderArchivados() {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       desarchivarPaciente(this.getAttribute('data-desarchivar-pac-id'), decodeURIComponent(this.getAttribute('data-desarchivar-pac-nombre')));
+    });
+  });
+  // Delegación Consentimiento investigación: el checkbox vivía en el modal Ver
+  // paciente pero quedó oculto ahí (51db326); es la única forma de tildarlo hoy,
+  // así que si nunca se marca acá el paciente jamás sale en el export de investigación
+  // aunque esté archivado (de ahí la diferencia entre esta lista y el Excel).
+  el.querySelectorAll('[data-consentimiento-pac-id]').forEach(function(chk) {
+    chk.addEventListener('click', function(e) { e.stopPropagation(); });
+    chk.addEventListener('change', function(e) {
+      e.stopPropagation();
+      toggleConsentimientoInvestigacion(this.getAttribute('data-consentimiento-pac-id'), this.checked);
     });
   });
 }
