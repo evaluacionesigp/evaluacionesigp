@@ -2042,11 +2042,7 @@ var HISTORIAL_DOMINIOS = [
 ];
 
 function historialZColor(z) {
-  if (z === null || z === undefined) return 'var(--muted)';
-  if (z >= -1.0) return 'var(--green)';
-  if (z >= -1.5) return 'var(--yellow)';
-  if (z >= -2.0) return 'var(--orange)';
-  return 'var(--red)';
+  return zNormMeta(z, false).color;
 }
 
 function syncHistorialFiltroPac(pacId) {
@@ -2287,11 +2283,12 @@ function zNormMeta(z, invertirZ) {
   if (z === null || z === undefined || isNaN(parseFloat(z))) return { label: '—', color: '#888780' };
   var zf = parseFloat(z);
   if (invertirZ) zf = -zf;
-  if (zf >= 1.5)   return { label: 'Superior', color: '#1565c0' };
+  if (zf >= 2.0)   return { label: 'Superior', color: '#1565c0' };
+  if (zf >= 1.5)   return { label: 'Límite superior normativo', color: '#1f8a7a' };
   if (zf > -0.7)   return { label: 'Normal', color: '#2e7a4f' };
-  if (zf > -1.33)  return { label: 'Límite inferior normativo', color: '#6f6f69' };
-  if (zf > -1.6)   return { label: 'Dificultad leve', color: '#7a5c00' };
-  if (zf > -2.5)   return { label: 'Dificultad moderada', color: '#a04000' };
+  if (zf > -1.33)  return { label: 'Límite inferior normativo', color: '#8a9a3a' };
+  if (zf > -1.6)   return { label: 'Dificultad leve', color: '#b8901f' };
+  if (zf > -2.5)   return { label: 'Dificultad moderada', color: '#c2622a' };
   return { label: 'Dificultad elevada', color: '#a00000' };
 }
 
@@ -14469,13 +14466,18 @@ function tavecTablaLabel(vKey) {
 }
 
 function tavecPerfilEstilo(interp) {
+  // interp.color llega en minúsculas (viene de meta.color.replace('#','') en
+  // tavecInterpWord, y meta.color siempre se define en minúsculas en zNormMeta) —
+  // antes las claves de este mapa estaban en MAYÚSCULAS y nunca coincidían, así
+  // que esta función siempre caía al color por defecto sin importar el resultado.
   var map = {
-    '2563EB': { bg: '#d8f0fa', txt: '#1565c0' },
-    '2E7A4F': { bg: '#e8f4e0', txt: '#2e7a4f' },
-    '639922': { bg: '#e8f4e0', txt: '#639922' },
-    'BA7517': { bg: '#fdf0c4', txt: '#7a5c00' },
-    'E07B00': { bg: '#fde8d0', txt: '#a04000' },
-    'C53030': { bg: '#fad8d8', txt: '#a00000' },
+    '1565c0': { bg: '#d8f0fa', txt: '#1565c0' },
+    '1f8a7a': { bg: '#dcf3ee', txt: '#1f8a7a' },
+    '2e7a4f': { bg: '#e8f4e0', txt: '#2e7a4f' },
+    '8a9a3a': { bg: '#eef2d8', txt: '#8a9a3a' },
+    'b8901f': { bg: '#faf0cf', txt: '#b8901f' },
+    'c2622a': { bg: '#fde3d0', txt: '#c2622a' },
+    'a00000': { bg: '#fad8d8', txt: '#a00000' },
     '888780': { bg: 'transparent', txt: 'var(--muted)' }
   };
   return map[interp.color] || { bg: '#e8f4e0', txt: '#325c28' };
@@ -14612,7 +14614,7 @@ function calcularTavec() {
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.m.toFixed(2) : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-size:0.78rem;color:var(--muted);">' + (bar ? bar.d.toFixed(2) : '—') + '</td>' +
       '<td style="text-align:center;padding:8px;font-family:monospace;font-weight:700;color:' + col + ';">' + zDisp + '</td>' +
-      '<td style="text-align:center;padding:8px;"><span style="background:' + (lbl==='Superior'?'#d8f0fa':lbl==='Normal'?'#e8f4e0':lbl==='Límite inferior normativo'?'#ece9e2':lbl==='Dificultad leve'?'#fdf0c4':lbl==='Dificultad moderada'?'#fde8d0':'#fad8d8') + ';border-radius:12px;padding:3px 10px;font-size:0.71rem;font-weight:700;">' + lbl + '</span></td>' +
+      '<td style="text-align:center;padding:8px;"><span style="background:' + (lbl==='Superior'?'#d8f0fa':lbl==='Límite superior normativo'?'#dcf3ee':lbl==='Normal'?'#e8f4e0':lbl==='Límite inferior normativo'?'#eef2d8':lbl==='Dificultad leve'?'#faf0cf':lbl==='Dificultad moderada'?'#fde3d0':'#fad8d8') + ';border-radius:12px;padding:3px 10px;font-size:0.71rem;font-weight:700;">' + lbl + '</span></td>' +
       '</tr>';
   });
   html += '</tbody></table>';
@@ -14741,10 +14743,11 @@ function renderPerfilZ() {
     var meta = zNormMeta(z, invertirZ);
     var styles = {
       'Superior': {bg:'#d8f0fa', txt:'#1565c0'},
+      'Límite superior normativo': {bg:'#dcf3ee', txt:'#1f8a7a'},
       'Normal': {bg:'#e8f4e0', txt:'#325c28'},
-      'Límite inferior normativo': {bg:'#ece9e2', txt:'#6f6f69'},
-      'Dificultad leve': {bg:'#fdf0c4', txt:'#7a5c00'},
-      'Dificultad moderada': {bg:'#fde8d0', txt:'#a04000'},
+      'Límite inferior normativo': {bg:'#eef2d8', txt:'#8a9a3a'},
+      'Dificultad leve': {bg:'#faf0cf', txt:'#b8901f'},
+      'Dificultad moderada': {bg:'#fde3d0', txt:'#c2622a'},
       'Dificultad elevada': {bg:'#fad8d8', txt:'#a00000'},
       '—': {bg:'transparent', txt:'var(--muted)'}
     };
