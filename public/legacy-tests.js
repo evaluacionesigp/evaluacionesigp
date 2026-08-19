@@ -14218,6 +14218,14 @@ function construirHojasInvestigacion(pacientes, resultados) {
     });
     if (test === 'TAVEC') hojas.push(hojaTavec(pacPorId, filasTest));
     else if (test === 'Cuestionarios Familiares') hojas.push(hojaFamiliares(pacPorId, filasTest));
+    else if (test === 'TMT A-B') hojas.push(hojaTmt(pacPorId, filasTest));
+    else if (test === 'WAIS-IV') hojas.push(hojaWais(pacPorId, filasTest));
+    else if (test === 'WAIS-IV Perfil') hojas.push(hojaWaisPerfil(pacPorId, filasTest));
+    else if (test === 'STAI') hojas.push(hojaStai(pacPorId, filasTest));
+    else if (test === 'MBI-HSS') hojas.push(hojaMbi(pacPorId, filasTest));
+    else if (test === 'CSI') hojas.push(hojaCsi(pacPorId, filasTest));
+    else if (test === 'SCL-90-R') hojas.push(hojaScl90(pacPorId, filasTest));
+    else if (test === 'SCQ') hojas.push(hojaScq(pacPorId, filasTest));
     else hojas.push(hojaGenerica(test, pacPorId, filasTest));
   });
   return hojas;
@@ -14249,6 +14257,120 @@ function hojaPacientes(pacientes, resultados) {
   };
 }
 
+// STAI guarda Estado y Rasgo (dos sub-escalas independientes) en una sola fila;
+// puntaje_total solo capturaba Estado y se perdía Rasgo por completo.
+function hojaStai(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.estado, num: true },
+      { v: d.cat_estado || '', num: false },
+      { v: d.rasgo, num: true },
+      { v: d.cat_rasgo || '', num: false }
+    ]);
+  });
+  return {
+    nombre: 'STAI',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Estado (PD)','Estado · Categoría','Rasgo (PD)','Rasgo · Categoría'],
+    filas: filas
+  };
+}
+
+// MBI-HSS guarda sus 3 sub-escalas (CE/DP/RP) en datos; puntaje_total solo
+// capturaba Cansancio Emocional y la categoria genérica era la conclusión global.
+function hojaMbi(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.CE, num: true }, { v: d.CE_cat || '', num: false },
+      { v: d.DP, num: true }, { v: d.DP_cat || '', num: false },
+      { v: d.RP, num: true }, { v: d.RP_cat || '', num: false },
+      { v: r.categoria || '', num: false }
+    ]);
+  });
+  return {
+    nombre: 'MBI-HSS',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Cansancio Emocional (CE)','CE · Categoría','Despersonalización (DP)','DP · Categoría','Realización Personal (RP)','RP · Categoría','Conclusión'],
+    filas: filas
+  };
+}
+
+// CSI guarda sus 8 sub-escalas (CSI_SUB_ORDER/CSI_LABELS, definidas más abajo
+// en la sección CSI) dentro de datos.<SUB>={score,z,pc}; puntaje_total solo
+// capturaba REP y la categoria genérica no alcanza para las otras 7.
+function hojaCsi(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    var fila = _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([{ v: r.fecha || '', num: false }]);
+    CSI_SUB_ORDER.forEach(function(sub) {
+      var s = d[sub] || {};
+      fila.push({ v: s.score, num: true });
+      fila.push({ v: s.pc, num: true });
+    });
+    return fila;
+  });
+  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación'];
+  CSI_SUB_ORDER.forEach(function(sub) {
+    headers.push(CSI_LABELS[sub] + ' (' + sub + ') · bruto /20');
+    headers.push(CSI_LABELS[sub] + ' (' + sub + ') · Pc');
+  });
+  return { nombre: 'CSI', headers: headers, filas: filas };
+}
+
+// SCL-90-R guarda sus 9 dimensiones dentro de datos.subescalas.<clave>={t,avg}
+// más IGS/TSP/IMSP; puntaje_total solo capturaba el IGS y categoria quedaba
+// como placeholder 'Ver detalle' (no describe nada).
+var SCL90_DIM_ORDEN = ['som','obs','sen','dep','ans','hos','fob','par','psi'];
+var SCL90_DIM_LABELS = { som:'Somatización', obs:'Obsesión-Compulsión', sen:'Sensitividad interpersonal',
+  dep:'Depresión', ans:'Ansiedad', hos:'Hostilidad', fob:'Ansiedad fóbica', par:'Ideación paranoide', psi:'Psicoticismo' };
+function hojaScl90(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    var sub = d.subescalas || {};
+    var fila = _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([{ v: r.fecha || '', num: false }]);
+    SCL90_DIM_ORDEN.forEach(function(k) {
+      var s = sub[k] || {};
+      fila.push({ v: s.avg, num: true });
+      fila.push({ v: s.t, num: true });
+    });
+    fila.push({ v: d.igt, num: true });
+    fila.push({ v: d.tsp, num: true });
+    fila.push({ v: d.imsp, num: true });
+    return fila;
+  });
+  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación'];
+  SCL90_DIM_ORDEN.forEach(function(k) {
+    headers.push(SCL90_DIM_LABELS[k] + ' · bruto promedio');
+    headers.push(SCL90_DIM_LABELS[k] + ' · T');
+  });
+  headers.push('IGS (Índice Global) · T', 'TSP (Total Síntomas Positivos)', 'IMSP (Índice Malestar Positivo)');
+  return { nombre: 'SCL-90-R', headers: headers, filas: filas };
+}
+
+// SCQ guarda sus 3 sub-escalas (DC/IS/CRR) en datos; el total general sí
+// llegaba al genérico via puntaje_total, pero las sub-escalas se perdían.
+function hojaScq(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.total, num: true },
+      { v: d.dc, num: true },
+      { v: d.is, num: true },
+      { v: d.crr, num: true },
+      { v: d.informante || '', num: false },
+      { v: r.categoria || '', num: false }
+    ]);
+  });
+  return {
+    nombre: 'SCQ',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Total (corte ≥15)','DC · Comunicación','IS · Interacción social','CRR · Cond. repetitivas','Informante','Categoría'],
+    filas: filas
+  };
+}
+
 function hojaGenerica(test, pacPorId, resultadosTest) {
   var filas = resultadosTest.map(function(r) {
     return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
@@ -14263,6 +14385,78 @@ function hojaGenerica(test, pacPorId, resultadosTest) {
     headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Puntaje bruto','Puntaje Z','Categoría'],
     filas: filas
   };
+}
+
+// TMT guarda A y B en una sola fila de psico_resultados (datos.tmt_a_seg /
+// datos.tmt_b_seg) con puntaje_total en null, así que la hoja genérica no
+// mostraba brutos ni distinguía A de B. Acá se desglosan en columnas propias.
+function hojaTmt(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.tmt_a_seg, num: true },
+      { v: d.tmt_a_z, num: true },
+      { v: d.tmt_b_seg, num: true },
+      { v: d.tmt_b_z, num: true }
+    ]);
+  });
+  return {
+    nombre: 'TMT A-B',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','TMT A · tiempo (seg)','TMT A · Z','TMT B · tiempo (seg)','TMT B · Z'],
+    filas: filas
+  };
+}
+
+// WAIS-IV (carga de Dígitos/Claves/Sec. Número-Letra) guarda las 3 subpruebas
+// en datos.rd_*/cla_*/sln_*, pero puntaje_total solo traía Dígitos y la hoja
+// genérica no diferenciaba subprueba — quedaba "todo junto" bajo un solo Z.
+function hojaWais(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var d = r.datos || {};
+    return _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([
+      { v: r.fecha || '', num: false },
+      { v: d.grupo || '', num: false },
+      { v: d.rd_pb, num: true },
+      { v: d.rd_pe, num: true },
+      { v: d.rd_z, num: true },
+      { v: d.cla_pb, num: true },
+      { v: d.cla_pe, num: true },
+      { v: d.cla_z, num: true },
+      { v: d.sln_pb, num: true },
+      { v: d.sln_pe, num: true },
+      { v: d.sln_z, num: true },
+      { v: d.sln_grupo || '', num: false }
+    ]);
+  });
+  return {
+    nombre: 'WAIS-IV (Díg-Cla-SLN)',
+    headers: ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación','Grupo etario WAIS-IV','Dígitos · bruto','Dígitos · PE','Dígitos · Z','Claves · bruto','Claves · PE','Claves · Z','Sec. Número-Letra · bruto','Sec. Número-Letra · PE','Sec. Número-Letra · Z','Grupo SLN (WMS-III)'],
+    filas: filas
+  };
+}
+
+// WAIS-IV Perfil guarda los 5 índices (ICV/IRP/IMT/IVP/CIT) dentro de
+// datos.indices.<clave>; la hoja genérica solo mostraba el CIT (puntaje_total).
+var WAIS_PERFIL_XLS_ORDEN = ['icv','irp','imt','ivp','cit'];
+function hojaWaisPerfil(pacPorId, resultadosTest) {
+  var filas = resultadosTest.map(function(r) {
+    var idx = (r.datos && r.datos.indices) || {};
+    var fila = _datosComunesPaciente(pacPorId[String(r.paciente_id)]).concat([{ v: r.fecha || '', num: false }]);
+    WAIS_PERFIL_XLS_ORDEN.forEach(function(k) {
+      var d = idx[k] || {};
+      fila.push({ v: d.pc, num: true });
+      fila.push({ v: d.pct, num: true });
+      fila.push({ v: d.desc || '', num: false });
+    });
+    return fila;
+  });
+  var headers = ['Nombre','Fecha de nacimiento','Edad','Escolaridad','Fecha de evaluación'];
+  WAIS_PERFIL_XLS_ORDEN.forEach(function(k) {
+    var corto = k.toUpperCase();
+    headers.push(corto + ' · PC'); headers.push(corto + ' · Percentil'); headers.push(corto + ' · Descripción');
+  });
+  return { nombre: 'WAIS-IV Perfil', headers: headers, filas: filas };
 }
 
 // TAVEC_VARS_ORDER (definido más abajo, en la sección TAVEC) es [etiqueta, clave
