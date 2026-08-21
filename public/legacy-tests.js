@@ -13392,9 +13392,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
           if(d.cla_pb!=null)add('WAIS-IV · Claves',d.cla_pb,10,3,d.cla_z,null);
           if(d.sln_pb!=null)add('WAIS-IV · Sec. Nro-Letra (WMS-III LeNu)',d.sln_pb,10,3,d.sln_z,d.sln_grupo||null);
         } else if(tn==='Stroop'){
-          if(d.zP!=null) add('Stroop — Palabra',d.p!=null?d.p:d.pCorr,50,10,d.zP,null);
-          if(d.zC!=null) add('Stroop — Color',d.c!=null?d.c:d.cCorr,50,10,d.zC,null);
-          if(d.zPC!=null)add('Stroop — Palabra/Color',d.pc!=null?d.pc:d.pcCorr,50,10,d.zPC,null);
+          if(d.zP!=null) add('Stroop — Palabra',d.pCorr!=null?d.pCorr:d.p,50,10,d.zP,null);
+          if(d.zC!=null) add('Stroop — Color',d.cCorr!=null?d.cCorr:d.c,50,10,d.zC,null);
+          if(d.zPC!=null)add('Stroop — Palabra/Color',d.pcCorr!=null?d.pcCorr:d.pc,50,10,d.zPC,null);
           if(d.zInt!=null)add('Stroop — Interferencia',d.interf,50,10,d.zInt,null);
         } else if(tn==='Figura Rey'){
           var fcrW = fcrWordEmitRows(d);
