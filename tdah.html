@@ -100,27 +100,29 @@
       <div class="seccion-marca-titulo">ASRS-V1.1</div>
       <div class="seccion-marca-sub">Escala de Autodetección de TDAH en Adultos</div>
     </div>
-    <div class="card"><div id="asrs-items-a"></div></div>
+    <div class="card">
+      <div class="card-hint">Las siguientes preguntas se refieren a cómo te sentiste y te comportaste durante los <strong>últimos 6 meses</strong>. Para cada una, marcá con qué frecuencia te pasó lo que se describe: 0 = Nunca · 1 = Rara vez · 2 = A veces · 3 = Con frecuencia · 4 = Con mucha frecuencia. No hay respuestas correctas ni incorrectas.</div>
+      <div id="asrs-items-a"></div>
+    </div>
     <div class="card"><div id="asrs-items-b"></div></div>
 
     <div class="seccion-marca">
       <div class="seccion-marca-titulo">WURS-25</div>
       <div class="seccion-marca-sub">Escala de Wender-Utah · Síntomas de TDAH en la infancia</div>
     </div>
-    <div class="card"><div id="wurs-items"></div></div>
-
-    <div class="seccion-marca">
-      <div class="seccion-marca-titulo">EAVA</div>
-      <div class="seccion-marca-sub">Escala de Autovaloración de TDAH en Adultos · últimos 6 meses</div>
+    <div class="card">
+      <div class="card-hint">Este cuestionario se refiere a cómo eras aproximadamente entre los <strong>5 y los 12 años</strong>, en tu infancia. Para cada palabra o frase, marcá qué tan bien te describía en esa época: 0 = Nada o casi nada · 1 = Un poco · 2 = Moderadamente · 3 = Bastante · 4 = Muy frecuentemente. Respondé según lo que recordás de vos mismo/a de niño/a, no de cómo sos ahora.</div>
+      <div id="wurs-items"></div>
     </div>
-    <div class="card"><div id="eava-items-a"></div></div>
-    <div class="card"><div id="eava-items-b"></div></div>
 
     <div class="seccion-marca">
       <div class="seccion-marca-titulo">DEX</div>
       <div class="seccion-marca-sub">Cuestionario Disejecutivo</div>
     </div>
-    <div class="card"><div id="dex-items"></div></div>
+    <div class="card">
+      <div class="card-hint">Las siguientes afirmaciones describen situaciones que pueden pasarte en tu <strong>vida cotidiana actual</strong>. Para cada una, marcá con qué frecuencia te sucede: 0 = Nunca · 1 = Ocasionalmente · 2 = Algunas veces · 3 = Con bastante frecuencia · 4 = Muy frecuentemente. No hay respuestas buenas ni malas.</div>
+      <div id="dex-items"></div>
+    </div>
 
     <button class="btn-primary" id="btn-enviar" onclick="enviarTdah()">Enviar respuestas</button>
     <div id="msg-envio" style="text-align:center;font-size:0.82rem;color:var(--muted);margin-top:10px;"></div>

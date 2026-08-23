@@ -1,7 +1,7 @@
 import { SUPA_URL, SUPA_KEY } from './core/supabase-config.js';
 import { serializeForm, applyDraftToForm } from './core/form-draft.js';
 
-// ══ ASRS-V1.1 · WURS-25 · EAVA · DEX ═══════════════════════════════════════
+// ══ ASRS-V1.1 · WURS-25 · DEX ═══════════════════════════════════════════════
 // Copiados tal cual de public/legacy-tests.js (no son un módulo ES, así que no
 // se pueden importar) para que el `datos`/`puntaje_total`/`puntaje_z`/`categoria`
 // que arma esta página pública sea idéntico al que produce la carga manual —
@@ -62,34 +62,6 @@ var WURS_ITEMS_LIST = [
 ];
 // Percentiles Scandar 2021 — Tabla V — WURS-25 — n=1.173, Argentina
 var WURS_PCT=[{p:1,v:3},{p:5,v:6},{p:10,v:8},{p:15,v:11},{p:20,v:12},{p:25,v:14},{p:30,v:15},{p:35,v:17},{p:50,v:21},{p:55,v:22},{p:60,v:24},{p:65,v:26},{p:70,v:29},{p:75,v:31},{p:80,v:34},{p:85,v:37},{p:90,v:41},{p:95,v:49},{p:99,v:62.6}];
-
-var EAVA_ITEMS_A = [
-  {n:1,  txt:'¿Con qué frecuencia comete errores cuando tiene que trabajar en un proyecto aburrido o difícil?'},
-  {n:2,  txt:'¿Con qué frecuencia tiene dificultades para mantener su atención cuando está aburrido o con un trabajo repetitivo?'},
-  {n:3,  txt:'¿Con qué frecuencia tiene dificultades para concentrarse en cuestiones que otras personas le comunican, aun cuando se dirijan directamente a usted?'},
-  {n:4,  txt:'¿Con qué frecuencia tiene dificultades para concretar los detalles de un proyecto una vez que las partes más difíciles se han conseguido?'},
-  {n:5,  txt:'¿Con qué frecuencia tiene dificultades en ordenar las cosas en una tarea que requiere organización?'},
-  {n:6,  txt:'Cuando tiene una tarea que requiere mucha reflexión, ¿con qué frecuencia la evita o demora en iniciarla?'},
-  {n:7,  txt:'¿Con qué frecuencia extravía cosas o tiene dificultades para encontrarlas en su casa o en el trabajo?'},
-  {n:8,  txt:'¿Con qué frecuencia se distrae por actividad o ruido a su alrededor?'},
-  {n:9,  txt:'¿Con qué frecuencia tiene dificultades para recordar citas u obligaciones?'}
-];
-var EAVA_ITEMS_B = [
-  {n:10, txt:'¿Con qué frecuencia se inquieta o mueve sus manos o pies cuando tiene que permanecer sentado durante largo tiempo?'},
-  {n:11, txt:'¿Con qué frecuencia abandona su asiento en reuniones o en otras situaciones en las cuales debe permanecer sentado?'},
-  {n:12, txt:'¿Con qué frecuencia tiene sensación de inquietud?'},
-  {n:13, txt:'¿Con qué frecuencia tiene dificultades para relajarse durante el tiempo libre?'},
-  {n:14, txt:'¿Con qué frecuencia se nota forzado en realizar actividades, como impulsado por un motor?'},
-  {n:15, txt:'¿Con qué frecuencia habla demasiado en ambientes sociales?'},
-  {n:16, txt:'Cuando mantiene una conversación, ¿con qué frecuencia permite que los demás terminen sus intervenciones?'},
-  {n:17, txt:'¿Con qué frecuencia tiene dificultad para esperar su turno en situaciones que requieran una espera?'},
-  {n:18, txt:'¿Con qué frecuencia interrumpe a los demás mientras están ocupados?'}
-];
-function eavaCat(score) {
-  if (score >= 24) return { cat:'Muy probable TDAH adulto' };
-  if (score >= 17) return { cat:'Probable TDAH adulto' };
-  return                  { cat:'Baja probabilidad de TDAH' };
-}
 
 var DEX_DESORG  = [1,4,6,7,8,10,11,17,18,19];
 var DEX_DESINHI = [2,3,5,9,12,13,14,15,16,20];
@@ -170,7 +142,6 @@ var HABITOS = [
 // ══ RENDER ═══════════════════════════════════════════════════════════════════
 var LABELS_ASRS = ['Nunca','Rara vez','A veces','Con frecuencia','Con mucha frecuencia'];
 var LABELS_WURS = ['Nada o casi nada','Un poco','Moderadamente','Bastante','Muy frecuentemente'];
-var LABELS_EAVA = ['Nunca','Raramente','Algunas veces','A menudo','Muy a menudo'];
 var LABELS_DEX  = ['Nunca','Ocasionalmente','Algunas veces','Con bastante frecuencia','Muy frecuentemente'];
 
 function _renderEscala(items, containerId, namePrefix, labels) {
@@ -201,12 +172,10 @@ function _renderTodo() {
   _renderEscala(ASRS_ITEMS.filter(function(i){ return i.sec==='A'; }), 'asrs-items-a', 'asrs_', LABELS_ASRS);
   _renderEscala(ASRS_ITEMS.filter(function(i){ return i.sec==='B'; }), 'asrs-items-b', 'asrs_', LABELS_ASRS);
   _renderEscala(WURS_ITEMS_LIST.map(function(txt,i){ return {n:i+1, txt:'De niño/a era/estaba: '+txt}; }), 'wurs-items', 'wurs_', LABELS_WURS);
-  _renderEscala(EAVA_ITEMS_A, 'eava-items-a', 'eava_', LABELS_EAVA);
-  _renderEscala(EAVA_ITEMS_B, 'eava-items-b', 'eava_', LABELS_EAVA);
   _renderEscala(DEX_ITEMS_TXT, 'dex-items', 'dex', LABELS_DEX);
 }
 
-// ══ CÁLCULO DE PUNTAJES (idéntico a calcularAsrs/calcularWurs/calcularEAVA/calcularDEX) ══
+// ══ CÁLCULO DE PUNTAJES (idéntico a calcularAsrs/calcularWurs/calcularDEX) ══
 function calcularEdad(fnac) {
   var hoy = new Date(); var nac = new Date(fnac);
   var edad = hoy.getFullYear() - nac.getFullYear();
@@ -253,23 +222,6 @@ function _calcularWursPublico() {
   var zW = parseFloat(((total-23.5)/13.16).toFixed(2));
   var cat = total>=46 ? 'Significativo para síntomas en la infancia' : total>=36 ? 'Probable historia síntomas infantiles' : 'Sin síntomas significativos en la infancia';
   return { test:'WURS-25', fecha: null, puntaje_total: total, puntaje_z: zW, categoria: cat, datos: { total:total, pc:pc, z:zW } };
-}
-
-function _calcularEavaPublico() {
-  var ptA=0, ptB=0;
-  for (var i=0;i<EAVA_ITEMS_A.length;i++) {
-    var s = document.querySelector('input[name="eava_'+EAVA_ITEMS_A[i].n+'"]:checked');
-    if (!s) return null;
-    ptA += parseInt(s.value);
-  }
-  for (var j=0;j<EAVA_ITEMS_B.length;j++) {
-    var sb = document.querySelector('input[name="eava_'+EAVA_ITEMS_B[j].n+'"]:checked');
-    if (!sb) return null;
-    ptB += parseInt(sb.value);
-  }
-  var rA = eavaCat(ptA), rB = eavaCat(ptB);
-  var catGlobal = (ptA>=24||ptB>=24) ? 'Muy probable TDAH adulto' : (ptA>=17||ptB>=17) ? 'Probable TDAH adulto' : 'Baja probabilidad';
-  return { test:'EAVA', fecha: null, puntaje_total: ptA+ptB, puntaje_z: null, categoria: catGlobal, datos: { parte_a:ptA, parte_b:ptB, cat_a:rA.cat, cat_b:rB.cat } };
 }
 
 function _calcularDexPublico() {
@@ -373,9 +325,6 @@ function _faltantesTdah() {
   for (var i=1;i<=25;i++) { if (!document.querySelector('input[name="wurs_'+i+'"]:checked')) wursSinResp++; }
   if (wursSinResp) faltantes.push(wursSinResp + ' ítem(s) del WURS-25');
 
-  var eavaSinResp = EAVA_ITEMS_A.concat(EAVA_ITEMS_B).filter(function(it){ return !document.querySelector('input[name="eava_'+it.n+'"]:checked'); }).length;
-  if (eavaSinResp) faltantes.push(eavaSinResp + ' ítem(s) del EAVA');
-
   var dexSinResp = 0;
   for (var j=1;j<=20;j++) { if (!document.querySelector('input[name="dex'+j+'"]:checked')) dexSinResp++; }
   if (dexSinResp) faltantes.push(dexSinResp + ' ítem(s) del DEX');
@@ -439,14 +388,13 @@ function enviarTdah() {
 
   var asrs = _calcularAsrsPublico(grupo);
   var wurs = _calcularWursPublico();
-  var eava = _calcularEavaPublico();
   var dex  = _calcularDexPublico();
-  if (!asrs || !wurs || !eava || !dex) {
+  if (!asrs || !wurs || !dex) {
     msgEl.style.color = '#c0392b';
     msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios. Revisá que estén todos completos.';
     return;
   }
-  [asrs, wurs, eava, dex].forEach(function(r) { r.fecha = hoy; });
+  [asrs, wurs, dex].forEach(function(r) { r.fecha = hoy; });
 
   var intake = _construirIntake();
 
@@ -463,7 +411,7 @@ function enviarTdah() {
       'apikey': SUPA_KEY,
       'Prefer': 'return=minimal'
     },
-    body: JSON.stringify({ p_paciente_id: pacId, p_intake: intake, p_resultados: [asrs, wurs, eava, dex] })
+    body: JSON.stringify({ p_paciente_id: pacId, p_intake: intake, p_resultados: [asrs, wurs, dex] })
   }).then(function(res) {
     if (!res.ok) {
       return res.text().then(function(body) {
