@@ -10164,7 +10164,7 @@ function abrirInforme() {
   // Limpiar campos
   var campos = ['inf-fecha-eval','inf-evaluado-por','inf-derivado-por','inf-dni','inf-ocupacion',
     'inf-procedencia','inf-dominancia','inf-contacto','inf-ant-clinicos','inf-ant-psiq',
-    'inf-ant-fam','inf-habitos','inf-motivo','inf-conducta','inf-perfil-cog','inf-conclusiones','inf-sugerencias-extra'];
+    'inf-ant-fam','inf-habitos','inf-medicacion','inf-motivo','inf-conducta','inf-perfil-cog','inf-conclusiones','inf-sugerencias-extra'];
   campos.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   infRenderSugerenciasChecks();
   infApplyConfigToForm(infDefaultCfg());
@@ -10207,6 +10207,7 @@ function cargarInforme(pacId) {
         'inf-ant-psiq':     inf.ant_psiquiatricos||'',
         'inf-ant-fam':      inf.ant_familiares||'',
         'inf-habitos':      inf.habitos_toxicos||'',
+        'inf-medicacion':   inf.medicacion||'',
         'inf-motivo':       inf.motivo_consulta||'',
         'inf-conducta':     inf.descripcion_conducta||'',
         'inf-perfil-cog':   inf.perfil_cognitivo||'',
@@ -10257,6 +10258,7 @@ function guardarInforme() {
     ant_psiquiatricos:document.getElementById('inf-ant-psiq').value || null,
     ant_familiares:   document.getElementById('inf-ant-fam').value || null,
     habitos_toxicos:  document.getElementById('inf-habitos').value || null,
+    medicacion:       document.getElementById('inf-medicacion').value || null,
     motivo_consulta:  datos.motivo_consulta || null,
     descripcion_conducta: datos.descripcion_conducta || null,
     perfil_cognitivo: datos.perfil_cognitivo || null,
@@ -13668,6 +13670,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     dpRow('Ant. Psiq./Psicol.',inf.ant_psiquiatricos||'—'),
     dpRow('Ant. Familiares',   inf.ant_familiares||'—'),
     dpRow('Hábitos Tóxicos',   inf.habitos_toxicos||'—'),
+    dpRow('Medicación Actual', inf.medicacion||'—'),
   ],COL_DP);
   body+=_wPar('',{before:0,after:80});
 
