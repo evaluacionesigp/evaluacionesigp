@@ -86,6 +86,7 @@ function renderPacientes() {
       '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-editar-pac="' + p.id + '" title="Editar datos">✏</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-familiar-pac="' + p.id + '" title="Copiar link para el familiar">📋 Cuestionario familiar</button>' +
+      '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-tdah-pac="' + p.id + '" title="Copiar link de cuestionarios TDAH para el paciente">🧠 Cuestionario TDAH</button>' +
       '<button class="btn-xs btn-xs-danger" data-borrar-pac-id="' + p.id + '" data-borrar-pac-nombre="' + encodeURIComponent(p.nombre) + '">✕</button>' +
       '</div></div>';
   }).join('');
@@ -115,6 +116,13 @@ function renderPacientes() {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       copiarLinkFamiliar(this.getAttribute('data-link-familiar-pac'));
+    });
+  });
+  // Delegación Link TDAH
+  el.querySelectorAll('[data-link-tdah-pac]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      copiarLinkTdah(this.getAttribute('data-link-tdah-pac'));
     });
   });
 }
@@ -193,6 +201,26 @@ function copiarLinkFamiliar(id) {
         navigator.clipboard.writeText(link).then(avisar).catch(function() { prompt('Copiá el link (válido por 7 días):', link); });
       } else {
         prompt('Copiá el link (válido por 7 días):', link);
+      }
+    })
+    .catch(catchGuardarError);
+}
+
+// El link vale 7 días desde que se genera, y además se vence solo apenas el
+// paciente lo envía con éxito (uso único — ver enviar_cuestionarios_tdah en
+// sql/agregar_tdah_publico.sql). A diferencia del familiar, acá se cargan
+// puntajes clínicos y datos sensibles (DNI, antecedentes de salud mental
+// propios y familiares), no un checklist de cuidador.
+function copiarLinkTdah(id) {
+  var link = new URL('tdah.html?paciente=' + encodeURIComponent(id), window.location.href).toString();
+  var avisar = function() { toast('Link copiado (válido por 7 días, uso único). Enviáselo al paciente por WhatsApp.', 'success'); };
+  var expira = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  supaFetch('/rest/v1/psico_pacientes?id=eq.' + id, 'PATCH', { tdah_link_expira: expira }, SESSION.access_token)
+    .then(function() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(avisar).catch(function() { prompt('Copiá el link (válido por 7 días, uso único):', link); });
+      } else {
+        prompt('Copiá el link (válido por 7 días, uso único):', link);
       }
     })
     .catch(catchGuardarError);
