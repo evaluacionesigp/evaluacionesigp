@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Evaluación clínica TDAH — Instituto González Palau</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles/familiar.css">
+<link rel="stylesheet" href="/src/styles/tdah.css">
+</head>
+<body>
+
+<div class="wrap">
+  <div class="marca">
+    <div class="marca-titulo">Instituto González Palau</div>
+    <div class="marca-sub">Evaluación clínica TDAH · Área de neuropsicología</div>
+  </div>
+
+  <div id="pantalla-error" class="msg-screen">
+    <div class="msg-icon">⚠️</div>
+    <div class="msg-titulo">Link inválido o vencido</div>
+    <div class="msg-texto">Este link ya no está disponible (venció o ya fue usado). Solicitá uno nuevo al profesional.</div>
+  </div>
+
+  <div id="pantalla-exito" class="msg-screen">
+    <div class="msg-icon">🙏</div>
+    <div class="msg-titulo">¡Muchas gracias por completar el cuestionario!</div>
+    <div class="msg-texto">Tus respuestas fueron enviadas correctamente al profesional. Ya podés cerrar esta página. Lo que hayas dudado, lo vemos juntos en la consulta.</div>
+  </div>
+
+  <div id="pantalla-form">
+
+    <div class="card">
+      <div class="card-title">Antes de la entrevista</div>
+      <div class="card-hint">Te pedimos que completes estos cuestionarios antes de la consulta. Sabemos que son varios y que algunas preguntas se parecen entre sí: cada uno mira algo distinto, por eso los usamos juntos. Respondé con honestidad, pensando en cómo sos habitualmente y no en cómo creés que habría que responder — no hay respuestas buenas ni malas, y ninguna respuesta define por sí sola el resultado de la evaluación. Tomate el tiempo que necesites, podés hacer pausas. Si algo te genera dudas, lo vemos juntos en la consulta.</div>
+      <div class="aviso-privacidad">🔒 Este link es personal e intransferible y deja de funcionar apenas lo enviás. Tus respuestas llegan directo al equipo profesional que te lo compartió y se usan exclusivamente para tu evaluación.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Datos generales</div>
+      <div class="field"><label>Apellido y nombre *</label><input type="text" id="ax-nombre" required></div>
+      <div class="field"><label>Fecha de nacimiento *</label><input type="date" id="ax-fnac" required></div>
+      <div class="field"><label>¿Qué nivel de educación tenés? *</label><input type="text" id="ax-escolaridad" placeholder="Ej: Secundario completo" required></div>
+      <div class="field"><label>DNI *</label><input type="text" id="ax-dni" required></div>
+      <div class="field"><label>¿A qué te dedicás? ¿De qué trabajás y/o qué estudiás? *</label><input type="text" id="ax-ocupacion" required></div>
+      <div class="field"><label>¿En qué ciudad vivís? *</label><input type="text" id="ax-ciudad" required></div>
+      <div class="field"><label>Derivado por *</label><input type="text" id="ax-derivado" placeholder="Dr./Lic. que deriva — si es por tu cuenta, poné: Iniciativa propia" required></div>
+      <div class="field"><label>Teléfono de contacto *</label><input type="tel" id="ax-tel" required></div>
+      <div class="field"><label>Correo de contacto *</label><input type="email" id="ax-correo" required></div>
+      <div class="field"><label>Dominancia *</label>
+        <select id="ax-dominancia" required>
+          <option value="">— Seleccionar —</option>
+          <option value="Diestro">Diestro/a</option>
+          <option value="Zurdo">Zurdo/a</option>
+          <option value="Ambidiestro">Ambidiestro/a</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Tenés alguno de los siguientes antecedentes de salud? *</div>
+      <div class="chk-list" id="chk-salud"></div>
+      <div class="chk-otros"><input type="text" id="ax-salud-otros" placeholder="Otros (opcional)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Hiciste durante la infancia alguno de estos tratamientos? *</div>
+      <div class="chk-list" id="chk-inftto"></div>
+      <div class="chk-otros"><input type="text" id="ax-inftto-otros" placeholder="Otros (opcional)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">¿Tiene alguien de tu familia alguno de los siguientes antecedentes? *</div>
+      <div class="card-sub">Podés marcar varias respuestas.</div>
+      <div class="chk-list" id="chk-fam"></div>
+      <div class="chk-otros"><input type="text" id="ax-fam-otros" placeholder="Otros (opcional)"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tratamiento psicológico y/o psiquiátrico *</div>
+      <div class="card-sub">Indicá si te encontrás asistiendo o has realizado tratamiento de salud mental (psiquiátrico, psicológico o ambos); cuándo iniciaste y, si lo finalizaste, cuándo. Si nunca hiciste, escribí "No realicé".</div>
+      <div class="field"><textarea id="ax-psiq" rows="3" required></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Medicación</div>
+      <div class="card-sub">Indicá nombre y dosis de la medicación que tomás actualmente (opcional).</div>
+      <div class="field"><textarea id="ax-medicacion" rows="2"></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Hábitos tóxicos *</div>
+      <div class="card-sub">Marcá todas las opciones que correspondan.</div>
+      <div class="chk-list" id="chk-habitos"></div>
+      <div class="chk-otros"><input type="text" id="ax-habitos-otros" placeholder="Otros (opcional)"></div>
+    </div>
+
+    <div class="seccion-marca">
+      <div class="seccion-marca-titulo">ASRS-V1.1</div>
+      <div class="seccion-marca-sub">Escala de Autodetección de TDAH en Adultos</div>
+    </div>
+    <div class="card"><div id="asrs-items-a"></div></div>
+    <div class="card"><div id="asrs-items-b"></div></div>
+
+    <div class="seccion-marca">
+      <div class="seccion-marca-titulo">WURS-25</div>
+      <div class="seccion-marca-sub">Escala de Wender-Utah · Síntomas de TDAH en la infancia</div>
+    </div>
+    <div class="card"><div id="wurs-items"></div></div>
+
+    <div class="seccion-marca">
+      <div class="seccion-marca-titulo">EAVA</div>
+      <div class="seccion-marca-sub">Escala de Autovaloración de TDAH en Adultos · últimos 6 meses</div>
+    </div>
+    <div class="card"><div id="eava-items-a"></div></div>
+    <div class="card"><div id="eava-items-b"></div></div>
+
+    <div class="seccion-marca">
+      <div class="seccion-marca-titulo">DEX</div>
+      <div class="seccion-marca-sub">Cuestionario Disejecutivo</div>
+    </div>
+    <div class="card"><div id="dex-items"></div></div>
+
+    <button class="btn-primary" id="btn-enviar" onclick="enviarTdah()">Enviar respuestas</button>
+    <div id="msg-envio" style="text-align:center;font-size:0.82rem;color:var(--muted);margin-top:10px;"></div>
+  </div>
+</div>
+
+<script type="module" src="/src/tdah-main.js"></script>
+</body>
+</html>

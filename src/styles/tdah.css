@@ -1,0 +1,26 @@
+/* Se carga después de familiar.css y reutiliza sus variables/tokens y estilos
+   base (.card, .field, .btn-primary, .msg-screen, etc.) — acá solo se agregan
+   los componentes que el cuestionario TDAH necesita y que el familiar no usa:
+   checklists de antecedentes y escalas Likert de 5 puntos (ASRS/WURS/EAVA/DEX). */
+
+.card-sub { font-size: 0.78rem; color: var(--muted); margin: -8px 0 14px; line-height: 1.45; }
+
+.chk-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 4px; }
+.chk-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.86rem; cursor: pointer; line-height: 1.35; }
+.chk-item input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
+.chk-otros { margin-top: 8px; }
+.chk-otros input { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.86rem; }
+
+.escala-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.escala-item:last-child { border-bottom: none; }
+.escala-pregunta { font-size: 0.86rem; margin-bottom: 10px; line-height: 1.4; }
+.escala-opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.escala-opts label { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 7px 3px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); text-align: center; }
+.escala-opts input[type="radio"] { accent-color: var(--accent); }
+.escala-opts span { font-size: 0.64rem; color: var(--muted); line-height: 1.2; }
+
+.seccion-marca { text-align: center; margin: 28px 0 6px; }
+.seccion-marca-titulo { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 600; color: var(--accentdk); }
+.seccion-marca-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+.aviso-privacidad { background: var(--surface2); border-left: 3px solid var(--accent); border-radius: 6px; padding: 12px 14px; font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
