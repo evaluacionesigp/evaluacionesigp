@@ -389,16 +389,22 @@ function escolTmtForPaciente(edad, anios) {
   return edad <= 59 ? escolTmtJoven(anios) : escolTmtMayor(anios);
 }
 
+// Grupos etarios de Butman et al. (2000): 0=<45 · 1=46-55 · 2=56-65 · 3=66-75 · 4=>75
 function grupoFlv(edad) {
-  if (edad === null || edad < 15) return '';
-  if (edad <= 29) return '0';
-  if (edad <= 49) return '1';
-  return '2';
+  if (edad === null || edad < 16) return '';
+  if (edad < 45) return '0';
+  if (edad <= 55) return '1';
+  if (edad <= 65) return '2';
+  if (edad <= 75) return '3';
+  return '4';
 }
 
+// Niveles educativos de Butman et al. (2000): primario 4-7 años · secundario 8-12 · terciario 13+
 function neFlv(anios) {
   if (anios === null) return '';
-  return anios >= 12 ? 'alto' : 'bajo';
+  if (anios <= 7) return 'primario';
+  if (anios <= 12) return 'secundario';
+  return 'terciario';
 }
 
 function grupoStroop(edad) {
@@ -1471,7 +1477,7 @@ var GLOSARIO_TESTS = {
     }
   },
   'Fluencia Verbal': {
-    mide: 'Evalúa generación léxica espontánea y estrategias de búsqueda semántica (animales, frutas) y fonológica (letra P, F, A).',
+    mide: 'Evalúa generación léxica espontánea: fluencia semántica (animales) y fonológica (letra P).',
     interpretacion: {
       bajo: 'Fluencia semántica baja sugiere compromiso léxico-semántico. Fluencia fonológica baja sugiere mayor compromiso ejecutivo-frontal.',
       limite: 'Posibles dificultades en acceso léxico o en estrategias de búsqueda. Integrar con el perfil ejecutivo.',
@@ -2679,7 +2685,6 @@ function aplicarEdicionResultado(vistaId, r) {
       edicionVariablesDesdeDatos(REY_VARS, d.variables, calcularRey);
       break;
     case 'flv':
-      if (d.sexo) pacSetVal('flv-sexo', d.sexo);
       if (d.ne) pacSetVal('flv-ne', d.ne);
       if (d.edad_grupo !== undefined && d.edad_grupo !== '') pacSetVal('flv-edad', d.edad_grupo);
       edicionVariablesDesdeDatos(FLV_VARS, d.variables, calcularFLV);
@@ -4586,56 +4591,28 @@ function informeTdahBinario(categoria) {
 }
 
 // ══ FLUENCIA VERBAL — BAREMOS ════════════════════════════════════════════════
-// Fuente: tabla baremos PFV
-// Índices: [sexo v/m][ne alto/bajo][edad 0=15-29, 1=30-49, 2=50-70] → {m, ds}
+// Fuente: Butman J, Allegri RF, Harris P, Drake M. "Fluencia verbal en español.
+// Datos normativos en Argentina." Medicina (Buenos Aires) 2000; 60(5/1): 561-564.
+// Tabla 1. n=266 adultos de Bs. As. (16-86 años). Fluencia semántica = animales
+// (1 min). Fluencia fonológica = letra "P" (1 min). Sin diferencias por sexo
+// (no se estratifica). Índices: [ne primario/secundario/terciario][edad 0..4] → {m, ds}
+// Grupos etarios: 0 = <45 · 1 = 46-55 · 2 = 56-65 · 3 = 66-75 · 4 = >75
 var FLV_BAR = {
   animales: {
-    v: { alto: [{m:18.7,ds:4.8},{m:23.6,ds:5.6},{m:20.9,ds:3.4}], bajo: [{m:18.7,ds:4.8},{m:22.2,ds:3.9},{m:16.5,ds:4.9}] },
-    m: { alto: [{m:20.0,ds:5.6},{m:22.3,ds:5.1},{m:20.8,ds:4.3}], bajo: [{m:18.8,ds:3.8},{m:18.7,ds:5.2},{m:17.2,ds:4.3}] }
-  },
-  frutas: {
-    v: { alto: [{m:13.5,ds:2.8},{m:15.8,ds:2.7},{m:14.9,ds:3.0}], bajo: [{m:13.7,ds:3.1},{m:13.5,ds:2.5},{m:13.5,ds:2.8}] },
-    m: { alto: [{m:13.5,ds:2.8},{m:15.8,ds:2.7},{m:14.9,ds:3.0}], bajo: [{m:13.7,ds:3.1},{m:13.5,ds:2.5},{m:13.5,ds:2.8}] }
-  },
-  herram: {
-    v: { alto: [{m:10.5,ds:4.0},{m:12.7,ds:4.1},{m:11.7,ds:3.8}], bajo: [{m:8.7,ds:3.1},{m:12.6,ds:4.8},{m:10.5,ds:4.0}] },
-    m: { alto: [{m:8.9,ds:3.7},{m:9.7,ds:3.2},{m:11.0,ds:3.9}],  bajo: [{m:7.6,ds:3.0},{m:10.0,ds:3.4},{m:9.6,ds:3.4}] }
+    primario:   [{m:16.5,ds:2.8},{m:18.7,ds:3.0},{m:15.5,ds:3.7},{m:15.4,ds:3.9},{m:12.4,ds:2.9}],
+    secundario: [{m:20.9,ds:5.6},{m:22.4,ds:4.7},{m:19.2,ds:5.2},{m:19.3,ds:5.1},{m:16.5,ds:2.3}],
+    terciario:  [{m:23.8,ds:6.2},{m:22.4,ds:4.8},{m:21.6,ds:5.4},{m:19.5,ds:5.5},{m:15.1,ds:3.5}]
   },
   letraP: {
-    v: { alto: [{m:10.1,ds:4.8},{m:18.6,ds:4.1},{m:16.3,ds:5.2}], bajo: [{m:14.1,ds:4.8},{m:16.7,ds:5.7},{m:10.1,ds:4.8}] },
-    m: { alto: [{m:10.1,ds:4.8},{m:18.6,ds:4.1},{m:16.3,ds:5.2}], bajo: [{m:14.1,ds:4.8},{m:16.7,ds:5.7},{m:10.1,ds:4.8}] }
-  },
-  letraF: {
-    v: { alto: [{m:9.9,ds:3.3},{m:15.1,ds:3.4},{m:14.9,ds:4.0}],  bajo: [{m:11.4,ds:4.0},{m:12.9,ds:3.7},{m:9.9,ds:3.3}] },
-    m: { alto: [{m:9.9,ds:3.3},{m:15.1,ds:3.4},{m:14.9,ds:4.0}],  bajo: [{m:11.4,ds:4.0},{m:12.9,ds:3.7},{m:9.9,ds:3.3}] }
-  },
-  letraExc: {
-    v: { alto: [{m:6.6,ds:3.1},{m:10.8,ds:3.7},{m:11.1,ds:3.5}],  bajo: [{m:7.8,ds:3.2},{m:8.8,ds:2.4},{m:6.6,ds:3.1}] },
-    m: { alto: [{m:6.6,ds:3.1},{m:10.8,ds:3.7},{m:11.1,ds:3.5}],  bajo: [{m:7.8,ds:3.2},{m:8.8,ds:2.4},{m:6.6,ds:3.1}] }
-  },
-  combCiu: {
-    v: { alto: [{m:4.5,ds:4.1},{m:7.7,ds:5.1},{m:6.6,ds:2.6}],   bajo: [{m:4.8,ds:2.8},{m:5.6,ds:3.5},{m:4.5,ds:4.1}] },
-    m: { alto: [{m:4.8,ds:3.4},{m:5.4,ds:2.9},{m:6.3,ds:3.5}],   bajo: [{m:2.9,ds:2.5},{m:3.3,ds:2.2},{m:2.4,ds:2.3}] }
-  },
-  combCap: {
-    v: { alto: [{m:4.7,ds:2.6},{m:7.0,ds:4.3},{m:5.6,ds:3.2}],   bajo: [{m:5.2,ds:3.2},{m:5.1,ds:5.0},{m:4.7,ds:2.6}] },
-    m: { alto: [{m:4.6,ds:2.7},{m:4.8,ds:3.1},{m:6.9,ds:2.8}],   bajo: [{m:5.1,ds:2.8},{m:3.5,ds:3.1},{m:4.1,ds:2.3}] }
-  },
-  adj: {
-    v: { alto: [{m:6.6,ds:3.7},{m:12.4,ds:3.3},{m:11.4,ds:3.4}], bajo: [{m:7.8,ds:2.8},{m:10.8,ds:4.2},{m:6.6,ds:3.7}] },
-    m: { alto: [{m:6.6,ds:3.7},{m:12.4,ds:3.3},{m:11.4,ds:3.4}], bajo: [{m:7.8,ds:2.8},{m:10.8,ds:4.2},{m:6.6,ds:3.7}] }
-  },
-  accion: {
-    v: { alto: [{m:13.7,ds:3.7},{m:22.5,ds:5.0},{m:20.7,ds:5.7}], bajo: [{m:14.7,ds:2.2},{m:12.7,ds:5.7},{m:13.7,ds:3.7}] },
-    m: { alto: [{m:13.7,ds:3.7},{m:22.5,ds:5.0},{m:20.7,ds:5.7}], bajo: [{m:14.7,ds:2.2},{m:12.7,ds:5.7},{m:13.7,ds:3.7}] }
+    primario:   [{m:12.8,ds:3.9},{m:14.8,ds:2.6},{m:13.3,ds:5.7},{m:10.8,ds:3.1},{m:9.8,ds:4.7}],
+    secundario: [{m:16.3,ds:6.1},{m:19.0,ds:4.7},{m:15.2,ds:4.0},{m:14.5,ds:3.5},{m:14.0,ds:3.7}],
+    terciario:  [{m:18.1,ds:6.2},{m:17.1,ds:4.1},{m:16.6,ds:3.2},{m:16.4,ds:4.5},{m:9.8,ds:4.7}]
   }
 };
 
 var FLV_VARS = [
   {key:'animales', id:'flv-animales', label:'Fluencia verbal semántica (animales)', tipo:'Semántica'},
-  {key:'frutas',   id:'flv-frutas',   label:'Frutas',   tipo:'Semántica'},
-  {key:'letraP',   id:'flv-p',        label:'Fluencia fonológica (letra P)',  tipo:'Fonológica'},
-  {key:'letraF',   id:'flv-f',        label:'Letra F',  tipo:'Fonológica'}
+  {key:'letraP',   id:'flv-p',        label:'Fluencia fonológica (letra P)',  tipo:'Fonológica'}
 ];
 
 function iniciarFLV() {
@@ -4652,16 +4629,14 @@ function limpiarFLV() {
 }
 
 function calcularFLV() {
-  var sexo  = document.getElementById('flv-sexo').value;
   var ne    = document.getElementById('flv-ne').value;
   var edadI = document.getElementById('flv-edad').value;
-  if (!sexo || !ne || edadI === '') { alert('Completá sexo, nivel educativo y grupo de edad.'); return; }
+  if (!ne || edadI === '') { alert('Completá nivel educativo y grupo de edad.'); return; }
 
   var gi = parseInt(edadI);
-  var sexoLabel  = sexo === 'v' ? 'Varón' : 'Mujer';
-  var neLabel    = ne === 'alto' ? 'NE Alto' : 'NE Bajo';
+  var neLabel    = {primario:'Primario (4-7 años)', secundario:'Secundario (8-12 años)', terciario:'Terciario (13+ años)'}[ne];
   var edadLabel  = document.getElementById('flv-edad').selectedOptions[0].text;
-  document.getElementById('flv-res-meta').textContent = sexoLabel + ' · ' + neLabel + ' · ' + edadLabel;
+  document.getElementById('flv-res-meta').textContent = neLabel + ' · ' + edadLabel;
 
   var html = '';
   var tipoActual = '';
@@ -4685,7 +4660,7 @@ function calcularFLV() {
 
     algunoDato = true;
     var bruto = parseFloat(raw);
-    var bar   = FLV_BAR[v.key][sexo][ne][gi];
+    var bar   = FLV_BAR[v.key][ne][gi];
     var z     = (bruto - bar.m) / bar.ds;
 
     var clf, col, badge;
@@ -4727,7 +4702,7 @@ function calcularFLV() {
     else
       ps.push('Se observan dificultades en la fluencia fonológica en: ' + fonBajas.map(function(x){ return x.label + ' (Z=' + x.z.toFixed(2) + ')'; }).join(', ') + '.');
   }
-  ps.push('<em>Fuente: Marino & Alderete (2010) — Baremos para población adulta argentina (UNC, Córdoba). Esta síntesis es orientativa y debe integrarse con el juicio clínico del profesional.</em>');
+  ps.push('<em>Fuente: Butman et al. (2000) — Medicina (Buenos Aires) 60(5/1):561-564. Datos normativos argentinos, n=266. Esta síntesis es orientativa y debe integrarse con el juicio clínico del profesional.</em>');
   document.getElementById('flv-interp').innerHTML = ps.map(function(p){ return '<p>'+p+'</p>'; }).join('');
 
   document.getElementById('flv-form').style.display = 'none';
@@ -4739,18 +4714,17 @@ function guardarResultadoFLV() {
   var pacId = document.getElementById('flv-paciente').value;
   var fecha = document.getElementById('flv-fecha').value;
   if (!pacId) { toast('Seleccioná un paciente primero'); return; }
-  var sexo=document.getElementById('flv-sexo').value;
   var ne=document.getElementById('flv-ne').value;
   var edadI=document.getElementById('flv-edad').value;
-  var datosObj={sexo:sexo,ne:ne,edad_grupo:edadI,variables:[]};
+  var datosObj={ne:ne,edad_grupo:edadI,variables:[]};
   var zAll=[];
-  if(sexo&&ne&&edadI!==''){
+  if(ne&&edadI!==''){
     var gi=parseInt(edadI);
     FLV_VARS.forEach(function(v){
       var raw=document.getElementById(v.id).value;
       if(raw==='')return;
       var bruto=parseFloat(raw);
-      var bar=FLV_BAR[v.key][sexo][ne][gi];
+      var bar=FLV_BAR[v.key][ne][gi];
       var z=parseFloat(((bruto-bar.m)/bar.ds).toFixed(2));
       datosObj.variables.push({label:v.label,tipo:v.tipo,bruto:bruto,m:bar.m,ds:bar.ds,z:z});
       zAll.push(z);
