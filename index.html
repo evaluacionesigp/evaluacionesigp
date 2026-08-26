@@ -77,7 +77,7 @@
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.55</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.56</div>
     </div>
   </aside>
 
@@ -995,30 +995,25 @@
             </div>
             <div class="field"><label>Fecha de evaluación</label><input type="date" id="flv-fecha"></div>
           </div>
-          <div class="form-grid-3">
-            <div class="field">
-              <label>Sexo *</label>
-              <select id="flv-sexo">
-                <option value="">— Seleccionar —</option>
-                <option value="v">Varón</option>
-                <option value="m">Mujer</option>
-              </select>
-            </div>
+          <div class="form-grid">
             <div class="field">
               <label>Nivel educativo *</label>
               <select id="flv-ne">
                 <option value="">— Seleccionar —</option>
-                <option value="alto">NE Alto (≥ 12 años de educación formal)</option>
-                <option value="bajo">NE Bajo (&lt; 12 años de educación formal)</option>
+                <option value="primario">Primario (4 a 7 años)</option>
+                <option value="secundario">Secundario (8 a 12 años)</option>
+                <option value="terciario">Terciario (13 años o más)</option>
               </select>
             </div>
             <div class="field">
               <label>Grupo de edad *</label>
               <select id="flv-edad">
                 <option value="">— Seleccionar —</option>
-                <option value="0">15–29 años</option>
-                <option value="1">30–49 años</option>
-                <option value="2">50–70 años</option>
+                <option value="0">Menos de 45 años</option>
+                <option value="1">46 a 55 años</option>
+                <option value="2">56 a 65 años</option>
+                <option value="3">66 a 75 años</option>
+                <option value="4">Más de 75 años</option>
               </select>
             </div>
           </div>
@@ -1029,20 +1024,18 @@
           <div class="section-label">Fluencia Semántica</div>
           <div class="form-grid">
             <div class="field"><label>Animales</label><input type="number" id="flv-animales" placeholder="N° de animales" min="0"></div>
-            <div class="field"><label>Frutas</label><input type="number" id="flv-frutas" placeholder="N° de frutas" min="0"></div>
           </div>
           <div class="section-label">Fluencia Fonológica</div>
           <div class="form-grid">
             <div class="field"><label>Letra P</label><input type="number" id="flv-p" placeholder="N° de palabras con P" min="0"></div>
-            <div class="field"><label>Letra F</label><input type="number" id="flv-f" placeholder="N° de palabras con F" min="0"></div>
           </div>
           <div class="btn-row" style="margin-top:16px;">
             <button class="btn-secondary" onclick="limpiarFLV()">🗑 Limpiar</button>
             <button class="btn-primary" onclick="calcularFLV()">Calcular puntajes Z →</button>
           </div>
           <div style="background:#fef5ec;border:1px solid #f0d4b0;border-radius:8px;padding:12px 16px;font-size:0.78rem;color:var(--muted);margin-top:14px;line-height:1.7;">
-            <strong style="color:var(--accentdk);">Referencia normativa:</strong> Marino, J. & Alderete, A. M. (2010). Valores Normativos de Pruebas de Fluidez Verbal Categoriales, Fonológicas, Gramaticales y Combinadas y Análisis Comparativo de la Capacidad de Iniciación. <em>Revista Neuropsicología, Neuropsiquiatría y Neurociencias, 10</em>(1), 79–93.<br>
-            <strong style="color:var(--accentdk);">Nivel educativo:</strong> NE Alto = 12 o más años de educación formal (secundaria completa o más) · NE Bajo = menos de 12 años (secundaria incompleta o menos). Muestra: 259 adultos argentinos de 15–70 años (UNC, Córdoba).
+            <strong style="color:var(--accentdk);">Referencia normativa:</strong> Butman, J., Allegri, R. F., Harris, P., & Drake, M. (2000). Fluencia verbal en español. Datos normativos en Argentina. <em>Medicina (Buenos Aires), 60</em>(5/1), 561–564.<br>
+            <strong style="color:var(--accentdk);">Nivel educativo:</strong> Primario = 4 a 7 años de escolaridad formal · Secundario = 8 a 12 años · Terciario = 13 años o más. Muestra: 266 adultos argentinos de 16–86 años (Buenos Aires).
           </div>
         </div>
       </div>
@@ -5452,7 +5445,7 @@
 
 <script src="/globals.js"></script>
 <script type="module" src="/src/main.js"></script>
-<script src="/legacy-tests.js?v=1.14.55" defer></script>
+<script src="/legacy-tests.js?v=1.14.56" defer></script>
 
 <div id="tooltip-glosario" role="tooltip" aria-hidden="true"></div>
 </body>
