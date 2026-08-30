@@ -314,6 +314,15 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .field textarea { resize: vertical; min-height: 80px; }
 .btn-row { display: flex; gap: 10px; margin-top: 16px; }
 
+/* Buscador inyectado antes de cada <select> de paciente (ver habilitarBuscadoresPaciente) */
+.buscador-paciente {
+  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 9px 12px; color: var(--text); margin-bottom: 6px;
+  font-family: 'Outfit', sans-serif; font-size: 0.88rem; transition: border-color 0.15s; box-sizing: border-box;
+}
+.buscador-paciente:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,112,112,0.15); }
+.buscador-paciente::placeholder { color: #6f938e; }
+
 /* ══ SECTOR / TESTS ══ */
 .back-btn {
   display: inline-flex; align-items: center; gap: 6px; color: var(--muted);

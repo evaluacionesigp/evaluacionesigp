@@ -71,10 +71,25 @@ function actualizarStatsHome() {
   if(sp) sp.textContent = activos.length;
   if(se) se.textContent = RESULTADOS.filter(function(r) { return idsActivos[String(r.paciente_id)]; }).length;
 }
+// Normaliza para comparar nombres sin importar mayúsculas/acentos (ej. "jose" encuentra "José").
+function _normalizarBusqueda(s) {
+  return (s || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
 function renderPacientes() {
   var el = document.getElementById('pacientes-lista-contenido');
-  var activos = PACIENTES.filter(function(p){ return !p.archivado; });
-  if (!activos.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-txt">No hay pacientes registrados aún.</div></div>'; return; }
+  var buscadorEl = document.getElementById('pacientes-buscador');
+  var termino = _normalizarBusqueda(buscadorEl ? buscadorEl.value : '');
+  var activos = PACIENTES.filter(function(p){
+    if (p.archivado) return false;
+    return !termino || _normalizarBusqueda(p.nombre).indexOf(termino) !== -1;
+  });
+  if (!activos.length) {
+    el.innerHTML = termino
+      ? '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-txt">No se encontraron pacientes con ese nombre.</div></div>'
+      : '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-txt">No hay pacientes registrados aún.</div></div>';
+    return;
+  }
   el.innerHTML = activos.map(function(p) {
     var edad = p.fecha_nacimiento ? calcularEdad(p.fecha_nacimiento) + ' años' : '';
     var meta = [p.sexo, edad, p.escolaridad].filter(Boolean).map(escHtml).join(' · ');
@@ -658,6 +673,38 @@ function llenarSelectPacientes() {
     if (el) el.innerHTML = opciones;
   });
   actualizarTopbarPaciente();
+  habilitarBuscadoresPaciente();
+}
+
+// Inyecta un campo de texto antes de cada <select id="...-paciente"> (son ~60,
+// uno por test) que filtra sus <option> a medida que se escribe — son listas
+// largas y buscar a mano en un <select> nativo es tedioso. Idempotente: una
+// vez que un select ya tiene su buscador, no se vuelve a tocar aunque se
+// llame de nuevo (p.ej. cada vez que se recargan los pacientes).
+function habilitarBuscadorEnSelect(select) {
+  if (!select || select.dataset.buscadorListo) return;
+  select.dataset.buscadorListo = '1';
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'buscador-paciente';
+  input.placeholder = '🔍 Buscar paciente…';
+  input.autocomplete = 'off';
+  select.parentNode.insertBefore(input, select);
+  input.addEventListener('input', function() {
+    var termino = _normalizarBusqueda(input.value);
+    Array.prototype.forEach.call(select.options, function(opt) {
+      if (!opt.value) return; // no ocultar "— Seleccionar paciente —"
+      opt.hidden = !!termino && _normalizarBusqueda(opt.textContent).indexOf(termino) === -1;
+    });
+  });
+  select.addEventListener('change', function() {
+    input.value = '';
+    Array.prototype.forEach.call(select.options, function(opt) { opt.hidden = false; });
+  });
+}
+
+function habilitarBuscadoresPaciente() {
+  document.querySelectorAll('select[id$="-paciente"]').forEach(habilitarBuscadorEnSelect);
 }
 
 function mostrarFormPac() {
