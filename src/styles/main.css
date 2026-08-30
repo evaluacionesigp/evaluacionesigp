@@ -149,6 +149,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
 .topbar-paciente-select.activo {
   color:var(--green); font-weight:600; border-color:#8fc98f; background:#f0faf0;
 }
+.topbar-paciente-wrap .buscador-paciente { width:160px; margin-bottom:0; }
 .app-content { flex:1; padding:40px 48px; max-width:980px; }
 
 /* ══ RESPONSIVE MOBILE ══ */
@@ -166,6 +167,7 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--te
   .app-main { margin-left:0; margin-top:52px; }
   .topbar { padding:8px 16px; }
   .topbar-paciente-select { min-width:160px; max-width:100%; }
+  .topbar-paciente-wrap .buscador-paciente { width:130px; }
   .app-content { padding:20px 16px; }
 }
 

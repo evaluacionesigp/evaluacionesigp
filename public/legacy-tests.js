@@ -676,10 +676,10 @@ function llenarSelectPacientes() {
   habilitarBuscadoresPaciente();
 }
 
-// Inyecta un campo de texto antes de cada <select id="...-paciente"> (son ~60,
-// uno por test) que filtra sus <option> a medida que se escribe — son listas
-// largas y buscar a mano en un <select> nativo es tedioso. Idempotente: una
-// vez que un select ya tiene su buscador, no se vuelve a tocar aunque se
+// Inyecta un campo de texto antes del <select> de "paciente activo" del
+// topbar, que filtra sus <option> a medida que se escribe — es la lista larga
+// que más se usa y buscar a mano en un <select> nativo es tedioso. Idempotente:
+// una vez que el select ya tiene su buscador, no se vuelve a tocar aunque se
 // llame de nuevo (p.ej. cada vez que se recargan los pacientes).
 function habilitarBuscadorEnSelect(select) {
   if (!select || select.dataset.buscadorListo) return;
@@ -704,7 +704,7 @@ function habilitarBuscadorEnSelect(select) {
 }
 
 function habilitarBuscadoresPaciente() {
-  document.querySelectorAll('select[id$="-paciente"]').forEach(habilitarBuscadorEnSelect);
+  habilitarBuscadorEnSelect(document.getElementById('topbar-paciente-select'));
 }
 
 function mostrarFormPac() {
