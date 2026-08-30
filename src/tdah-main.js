@@ -106,7 +106,12 @@ function dexZLabel(z) {
 var ANT_SALUD = [
   {id:'prematuridad', label:'Prematuridad / bajo peso al nacer, complicaciones en el embarazo o parto de tu madre'},
   {id:'golpe',         label:'Golpe en la cabeza con pérdida de conciencia u hospitalización, epilepsia o crisis, meningitis/encefalitis, tics o Tourette'},
-  {id:'tiroides',      label:'Hipertiroidismo o hipotiroidismo, anemia, diabetes'},
+  {id:'hta',           label:'Hipertensión arterial (HTA)'},
+  {id:'diabetes',      label:'Diabetes (DBT)'},
+  {id:'tiroides',      label:'Hipotiroidismo o hipertiroidismo'},
+  {id:'cardiaca',      label:'Enfermedad cardíaca (arritmias, infarto, insuficiencia cardíaca)'},
+  {id:'acv',           label:'ACV o accidente isquémico transitorio (AIT)'},
+  {id:'migrana',       label:'Migraña o cefaleas frecuentes'},
   {id:'insomnio',      label:'Insomnio o dificultades en el sueño'},
   {id:'internaciones', label:'Internaciones por alguna causa'},
   {id:'diag_psi',      label:'Diagnóstico psicológico o de salud mental'},
@@ -131,7 +136,11 @@ var ANT_FAMILIARES = [
   {id:'bipolaridad',  label:'Bipolaridad, Esquizofrenia'},
   {id:'depresion',    label:'Depresión o ansiedad'},
   {id:'otro_diag',    label:'Algún otro diagnóstico de salud mental'},
-  {id:'neurologica',  label:'Alguna otra enfermedad neurológica (Epilepsia, Parkinson, etc.)'}
+  {id:'demencia',     label:'Demencia o Enfermedad de Alzheimer'},
+  {id:'neurologica',  label:'Alguna otra enfermedad neurológica (Epilepsia, Parkinson, etc.)'},
+  {id:'hta',          label:'Hipertensión arterial (HTA)'},
+  {id:'diabetes',     label:'Diabetes (DBT)'},
+  {id:'cardiovascular', label:'Enfermedad cardiovascular (infarto, ACV)'}
 ];
 var HABITOS = [
   {id:'tabaco',  label:'Tabaco'},
@@ -173,6 +182,13 @@ function _renderTodo() {
   _renderEscala(ASRS_ITEMS.filter(function(i){ return i.sec==='B'; }), 'asrs-items-b', 'asrs_', LABELS_ASRS);
   _renderEscala(WURS_ITEMS_LIST.map(function(txt,i){ return {n:i+1, txt:'De niño/a era/estaba: '+txt}; }), 'wurs-items', 'wurs_', LABELS_WURS);
   _renderEscala(DEX_ITEMS_TXT, 'dex-items', 'dex', LABELS_DEX);
+}
+
+// El bloque de cuestionarios TDAH solo se pide si el paciente vino por eso —
+// para el resto de las consultas alcanza con la anamnesis general de arriba.
+function toggleBloqueTdah() {
+  var esTdah = document.getElementById('ax-motivo-tdah').value === 'si';
+  document.getElementById('bloque-tdah').style.display = esTdah ? 'block' : 'none';
 }
 
 // ══ CÁLCULO DE PUNTAJES (idéntico a calcularAsrs/calcularWurs/calcularDEX) ══
@@ -263,9 +279,9 @@ function _formatearChecklist(items, prefix, ningunoId, otrosId, ningunoTexto) {
   var marcados = items.filter(function(it) {
     var chk = document.getElementById(prefix + '-' + it.id);
     return chk && chk.checked;
-  }).map(function(it){ return '• ' + it.label; });
-  if (otrosVal) marcados.push('• Otros: ' + otrosVal);
-  return marcados.length ? marcados.join('\n') : null;
+  }).map(function(it){ return it.label; });
+  if (otrosVal) marcados.push(otrosVal);
+  return marcados.length ? marcados.join(', ') + '.' : null;
 }
 
 function _construirIntake() {
@@ -278,8 +294,8 @@ function _construirIntake() {
   var saludTxt  = _formatearChecklist(ANT_SALUD, 'ax-salud', 'ax-salud-ninguno', 'ax-salud-otros', 'Ninguno reportado.');
   var infttoTxt = _formatearChecklist(TRAT_INFANCIA, 'ax-inftto', 'ax-inftto-ninguno', 'ax-inftto-otros', 'Ninguno reportado.');
   var antClinicosPartes = [];
-  if (saludTxt)  antClinicosPartes.push('Antecedentes de salud (cuestionario previo a la consulta):\n' + saludTxt);
-  if (infttoTxt) antClinicosPartes.push('Tratamientos realizados durante la infancia:\n' + infttoTxt);
+  if (saludTxt)  antClinicosPartes.push('Antecedentes de salud: ' + saludTxt);
+  if (infttoTxt) antClinicosPartes.push('Tratamientos realizados durante la infancia: ' + infttoTxt);
 
   return {
     nombre: document.getElementById('ax-nombre').value.trim() || null,
@@ -291,7 +307,7 @@ function _construirIntake() {
     derivado_por: document.getElementById('ax-derivado').value.trim() || null,
     contacto: contactoPartes.length ? contactoPartes.join(' · ') : null,
     dominancia: document.getElementById('ax-dominancia').value || null,
-    ant_clinicos: antClinicosPartes.length ? antClinicosPartes.join('\n\n') : null,
+    ant_clinicos: antClinicosPartes.length ? antClinicosPartes.join(' ') : null,
     ant_psiquiatricos: document.getElementById('ax-psiq').value.trim() || null,
     ant_familiares: _formatearChecklist(ANT_FAMILIARES, 'ax-fam', 'ax-fam-ninguno', 'ax-fam-otros', 'Ninguno reportado.'),
     habitos_toxicos: _formatearChecklist(HABITOS, 'ax-habitos', 'ax-habitos-ninguno', 'ax-habitos-otros', 'Ninguno reportado.'),
@@ -318,16 +334,22 @@ function _faltantesTdah() {
   if (!_algunoMarcado(ANT_FAMILIARES, 'ax-fam', 'ax-fam-ninguno')) faltantes.push('antecedentes familiares');
   if (!_algunoMarcado(HABITOS, 'ax-habitos', 'ax-habitos-ninguno')) faltantes.push('hábitos tóxicos');
 
-  var asrsSinResp = ASRS_ITEMS.filter(function(it){ return !document.querySelector('input[name="asrs_'+it.n+'"]:checked'); }).length;
-  if (asrsSinResp) faltantes.push(asrsSinResp + ' ítem(s) del ASRS-V1.1');
+  var motivoTdah = document.getElementById('ax-motivo-tdah').value;
+  if (!motivoTdah) { faltantes.push('si tu consulta es por TDAH'); return faltantes; }
 
-  var wursSinResp = 0;
-  for (var i=1;i<=25;i++) { if (!document.querySelector('input[name="wurs_'+i+'"]:checked')) wursSinResp++; }
-  if (wursSinResp) faltantes.push(wursSinResp + ' ítem(s) del WURS-25');
+  // Los 3 cuestionarios solo son obligatorios si vino por diagnóstico de TDAH.
+  if (motivoTdah === 'si') {
+    var asrsSinResp = ASRS_ITEMS.filter(function(it){ return !document.querySelector('input[name="asrs_'+it.n+'"]:checked'); }).length;
+    if (asrsSinResp) faltantes.push(asrsSinResp + ' ítem(s) del ASRS-V1.1');
 
-  var dexSinResp = 0;
-  for (var j=1;j<=20;j++) { if (!document.querySelector('input[name="dex'+j+'"]:checked')) dexSinResp++; }
-  if (dexSinResp) faltantes.push(dexSinResp + ' ítem(s) del DEX');
+    var wursSinResp = 0;
+    for (var i=1;i<=25;i++) { if (!document.querySelector('input[name="wurs_'+i+'"]:checked')) wursSinResp++; }
+    if (wursSinResp) faltantes.push(wursSinResp + ' ítem(s) del WURS-25');
+
+    var dexSinResp = 0;
+    for (var j=1;j<=20;j++) { if (!document.querySelector('input[name="dex'+j+'"]:checked')) dexSinResp++; }
+    if (dexSinResp) faltantes.push(dexSinResp + ' ítem(s) del DEX');
+  }
 
   return faltantes;
 }
@@ -382,19 +404,23 @@ function enviarTdah() {
     return;
   }
 
-  var edad = calcularEdad(document.getElementById('ax-fnac').value);
-  var grupo = edad <= 50 ? '18-50' : '>50';
   var hoy = new Date().toISOString().split('T')[0];
+  var resultados = [];
 
-  var asrs = _calcularAsrsPublico(grupo);
-  var wurs = _calcularWursPublico();
-  var dex  = _calcularDexPublico();
-  if (!asrs || !wurs || !dex) {
-    msgEl.style.color = '#c0392b';
-    msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios. Revisá que estén todos completos.';
-    return;
+  if (document.getElementById('ax-motivo-tdah').value === 'si') {
+    var edad = calcularEdad(document.getElementById('ax-fnac').value);
+    var grupo = edad <= 50 ? '18-50' : '>50';
+    var asrs = _calcularAsrsPublico(grupo);
+    var wurs = _calcularWursPublico();
+    var dex  = _calcularDexPublico();
+    if (!asrs || !wurs || !dex) {
+      msgEl.style.color = '#c0392b';
+      msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios. Revisá que estén todos completos.';
+      return;
+    }
+    resultados = [asrs, wurs, dex];
+    resultados.forEach(function(r) { r.fecha = hoy; });
   }
-  [asrs, wurs, dex].forEach(function(r) { r.fecha = hoy; });
 
   var intake = _construirIntake();
 
@@ -411,7 +437,7 @@ function enviarTdah() {
       'apikey': SUPA_KEY,
       'Prefer': 'return=minimal'
     },
-    body: JSON.stringify({ p_paciente_id: pacId, p_intake: intake, p_resultados: [asrs, wurs, dex] })
+    body: JSON.stringify({ p_paciente_id: pacId, p_intake: intake, p_resultados: resultados })
   }).then(function(res) {
     if (!res.ok) {
       return res.text().then(function(body) {
@@ -434,6 +460,7 @@ function enviarTdah() {
 }
 
 window.enviarTdah = enviarTdah;
+window.toggleBloqueTdah = toggleBloqueTdah;
 
 window.addEventListener('DOMContentLoaded', function() {
   var pacId = getPacienteIdUrl();
@@ -444,5 +471,6 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pantalla-form').style.display = 'block';
   _renderTodo();
   tdahRestoreDraft(pacId);
+  toggleBloqueTdah(); // por si el borrador restaurado ya traía una respuesta
   tdahBindDraftAutosave(pacId);
 });

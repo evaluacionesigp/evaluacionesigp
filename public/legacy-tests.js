@@ -86,7 +86,7 @@ function renderPacientes() {
       '<button class="btn-xs btn-xs-primary" data-ver-pac="' + p.id + '">Ver</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-editar-pac="' + p.id + '" title="Editar datos">✏</button>' +
       '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-familiar-pac="' + p.id + '" title="Copiar link para el familiar">📋 Cuestionario familiar</button>' +
-      '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-tdah-pac="' + p.id + '" title="Copiar link de cuestionarios TDAH para el paciente">🧠 Cuestionario TDAH</button>' +
+      '<button class="btn-xs" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);" data-link-tdah-pac="' + p.id + '" title="Copiar link del cuestionario previo a la consulta">📝 Cuestionario previo</button>' +
       '<button class="btn-xs btn-xs-danger" data-borrar-pac-id="' + p.id + '" data-borrar-pac-nombre="' + encodeURIComponent(p.nombre) + '">✕</button>' +
       '</div></div>';
   }).join('');
