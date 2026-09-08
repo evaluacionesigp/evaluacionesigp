@@ -12,15 +12,23 @@ export function supaFetch(path, method, body, token, extraHeaders) {
     if (formParaGuardar) body.datos._form = serializeForm(formParaGuardar);
   }
   if (method === 'POST' && path === '/rest/v1/psico_resultados' && window.RESULTADO_EDIT && window.RESULTADO_EDIT.id) {
-    var editId = window.RESULTADO_EDIT.id;
-    return supaFetch('/rest/v1/psico_resultados?id=eq.' + editId, 'PATCH', body, token, extraHeaders)
-      .then(function(res) {
-        if (res.ok) {
-          window.RESULTADO_EDIT = null;
-          ocultarBannerEdicionResultado();
-        }
-        return res;
-      });
+    // Solo se redirige a PATCH (actualizar) si el paciente sigue siendo el mismo
+    // que se estaba editando. Si cambió (el residente seleccionó otro paciente en
+    // el mismo formulario sin cancelar la edición), esto ya no es una edición —
+    // es una carga nueva — y NUNCA debe pisar el registro de otro paciente.
+    if (body && String(body.paciente_id) === String(window.RESULTADO_EDIT.paciente_id)) {
+      var editId = window.RESULTADO_EDIT.id;
+      return supaFetch('/rest/v1/psico_resultados?id=eq.' + editId, 'PATCH', body, token, extraHeaders)
+        .then(function(res) {
+          if (res.ok) {
+            window.RESULTADO_EDIT = null;
+            ocultarBannerEdicionResultado();
+          }
+          return res;
+        });
+    }
+    window.RESULTADO_EDIT = null;
+    ocultarBannerEdicionResultado();
   }
   var headers = { 'Content-Type': 'application/json', 'apikey': SUPA_KEY };
   if (token) headers['Authorization'] = 'Bearer ' + token;

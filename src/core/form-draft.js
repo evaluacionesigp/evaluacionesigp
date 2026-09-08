@@ -74,6 +74,16 @@ function onFormEvent(e) {
   // dato del cuestionario: recién ahí puede aparecer un borrador de OTRO
   // paciente para este mismo test.
   if (e.target.id === testId + '-paciente') {
+    // Si había una edición en curso de OTRO paciente en este mismo test, se
+    // cancela acá mismo: seguir en "modo edición" con el paciente cambiado es
+    // lo que hacía que, al guardar, se pisara el registro del paciente original
+    // en vez de crear uno nuevo (ver supaFetch en este mismo archivo).
+    if (window.RESULTADO_EDIT && window.RESULTADO_EDIT._vista === testId &&
+        String(window.RESULTADO_EDIT.paciente_id) !== String(e.target.value)) {
+      window.RESULTADO_EDIT = null;
+      if (typeof ocultarBannerEdicionResultado === 'function') ocultarBannerEdicionResultado();
+      if (typeof toast === 'function') toast('Edición cancelada: seleccionaste otro paciente. Esto se va a guardar como una evaluación nueva.', 'success');
+    }
     restoreFormDraft(testId);
     return;
   }
