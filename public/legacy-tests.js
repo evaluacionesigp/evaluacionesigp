@@ -13,8 +13,11 @@ function cargarPacientes() {
 }
 function cargarResultados() {
   FORM_DIRTY = false;
-  supaFetch('/rest/v1/psico_resultados?select=*,psico_pacientes(nombre)&order=creado.desc&limit=200', 'GET', null, SESSION.access_token)
-    .then(function(r){ return r.json(); })
+  // Antes traía solo las últimas 200 evaluaciones de toda la clínica (limit=200);
+  // pacientes con evaluaciones más viejas que esas 200 (típicamente los archivados)
+  // quedaban afuera de Historial, el panel de Perfil Z y el contador de Inicio.
+  // fetchTodosPaginado trae todo, paginando con el header Range de PostgREST.
+  fetchTodosPaginado('/rest/v1/psico_resultados?select=*,psico_pacientes(nombre)&order=creado.desc', SESSION.access_token)
     .then(function(data) {
       RESULTADOS = Array.isArray(data) ? data : [];
       renderFiltroHistorial();
