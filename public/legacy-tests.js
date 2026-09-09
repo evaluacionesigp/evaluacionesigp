@@ -9049,6 +9049,14 @@ function dexReporteSintomas(scores) {
   return partes.length ? (SINT_SIG + ': ' + partes.join(' ; ')) : SINT_AUS;
 }
 
+// Para el Word: solo "Significativo"/"No significativo" (la descripción ítem
+// por ítem de dexReporteSintomas queda solo en la página, no en el informe).
+// Mismo corte que usa dexZLabel para "Elevado"/"Muy elevado".
+function informeDexBinario(z) {
+  if (z == null || isNaN(parseFloat(z))) return '—';
+  return parseFloat(z) >= 1.0 ? 'Significativo' : 'No significativo';
+}
+
 function iniciarDEX() {
   aplicarTituloGlosario('dex-titulo-glosario', 'DEX', 'DEX · Cuestionario Disejecutivo');
   document.getElementById('dex-fecha').value = new Date().toISOString().split('T')[0];
@@ -13642,7 +13650,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         if(d.is!=null)addCL('SCQ · IS Interacción social',d.is,'—');
         if(d.crr!=null)addCL('SCQ · CRR Cond. repetitivas',d.crr,'—');
       }
-      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,dexReporteSintomas(d.scores)||informeTdahBinario(r.categoria));}
+      else if(r.test==='DEX'){var dv=d.version==='hetero'?'Heteroadm.':'Autoadm.';var zT=d.zTotal!=null?d.zTotal:r.puntaje_z;addCL('DEX · Cuestionario Disejecutivo ('+dv+')',d.total,informeDexBinario(zT));}
       else if(r.test==='CRC'){addCL('CRC · Reserva Cognitiva',r.puntaje_total!=null?r.puntaje_total+'/25':'—',r.categoria||'—');}
       else if(r.test==='PSS-10'){addCL('PSS-10 · Estrés Percibido',r.puntaje_total!=null?r.puntaje_total+'/40':'—',r.categoria||'—');}
       else if(r.test==='Holmes-Rahe'){addCL('Holmes & Rahe · Reajuste Psicosocial',r.puntaje_total!=null?r.puntaje_total+' LCU':'—',informeHolmesEstresores(r.puntaje_total,r.categoria));}
@@ -13963,11 +13971,12 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var avdiSint = famReporteSintomasAvd(fam.avdi, FAM_AVDI);
     famRows.push(_wRow([famCell('Escala de AVD Instrumentales',COL_FAM[0],'F2F2F2'),famCell(avdiSigTxt,COL_FAM[1],'F2F2F2',true),famCell(avdiSint,COL_FAM[2],'F2F2F2')]));
     
-    // AVD Expansivas
+    // AVD Expansivas — en el Word solo Significativo/No significativo; la
+    // descripción ítem por ítem (famReporteSintomasAvd) queda solo en la
+    // vista previa de la app (ver renderFamiliarPreview).
     var avdeSig = famAvdHaySignificativo(fam.avde, FAM_AVDE);
     var avdeSigTxt = avdeSig === null ? '—' : (avdeSig ? 'Significativo' : 'No significativo');
-    var avdeSint = famReporteSintomasAvd(fam.avde, FAM_AVDE);
-    famRows.push(_wRow([famCell('Escala de AVD Expansivas',COL_FAM[0]),famCell(avdeSigTxt,COL_FAM[1],'',true),famCell(avdeSint,COL_FAM[2])]));
+    famRows.push(_wRow([famCell('Escala de AVD Expansivas',COL_FAM[0]),famCell(avdeSigTxt,COL_FAM[1],'',true),famCell('—',COL_FAM[2])]));
     
     // AD8-ARG
     var ad8Val = fam.ad8Total!=null?fam.ad8Total:(fam.ad8_total!=null?fam.ad8_total:null);
