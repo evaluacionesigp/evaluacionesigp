@@ -13952,7 +13952,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
         var v=fam.npiq[it.id];
         if(v&&v>0){
           var grav=GRAV_LBL[v]||'';
-          sintomas.push(it.label+(it.prompt?': '+it.prompt:'')+(grav?' ('+grav+')':''));
+          sintomas.push(it.label+(grav?' ('+grav+')':''));
         }
       });
       npiqSint = sintomas.length ? sintomas.join(' ; ') : '—';
