@@ -1,2 +1,6 @@
 node_modules/
 dist/
+
+# CLI de Supabase: metadata local del "supabase link" (project-ref, pooler-url,
+# etc.), nunca se sube.
+supabase/.temp/
