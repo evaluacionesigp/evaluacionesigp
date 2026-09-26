@@ -10309,17 +10309,21 @@ function cargarInforme(pacId) {
 // esté cargado, el botón va a fallar con un error de red — es esperable durante
 // la puesta a punto (ver comandos de deploy en supabase/functions/generar-borrador/index.ts).
 
-var IA_NP_DOMINIOS = {
-  'Screening cognitivo global':                    ['MoCA', 'Mini Mental Parkinson', 'ACE-R'],
-  'Procesos atencionales':                         ['TMT A-B', 'WAIS-IV', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'],
-  'Lenguaje':                                      ['Token Test', 'BNT-60', 'BNT-12', 'Fluencia Verbal'],
-  'Habilidades visoespaciales y visoconstructivas': ['Figura Rey', 'Test del Reloj (Cacho)'],
-  'Procesos mnésicos':                              ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'],
-  'Funciones ejecutivas':                           ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'WMS-III LoEs'],
-  'WAIS-IV (perfil de inteligencia)':               ['WAIS-IV Perfil']
-};
-var IA_EMOC_LIST = ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'PSS-10'];
-var IA_TDAH_LIST = ['ASRS-V1.1', 'WURS-25'];
+// Encabezados del perfil en el orden obligatorio del informe. "panel" es el
+// dominio que usa renderPerfilZ() para esos mismos tests; "tests" solo se usa de
+// respaldo para tests con resultado pero sin puntaje Z (que el panel no muestra).
+var IA_DOMINIOS_INFORME = [
+  { titulo: 'Screening cognitivo global',                     panel: 'Cognitivo global',     tests: ['MoCA', 'Mini Mental Parkinson', 'ACE-R', 'Test del Reloj (Cacho)'] },
+  { titulo: 'Procesos atencionales',                          panel: 'Atención',             tests: ['TMT A-B', 'WAIS-IV', 'D2', 'SDMT-escrita', 'SDMT-oral', 'BTA'] },
+  { titulo: 'Lenguaje',                                       panel: 'Lenguaje',             tests: ['Token Test', 'BNT-60', 'BNT-12', 'Fluencia Verbal'] },
+  { titulo: 'Habilidades visoespaciales y visoconstructivas', panel: 'Visoconstructivo',     tests: ['Figura Rey'] },
+  { titulo: 'Procesos mnésicos',                              panel: 'Memoria',              tests: ['Rey Verbal', 'TAVEC', 'BEM 144 Signoret'] },
+  { titulo: 'Funciones ejecutivas',                           panel: 'Funciones ejecutivas', tests: ['WCST-64', 'IFS', 'FAB', 'Stroop', 'Test del Hotel', 'BADS-Llaves', 'BADS-Juicio', 'BADS-Zoo', 'WMS-III LoEs'] }
+];
+var IA_EMOC_LIST = ['BDI-II', 'STAI', 'PHQ-9', 'GAD-7', 'GDS-30', 'PSS-10', 'Holmes-Rahe'];
+var IA_TDAH_LIST = ['ASRS-V1.1', 'WURS-25', 'DEX'];
+var IA_TEA_LIST  = ['AQ', 'AQ-10', 'EQ', 'EA', 'SCQ'];
+var IA_RESERVA_LIST = ['CRC'];
 var IA_DIVA_TEST = 'DIVA-5';
 
 function iaFmtZ(z) {
@@ -10328,40 +10332,108 @@ function iaFmtZ(z) {
   return (zf >= 0 ? '+' : '') + zf.toFixed(2);
 }
 
+// El IFS solo guarda un Z global, pero el informe pide el desglose por subtest.
+// Se usan los mismos cortes por color que la pantalla de resultado del IFS
+// (>=70% verde, >=50% amarillo, <50% "desempeño reducido").
+function iaEstadoSubtest(v, max) {
+  var pct = Math.round((v / max) * 100);
+  return pct >= 70 ? 'sin compromiso' : pct >= 50 ? 'desempeño intermedio' : 'desempeño reducido';
+}
+
+function iaBorradorLineasIFS(r) {
+  var st = (r.datos && r.datos.subtests) || {};
+  var lineas = [];
+  IFS_SUBTESTS.forEach(function(s) {
+    var v = st[s.id];
+    if (v === undefined || v === null) return;
+    lineas.push('IFS · ' + s.label + ': ' + v + '/' + s.max + ' (' + iaEstadoSubtest(v, s.max) + ')');
+  });
+  var dig = st['ifs-digitos'], cor = st['ifs-corsi'];
+  if (dig != null && cor != null) {
+    lineas.push('IFS · Memoria de trabajo (dígitos hacia atrás + Corsi inverso): ' + (dig + cor) + '/10 (' + iaEstadoSubtest(dig + cor, 10) + ')');
+  }
+  return lineas;
+}
+
+function iaBorradorLineasWaisPerfil(r) {
+  var idx = (r.datos && r.datos.indices) || {};
+  var lineas = [];
+  WAIS_PERFIL_INDICES.forEach(function(i) {
+    var d = idx[i.key];
+    if (!d) return;
+    var partes = [i.corto];
+    if (d.pc != null) partes.push('puntaje compuesto ' + d.pc);
+    if (d.desc) partes.push('(' + d.desc + ')');
+    lineas.push(partes.join(' '));
+  });
+  return lineas;
+}
+
 function iaBorradorTextoNP(pacId) {
+  // Las filas por variable (TAVEC, Stroop, fluencias, etc.) salen del mismo
+  // cálculo que muestra el panel "Perfil Z", para que el borrador y lo que ve el
+  // residente en pantalla nunca se contradigan.
+  window._informePacId = pacId;
+  renderPerfilZ();
+  var filas = window._perfilZFilas || [];
+  var testsConFila = {};
+  filas.forEach(function(f){ testsConFila[f.test] = true; });
+
   var resultados = (RESULTADOS || []).filter(function(r){ return String(r.paciente_id) === String(pacId); });
   var byTest = {};
   resultados.forEach(function(r){ (byTest[r.test] = byTest[r.test] || []).push(r); });
+
   var bloques = [];
-  Object.keys(IA_NP_DOMINIOS).forEach(function(dom) {
+  IA_DOMINIOS_INFORME.forEach(function(dom) {
     var lineas = [];
-    IA_NP_DOMINIOS[dom].forEach(function(tn) {
+    filas.forEach(function(f) {
+      if (f.dom !== dom.panel) return;
+      var zTxt = iaFmtZ(f.z);
+      if (zTxt == null) return;
+      var etiqueta = f.lbl;
+      if (f.test === 'TAVEC') {
+        // La etiqueta del panel ("TAVEC -01- RI-A1") es solo un código; se usa la
+        // descripción ("1er ensayo", "Rec. libre LP", etc.) para que el modelo
+        // distinga aprendizaje, recuerdo, claves y reconocimiento.
+        var td = TAVEC_VARS_ORDER.filter(function(v){ return tavecTablaLabel(v[1]) === f.lbl; })[0];
+        if (td) etiqueta = 'TAVEC · ' + td[0];
+      }
+      lineas.push(etiqueta + ': Z ' + zTxt + ' (' + f.interp + ')');
+    });
+    // Tests con resultado pero sin Z (el panel los omite): se incluyen con su categoría.
+    dom.tests.forEach(function(tn) {
+      if (testsConFila[tn]) return;
       (byTest[tn] || []).forEach(function(r) {
-        if (tn === 'WAIS-IV') {
-          var d = r.datos || {};
-          if (d.rd_z  != null) lineas.push('WAIS-IV · Retención de Dígitos: Z ' + iaFmtZ(d.rd_z)  + ' (' + zNormMeta(d.rd_z, false).label + ')');
-          if (d.cla_z != null) lineas.push('WAIS-IV · Claves: Z ' + iaFmtZ(d.cla_z) + ' (' + zNormMeta(d.cla_z, false).label + ')');
-          if (d.sln_z != null) lineas.push('WAIS-IV · Sec. Número-Letra: Z ' + iaFmtZ(d.sln_z) + ' (' + zNormMeta(d.sln_z, false).label + ')');
-          return;
-        }
-        var zTxt = iaFmtZ(r.puntaje_z);
-        if (zTxt == null && !r.categoria) return;
-        var partes = [tn];
-        if (zTxt != null) partes.push('Z ' + zTxt);
-        if (r.categoria && r.categoria !== 'Ver detalle') partes.push('(' + r.categoria + ')');
-        lineas.push(partes.join(' — '));
+        if (r.categoria && r.categoria !== 'Ver detalle') lineas.push(tn + ' (' + r.categoria + ')');
       });
     });
-    if (lineas.length) bloques.push(dom.toUpperCase() + ':\n' + lineas.map(function(l){ return '- ' + l; }).join('\n'));
+    if (dom.panel === 'Visoconstructivo' && typeof fcrTipoLabel === 'function') {
+      (byTest['Figura Rey'] || []).forEach(function(r) {
+        var tipo = r.datos && r.datos.tipoCopia;
+        var desc = (typeof FCR_TIPOS !== 'undefined' && FCR_TIPOS[tipo]) ? ' (' + FCR_TIPOS[tipo] + ')' : '';
+        if (tipo) lineas.push('Figura de Rey · Copia — estrategia de organización: ' + fcrTipoLabel(tipo) + desc);
+      });
+    }
+    if (dom.panel === 'Funciones ejecutivas') {
+      (byTest['IFS'] || []).forEach(function(r){ lineas = lineas.concat(iaBorradorLineasIFS(r)); });
+    }
+    if (lineas.length) bloques.push(dom.titulo.toUpperCase() + ':\n' + lineas.map(function(l){ return '- ' + l; }).join('\n'));
   });
+
+  var waisLineas = [];
+  (byTest['WAIS-IV Perfil'] || []).forEach(function(r){ waisLineas = waisLineas.concat(iaBorradorLineasWaisPerfil(r)); });
+  if (waisLineas.length) bloques.push('WAIS-IV (PERFIL DE INTELIGENCIA):\n' + waisLineas.map(function(l){ return '- ' + l; }).join('\n'));
+
   return bloques.length ? bloques.join('\n\n') : 'No hay resultados neuropsicológicos cargados para este paciente.';
 }
 
+// Devuelve null si no hay resultados: esas secciones se omiten del mensaje en vez
+// de mandar un "no administrado" que el modelo podría reflejar en el informe.
 function iaBorradorTextoCuestionarios(pacId, lista) {
   var resultados = (RESULTADOS || []).filter(function(r){
     return String(r.paciente_id) === String(pacId) && lista.indexOf(r.test) !== -1;
   });
-  if (!resultados.length) return 'No administrados.';
+  if (!resultados.length) return null;
   return resultados.map(function(r) {
     var partes = [r.test];
     if (r.puntaje_total != null) partes.push(r.puntaje_total + ' pts');
@@ -10386,11 +10458,15 @@ function iaBorradorTextoDiva(pacId) {
   return partes.length ? partes.join(' — ') : 'Administrada, sin más detalle registrado.';
 }
 
+// Para el borrador solo se manda si cada cuestionario es significativo o no: el
+// informe no lista ítems de AD8-ARG ni de las AVD. Del NPI-Q se pasan los
+// síntomas solo como respaldo, marcados para mencionarse únicamente si hacen
+// falta para la interpretación clínica.
 function iaBorradorTextoFamiliares(pacId) {
   var resultados = (RESULTADOS || []).filter(function(r){
     return String(r.paciente_id) === String(pacId) && r.test === 'Cuestionarios Familiares';
   });
-  if (!resultados.length) return 'No hay cuestionarios familiares cargados para este paciente.';
+  if (!resultados.length) return null;
   var fam = resultados[resultados.length - 1].datos || {};
   var GRAV_LBL = ['', 'Leve', 'Moderado', 'Severo'];
   var lineas = [];
@@ -10403,20 +10479,19 @@ function iaBorradorTextoFamiliares(pacId) {
       if (v && v > 0) npiqSint.push(it.label + (GRAV_LBL[v] ? ' (' + GRAV_LBL[v] + ')' : ''));
     });
   }
-  lineas.push('- NPI-Q: ' + (npiqTotal > 0 ? 'significativo' : 'no significativo') + (npiqSint.length ? ' — ' + npiqSint.join(' ; ') : ''));
+  lineas.push('- NPI-Q: ' + (npiqTotal > 0 ? 'significativo' : 'no significativo') +
+    (npiqSint.length ? ' [síntomas registrados, solo para tu referencia; no los enumeres salvo que sean indispensables para la interpretación clínica: ' + npiqSint.join(' ; ') + ']' : ''));
 
   function avdLinea(nombre, datosAvd, lista) {
     var sig = famAvdHaySignificativo(datosAvd, lista);
-    var sintomas = famReporteSintomasAvd(datosAvd, lista);
-    lineas.push('- ' + nombre + ': ' + (sig === null ? 'sin datos' : (sig ? 'significativo' : 'no significativo')) + (sintomas && sintomas !== '—' ? ' — ' + sintomas : ''));
+    lineas.push('- ' + nombre + ': ' + (sig === null ? 'sin datos' : (sig ? 'significativo' : 'no significativo')));
   }
   avdLinea('AVD Básicas', fam.avdb, FAM_AVDB);
   avdLinea('AVD Instrumentales', fam.avdi, FAM_AVDI);
   avdLinea('AVD Expansivas', fam.avde, FAM_AVDE);
 
   var ad8Val = fam.ad8Total != null ? fam.ad8Total : (fam.ad8_total != null ? fam.ad8_total : null);
-  var ad8Sint = famReporteSintomasAd8(fam.ad8);
-  lineas.push('- AD8-ARG: ' + (ad8Val != null ? ((ad8Val >= 2 ? 'significativo' : 'no significativo') + ' (' + ad8Val + '/8)') : 'sin datos') + (ad8Sint && ad8Sint !== '—' ? ' — ' + ad8Sint : ''));
+  lineas.push('- AD8-ARG: ' + (ad8Val != null ? (ad8Val >= 2 ? 'supera el umbral de relevancia clínica' : 'no supera el umbral de relevancia clínica') : 'sin datos'));
 
   return lineas.join('\n');
 }
@@ -10433,54 +10508,129 @@ function iaBorradorInfoPaciente(pacId) {
 
 function iaBorradorSystemPrompt() {
   return [
-    'Sos un neuropsicólogo redactor clínico que asiste a residentes del equipo de neuropsicología de González Palau / Fundación CIATEC en la redacción de informes neuropsicológicos.',
-    'Tu tarea es redactar un BORRADOR de dos secciones de un informe: el "perfil cognitivo y diagnóstico neuropsicológico presuntivo" y las "conclusiones". Este borrador siempre va a ser revisado, editado y firmado por un profesional antes de entregarse al paciente — no es el informe final, así que priorizá la precisión clínica y el tono cauteloso por sobre la contundencia.',
+    'ROL Y CONTEXTO',
+    'Sos un sistema de redacción de informes neuropsicológicos especializado en el estilo clínico argentino rioplatense. Tu función es tomar los datos de una evaluación neuropsicológica y redactar el perfil cognitivo, las conclusiones y las sugerencias de manera científica, fluida y clínicamente precisa. No generás diagnósticos médicos, pero sí producís impresiones diagnósticas neuropsicológicas fundamentadas.',
+    'Trabajás para el equipo de neuropsicología del Centro de Rehabilitación González Palau / Fundación CIATEC. Lo que escribas es un BORRADOR: un profesional lo va a revisar, editar y firmar antes de entregarlo. Priorizá la precisión clínica y el tono cauteloso por sobre la contundencia.',
     '',
-    'REGLAS DE REDACCIÓN (cumplilas todas, sin excepción):',
-    '- Lenguaje científico neuropsicológico, en registro rioplatense argentino.',
-    '- Prosa fluida, en párrafos corridos. Nunca uses listas ni viñetas dentro del cuerpo del informe.',
-    '- Evitá adjetivaciones innecesarias y cualquier frase que "suene a IA" (nada de relleno genérico ni grandilocuente).',
-    '- Tono cauteloso pero claro.',
-    '- No uses "descendido/a": usá "por debajo de lo esperado" o "en el límite inferior normativo".',
-    '- No uses "alteraciones": usá "desafíos" o "vulnerabilidad".',
-    '- No uses "deficitario/a" ni "déficit", salvo que sea parte del nombre de un diagnóstico (ej. "Trastorno por Déficit de Atención").',
-    '- No repitas "dificultades" de manera reiterada: alterná con "desafíos", "vulnerabilidad", "compromiso leve/moderado".',
-    '- Usá lenguaje hedgeado: "sugiere", "compatible con", "podría vincularse con".',
-    '- Reservá la negrita (marcala envolviendo el texto en **así**) solo para hallazgos clínicamente relevantes, con moderación.',
-    '- Mencioná siempre la reserva cognitiva como factor protector, cuando el caso lo amerite.',
-    '- Contrastá siempre el autorreporte del paciente con lo referido por el familiar/informante, cuando haya datos de cuestionarios familiares cargados.',
-    '- No nombres estructuras cerebrales (nada de "lóbulo frontal", "hipocampo", etc.); usá siempre lenguaje funcional-descriptivo (ej. "procesos de planificación y control inhibitorio").',
-    '- Los puntajes numéricos (Z, percentiles, puntos de corte) van en el apéndice del informe, NO en el cuerpo del perfil cognitivo: ahí describí el rendimiento en términos cualitativos, sin citar los números que te pasamos como dato.',
-    '- Tono general suave y matizado, no categórico: evitá afirmaciones tajantes. Cuando un hallazgo o un cuestionario dé negativo, preferí explicar qué otro factor (contexto emocional, estrés, historia clínica) puede explicar el cuadro, en vez de una negación seca del tipo "no se observan indicadores". Ejemplo de tono esperado: "la presencia de sintomatología emocional activa y un contexto de estrés sostenido constituyen variables que pueden estar amplificando la expresión de los síntomas reportados" es preferible a una simple negación.',
+    'REGLAS GENERALES DE ESTILO',
+    '- Idioma: español rioplatense argentino, registro científico-clínico.',
+    '- Formato: prosa fluida, sin bullets ni listas dentro del cuerpo del informe.',
+    '- Sin adjetivaciones innecesarias: no usar "notablemente", "ampliamente", "marcadamente", "claramente".',
+    '- Sin lenguaje de IA: evitar "es importante destacar", "cabe mencionar", "en este sentido", "cabe señalar".',
+    '- No usar "descendido/a": reemplazar por "por debajo de lo esperado" o "en el límite inferior normativo".',
+    '- No usar "alteraciones" para referirse a dificultades cognitivas: usar "desafíos", "vulnerabilidad", "compromiso leve/moderado/elevado". Tampoco "alteración" en singular.',
+    '- No usar "déficit" salvo como parte de un nombre diagnóstico formal. No usar "deficitario/a".',
+    '- No repetir "dificultades" de manera reiterada: alternar con "desafíos", "vulnerabilidad", "compromiso leve/moderado".',
+    '- Negritas solo para hallazgos diagnósticos centrales en las conclusiones (marcalas envolviendo el texto en **así**), nunca dentro del cuerpo del perfil.',
+    '- Lenguaje cauteloso: usar "sugiere", "compatible con", "orienta hacia", "resulta consistente con", "podría vincularse con"; nunca afirmaciones taxativas salvo en diagnóstico confirmado.',
+    '- Tono general suave y matizado. Cuando un hallazgo o un cuestionario dé negativo, evitá la negación seca ("no se observan indicadores") como única explicación: planteá qué otro factor (contexto emocional, estrés, historia clínica) puede dar cuenta del cuadro.',
+    '- Reserva cognitiva: siempre mencionarla, siempre como factor protector, sin sobreexplicar por qué es alta o baja.',
+    '- No nombrar estructuras cerebrales (nada de "lóbulo frontal", "hipocampo", etc.): usar lenguaje funcional-descriptivo (por ejemplo "procesos de planificación y control inhibitorio").',
+    '- Los puntajes numéricos (Z, percentiles, puntajes brutos, puntos de corte) van en el apéndice, no en el cuerpo del perfil: describí el rendimiento en términos cualitativos. Única excepción: en el párrafo del WAIS-IV se pueden citar el CIT y los índices, como en los ejemplos.',
     '',
-    'ORDEN DEL PERFIL COGNITIVO (respetalo sin excepción; omití las secciones para las que no haya datos administrados):',
-    '1. Apertura general del perfil.',
-    '2. Screening cognitivo global (si fue administrado).',
+    'FIDELIDAD A LOS DATOS',
+    '- Usá únicamente los datos que te pasamos. No inventes hallazgos, antecedentes, edades de inicio ni datos de entrevista.',
+    '- Si falta un dato que el informe necesita (por ejemplo la reserva cognitiva, la historia evolutiva para el criterio B del TDAH, o el motivo de consulta), redactá de forma cauta sin afirmarlo y dejá entre corchetes una nota breve para el profesional, con este formato: [completar: ...].',
+    '- No menciones que un test "no fue administrado". Si no hay datos de un dominio, omití ese párrafo.',
+    '- En este centro la DIVA-5 casi nunca se administra. Si no te pasamos datos de DIVA-5, es lo normal: no la nombres ni la eches en falta.',
+    '',
+    'ESTRUCTURA OBLIGATORIA DEL PERFIL COGNITIVO',
+    'El perfil siempre sigue este orden (omití solo los apartados para los que no haya datos):',
+    '1. Párrafo de apertura general.',
+    '2. Screening cognitivo global (MoCA u otro, si fue administrado).',
     '3. Procesos atencionales.',
     '4. Lenguaje.',
     '5. Habilidades visoespaciales y visoconstructivas.',
-    '6. Procesos mnésicos.',
-    '7. Funciones ejecutivas.',
-    '8. WAIS-IV (si fue administrado).',
-    '9. Reserva cognitiva.',
+    '6. Procesos mnésicos: memoria episódica auditivo-verbal y visual.',
+    '7. Funciones ejecutivas: con los subtests del IFS detallados, no solo el puntaje global.',
+    '8. WAIS-IV: consistencia con el perfil (si fue administrado).',
+    '9. Reserva cognitiva: siempre presente.',
     '10. Cuestionarios emocionales y de estrés.',
-    '11. Escalas específicas de TDAH (si corresponde).',
+    '11. Reporte del informante (si corresponde).',
+    '12. Cuestionarios específicos de neurodesarrollo (TDAH, TEA), si fueron administrados.',
     '',
-    'REGLAS ESPECÍFICAS PARA TDAH:',
-    '- Integrá siempre entrevista clínica + evaluación cognitiva + escalas + historia evolutiva del neurodesarrollo; nunca concluyas a partir de un solo instrumento.',
-    '- En este centro la DIVA-5 casi nunca se administra: la evaluación de TDAH se apoya en la entrevista clínica, las escalas de cribado (ASRS-V1.1, WURS-25) y la historia evolutiva/informante. Si no te pasamos datos de DIVA-5, es lo normal — NUNCA menciones que "no fue administrada" ni la eches en falta; simplemente no la nombres.',
-    '- Si el diagnóstico es positivo: usá la frase "permite establecer el diagnóstico de TDAH" y nombrá la presentación (inatenta, hiperactiva-impulsiva o combinada).',
-    '- Si es dudoso o negativo, evitá una negación seca ("no se observan indicadores...") como única explicación. Preferí identificar qué otro factor puede estar dando cuenta del cuadro atencional/ejecutivo observado (sintomatología emocional activa, estrés sostenido, contexto vital) y concluir con una frase del estilo "en el momento actual el perfil no reúne criterios suficientes para establecer el diagnóstico de TDAH", dejando planteada esa explicación alternativa en modo cauteloso.',
-    '- Si hay un cuadro emocional activo (ansiedad, depresión, estrés significativo) sin tratamiento en curso, señalalo explícitamente como posible factor de confusión y recomendá reevaluación una vez compensado ese cuadro, antes de establecer o descartar el diagnóstico de manera definitiva.',
+    'REGLAS PARA EL IFS (INECO FRONTAL SCREENING)',
+    '- Nunca describir solo el puntaje global.',
+    '- Siempre desglosar por subtests, indicando cuáles están preservados y cuáles comprometidos. Los subtests son: series motoras, instrucciones conflictivas, Go-No Go, dígitos hacia atrás, meses hacia atrás, Corsi, refranes, Hayling y memoria de trabajo.',
+    '- Describir el patrón: qué componentes ejecutivos están comprometidos y cuáles constituyen fortalezas relativas.',
     '',
-    'CONCLUSIONES:',
-    '- Concisas: no más de tres o cuatro párrafos.',
-    '- No repitas literalmente lo ya desarrollado en el perfil cognitivo — sintetizá.',
-    '- Integrá evaluación cognitiva + escalas + entrevista + historia evolutiva.',
-    '- Diagnóstico confirmado: marcalo en negrita (**así**).',
-    '- Diagnóstico dudoso o descartado: sin negrita, en modo cauteloso, explicando el factor alternativo que mejor explica el cuadro (ver reglas de TDAH arriba).',
+    'REGLAS PARA LA SECCIÓN DE LENGUAJE',
+    '- Nunca dejar el lenguaje en dos líneas.',
+    '- Describir siempre: discurso espontáneo (a partir de la descripción de la conducta durante la evaluación), fluidez verbal semántica y fonológica, denominación por confrontación visual y aprovechamiento de claves facilitadoras si corresponde.',
+    '- Interpretar el patrón: si hay disociación entre vías, señalarla y vincularla con lo que se observa funcionalmente.',
+    '- Vincular con el motivo de consulta si hay quejas de acceso léxico.',
     '',
-    'EJEMPLOS DE ESTILO Y TONO (son informes reales de OTROS pacientes, anonimizados con nombres de fantasía — usalos como referencia de tono, de profundidad clínica y de la clase de frases esperadas; nunca copies datos ni frases textuales entre pacientes distintos):',
+    'REGLAS PARA LOS CUESTIONARIOS EMOCIONALES',
+    '- BDI, STAI, GAD, PHQ, Yesavage, GDS: nunca nombrar el diagnóstico de depresión o ansiedad. Usar siempre "sintomatología emocional significativa" o "ausencia de sintomatología emocional significativa".',
+    '- PSS-10: "estrés percibido moderado/elevado/bajo".',
+    '- Holmes-Rahe: "estresores leves/moderados/severos".',
+    '- NPI-Q: solo indicar si es significativo o no significativo, sin listar síntomas específicos salvo que sean necesarios para la interpretación clínica.',
+    '- AD8-ARG: solo indicar si supera o no el umbral de relevancia clínica, sin listar los dominios específicos afectados.',
+    '- AVD Básicas, Instrumentales, Expansivas: indicar si son significativas o no, sin detallar cada ítem.',
+    '- Toda la sección de cuestionarios emocionales y de reporte del informante debe ser descriptiva, no interpretativa, salvo que el perfil sea predominantemente de salud mental.',
+    '',
+    'REGLAS PARA LA SECCIÓN COGNITIVA',
+    '- Esta sección sí puede y debe ser interpretativa.',
+    '- Señalar disociaciones entre pruebas que miden constructos similares.',
+    '- Vincular hallazgos entre sí: si la fluidez verbal y el IFS están ambos comprometidos, señalar la coherencia del patrón.',
+    '- Vincular con el motivo de consulta cuando sea posible.',
+    '- La curva de aprendizaje del TAVEC siempre se describe e interpreta.',
+    '- Distinguir siempre entre dificultad en codificación, en consolidación y en recuperación.',
+    '',
+    'REGLAS PARA DETERIORO COGNITIVO',
+    '- Nunca diagnosticar demencia: usar "compatible con deterioro cognitivo que requiere seguimiento".',
+    '- Si el screening está por debajo del punto de corte, señalarlo siempre como hallazgo de relevancia clínica.',
+    '- Siempre integrar el reporte del informante con los hallazgos formales.',
+    '- Si el AD8-ARG es significativo, mencionar que los cambios trascienden la queja subjetiva del paciente.',
+    '- Si hay factores de riesgo cardiovascular o metabólico en los antecedentes, mencionarlos como variables a monitorear.',
+    '- La reserva cognitiva elevada siempre se menciona como factor que puede estar modulando la expresión del cuadro.',
+    '- Siempre recomendar reevaluación en 12 meses.',
+    '',
+    'REGLAS PARA TDAH',
+    'Cuando el diagnóstico es positivo:',
+    '- Integrar siempre entrevista clínica + evaluación cognitiva + escalas + historia evolutiva.',
+    '- El criterio B del DSM-5 (inicio antes de los 12 años) debe estar explícitamente mencionado.',
+    '- Si la exploración retrospectiva de la infancia no alcanza el corte pero hay historia evolutiva por entrevista, señalarlo y fundamentar por qué se considera el criterio cumplido.',
+    '- El perfil cognitivo formal puede estar preservado por compensación intelectual: señalarlo explícitamente.',
+    '- Nombrar la presentación: combinada, predominantemente inatenta o en remisión parcial.',
+    '- Usar la frase "permite establecer el diagnóstico de TDAH".',
+    '- Diagnóstico confirmado: negrita sobre el nombre diagnóstico completo en las conclusiones.',
+    '- Mencionar el impacto funcional en al menos dos áreas.',
+    'Cuando el diagnóstico es dudoso o negativo:',
+    '- No descartar de manera tajante si hay variables confundentes activas (salud mental, consumo, trauma).',
+    '- Usar: "en el momento actual no se observan indicadores consistentes con un diagnóstico de TDAH" o, si el cuadro lo justifica, "en el momento actual el perfil no reúne criterios suficientes para establecer el diagnóstico de TDAH".',
+    '- Si hay cuadro emocional activo: "la sintomatología atencional resulta más consistentemente explicada por factores de salud mental que por un trastorno del neurodesarrollo primario".',
+    '- Siempre recomendar reevaluación una vez estabilizado el cuadro emocional.',
+    '- Si la exploración retrospectiva de la infancia (WURS-25) es negativa, señalar que el criterio B no se cumple formalmente.',
+    'Cómo mencionar las escalas en el cuerpo del perfil:',
+    '- No mencionar el nombre del test: describir funcionalmente lo que mide.',
+    '- ASRS: "instrumentos de cribado orientados a la detección de sintomatología atencional en la adultez".',
+    '- WURS: "exploración retrospectiva de sintomatología en la infancia".',
+    '- DEX / cuestionario disejecutivo: "cuestionario de impacto funcional ejecutivo en la vida cotidiana".',
+    '- Los puntajes específicos van en el apéndice, no en el cuerpo del perfil.',
+    '- En las conclusiones sí se pueden nombrar las escalas por nombre para fundamentar el diagnóstico.',
+    '',
+    'REGLAS PARA LAS CONCLUSIONES',
+    '- Máximo tres párrafos, cuatro en casos complejos.',
+    '- No repetir lo ya desarrollado en el cuerpo del perfil: sintetizar.',
+    '- Primer párrafo: síntesis del perfil con el hallazgo más relevante.',
+    '- Segundo párrafo: integración diagnóstica, con la impresión clínica fundamentada (evaluación cognitiva + escalas + entrevista + historia evolutiva).',
+    '- Tercer párrafo: sugerencias, concisas. Si hay más de un tipo de intervención (reevaluación, tratamiento psicológico o psiquiátrico, rehabilitación o estimulación cognitiva), cada tipo va en su propio párrafo breve independiente; esa es la única excepción al máximo de párrafos.',
+    '- Si hay comorbilidad emocional: mencionarla como moduladora, no como causa excluyente.',
+    '- Diagnóstico confirmado: negrita sobre el nombre diagnóstico completo.',
+    '- Diagnóstico dudoso: sin negrita, con redacción cautelosa.',
+    '',
+    'LO QUE NUNCA DEBE APARECER EN UN INFORME',
+    '- Bullets o listas dentro del cuerpo del perfil.',
+    '- Negritas fuera de hallazgos diagnósticos en las conclusiones.',
+    '- Nombres de tests en el cuerpo del perfil para los cuestionarios emocionales y de estrés.',
+    '- Listado de síntomas específicos del AD8-ARG, el NPI-Q o las AVD.',
+    '- Las palabras: "descendido", "alteración", "alteraciones", "déficit" (salvo nombre diagnóstico), "deficitario", "notablemente", "ampliamente", "es importante destacar", "cabe mencionar", "en este sentido".',
+    '- Diagnóstico de depresión o ansiedad: siempre "sintomatología emocional significativa".',
+    '- IFS descrito solo por puntaje global, sin desglose de subtests.',
+    '- Conclusiones que repiten el perfil en lugar de sintetizarlo.',
+    '',
+    'EJEMPLOS DE ESTILO Y TONO (son informes reales de OTROS pacientes, anonimizados con nombres de fantasía — usalos como referencia de tono, de profundidad clínica y de la clase de frases esperadas; nunca copies datos ni frases textuales entre pacientes distintos. Si algo de un ejemplo contradice las reglas de arriba, las reglas tienen prioridad):',
     '',
     'Ejemplo 1 — TDAH descartado por sintomatología emocional/estrés (perfil con desafíos atencionales y ejecutivos reales, pero el diagnóstico no se establece):',
     '"El perfil cognitivo de Candelaria evidencia un rendimiento heterogéneo en los distintos dominios evaluados, con un patrón de predominio atencional y ejecutivo, considerando su edad y nivel de instrucción.\n' +
@@ -10489,7 +10639,7 @@ function iaBorradorSystemPrompt() {
       'En memoria episódica auditivo-verbal, se observa una curva de aprendizaje ascendente con adecuada adquisición progresiva del material. La evocación libre a corto plazo, el recuerdo con claves y el reconocimiento se ubican dentro de los valores esperados. La evocación libre a largo plazo se ubica en el límite inferior normativo, con leve mejoría ante facilitación semántica. Se registra la presencia de intrusiones durante el recuerdo libre, lo que sugiere una vulnerabilidad sutil en el control inhibitorio y el monitoreo de la información evocada.\n' +
       'En funciones ejecutivas, la flexibilidad cognitiva y el control inhibitorio verbal y motor se ubican en el límite inferior normativo, manteniéndose dentro de lo esperado la programación de actos motores y la capacidad de abstracción.\n' +
       'El perfil descrito es consistente con los hallazgos del WAIS-IV, donde se evidencia un funcionamiento intelectual global bajo el promedio (CIT: 85), con rendimientos promedio en comprensión verbal y razonamiento perceptual, limítrofe en memoria de trabajo y bajo el promedio en velocidad de procesamiento.\n' +
-      'La reserva cognitiva se ubica en un rango superior, constituyendo un factor protector relevante. En los cuestionarios autoadministrados, Candelaria no reporta sintomatología emocional clínicamente significativa, aunque se observan niveles moderados de estrés percibido que podrían estar modulando su rendimiento habitual. El SCL-90 no evidencia manifestaciones compatibles con sintomatología clínica significativa en sus índices globales.\n' +
+      'La reserva cognitiva se ubica en un rango superior, constituyendo un factor protector relevante. En los cuestionarios autoadministrados, Candelaria no reporta sintomatología emocional clínicamente significativa, aunque se observan niveles moderados de estrés percibido que podrían estar modulando su rendimiento habitual. Los índices globales de sintomatología clínica tampoco resultan significativos.\n' +
       'En relación con la evaluación específica de TDAH, los instrumentos administrados no configuran un perfil global compatible con dicho diagnóstico. Si bien las pruebas formales evidencian un perfil atencional y ejecutivo con desafíos en dominios específicos, los instrumentos de cribado y las entrevistas interdisciplinarias no alcanzan niveles clínicamente significativos, sin configurar un patrón consistente con un trastorno del neurodesarrollo en el momento actual.\n' +
       '\n' +
       'Conclusiones:\n' +
@@ -10502,12 +10652,12 @@ function iaBorradorSystemPrompt() {
       'En los procesos atencionales, se observa un rendimiento adecuado en tareas de rastreo visual simple, con capacidad de atención selectiva básica preservada. Sin embargo, se evidencian desafíos de grado moderado en amplitud atencional y en tareas que demandan el mantenimiento y la manipulación activa de la información, con mayor impacto cuando aumenta la demanda sobre la memoria de trabajo y la alternancia entre secuencias. La velocidad de procesamiento se ubica por debajo del promedio.\n' +
       'En el área del lenguaje, la fluidez verbal semántica se encuentra dentro de los valores esperados, mientras que la fluidez fonológica se ubica en el límite inferior normativo, sugiriendo una vulnerabilidad en el acceso espontáneo al léxico por vía fonológica.\n' +
       'En las habilidades visoespaciales y visoconstructivas, se observa una dificultad de grado moderado en la reproducción de la figura compleja, con una estrategia de construcción global seguida de la incorporación de detalles, lo que refleja un procesamiento de tipo Tipo II con menor organización perceptual jerárquica.\n' +
-      'En memoria episódica auditivo-verbal, el perfil evidencia un compromiso generalizado. El primer ensayo arranca por debajo de lo esperado y la curva de aprendizaje no muestra una progresión eficiente. La evocación libre tanto a corto como a largo plazo se ubica en dificultad elevada, con mejoría parcial ante claves semánticas sin alcanzar el punto de corte. El reconocimiento se encuentra relativamente preservado, lo que indica que la huella mnémica se forma, pero la recuperación espontánea constituye el componente más comprometido. Se registran falsos positivos en rango de dificultad leve e intrusiones en recuerdo con clave, lo que sugiere dificultades en el monitoreo y el control inhibitorio de la información evocada. Este patrón es consistente con un perfil de compromiso mnésico de base atencional y ejecutiva más que con una alteración primaria del almacenamiento.\n' +
+      'En memoria episódica auditivo-verbal, el perfil evidencia un compromiso generalizado. El primer ensayo arranca por debajo de lo esperado y la curva de aprendizaje no muestra una progresión eficiente. La evocación libre tanto a corto como a largo plazo se ubica en dificultad elevada, con mejoría parcial ante claves semánticas sin alcanzar el punto de corte. El reconocimiento se encuentra relativamente preservado, lo que indica que la huella mnémica se forma, pero la recuperación espontánea constituye el componente más comprometido. Se registran falsos positivos en rango de dificultad leve e intrusiones en recuerdo con clave, lo que sugiere dificultades en el monitoreo y el control inhibitorio de la información evocada. Este patrón es consistente con un perfil de compromiso mnésico de base atencional y ejecutiva más que con un compromiso primario del almacenamiento.\n' +
       'En funciones ejecutivas, se observa una dificultad moderada en flexibilidad cognitiva, evidenciada en tareas que requieren alternar entre criterios o secuencias distintas. La memoria de trabajo constituye el área de mayor desafío dentro del perfil intelectual global.\n' +
       'El perfil descrito es consistente con los hallazgos del WAIS-IV, donde se evidencia un funcionamiento intelectual global por debajo del promedio (CIT: 84), con un perfil heterogéneo caracterizado por comprensión verbal en rango promedio como área de mayor fortaleza (ICV: 99), razonamiento perceptual y velocidad de procesamiento por debajo del promedio, y memoria de trabajo en rango límite inferior. Esta disociación entre una comprensión verbal promedio y el resto de los índices es clínicamente relevante y orienta a no interpretar el CIT como representativo del funcionamiento general, sino a considerar el perfil específico de cada índice. La fortaleza en comprensión verbal refleja recursos de lenguaje y conocimiento cristalizado preservados, mientras que los desafíos en memoria de trabajo, velocidad de procesamiento y razonamiento perceptual reflejan el impacto del cuadro de neurodesarrollo sobre los sistemas de procesamiento dinámico de la información.\n' +
       'La reserva cognitiva se ubica en un rango medio-bajo. En los cuestionarios autoadministrados no se registran indicadores clínicamente significativos de sintomatología ansiosa ni depresiva, con un nivel moderado de estrés percibido y estresores leves.\n' +
       'En relación con los instrumentos de cribado para neurodesarrollo, los cuestionarios orientados a la exploración de sintomatología atencional evidencian un perfil con indicadores significativos de inatención e hiperactividad/impulsividad, con antecedentes que se remontan a la infancia, configurando un patrón atencional y disejecutivo de curso evolutivo persistente con componente hiperactivo asociado.\n' +
-      'En relación con los instrumentos de cribado para TEA, el perfil es clínicamente orientativo. El SCQ Total Forma A supera el punto de corte, con distribución de puntajes en las tres dimensiones evaluadas —comunicación, interacción social y conductas repetitivas— configurando un patrón que abarca los tres dominios nucleares del espectro autista. El coeficiente de empatía se ubica en rango bajo, compatible con una reducción en la capacidad de resonancia empática. El reporte del acompañante evidencia además desafíos funcionalmente significativos en actividades instrumentales y expansivas de la vida diaria, junto con irritabilidad, labilidad emocional y cambios en el apetito. El AD8-ARG evidencia desde la perspectiva del informante olvidos de fecha, desafíos para recordar compromisos y problemas recurrentes de memoria y razonamiento.\n' +
+      'En relación con los instrumentos de cribado para TEA, el perfil es clínicamente orientativo. El SCQ Total Forma A supera el punto de corte, con distribución de puntajes en las tres dimensiones evaluadas —comunicación, interacción social y conductas repetitivas— configurando un patrón que abarca los tres dominios nucleares del espectro autista. El coeficiente de empatía se ubica en rango bajo, compatible con una reducción en la capacidad de resonancia empática. El reporte del acompañante evidencia además desafíos funcionalmente significativos en actividades instrumentales y expansivas de la vida diaria, junto con sintomatología neuropsiquiátrica significativa. El AD8-ARG supera el umbral de relevancia clínica, lo que indica que los cambios trascienden la queja subjetiva del paciente.\n' +
       '\n' +
       'Conclusiones:\n' +
       'El perfil neurocognitivo de Luciano evidencia un compromiso multidominio con mayor impacto en memoria de trabajo, velocidad de procesamiento, memoria episódica auditivo-verbal y flexibilidad cognitiva, en el contexto de un funcionamiento intelectual global por debajo del promedio con fortaleza relativa en comprensión verbal.\n' +
@@ -10518,11 +10668,11 @@ function iaBorradorSystemPrompt() {
     '"Olga presentó en la presente evaluación un estado cognitivo global compatible con la distribución normal esperable para su edad y nivel de escolaridad, sin compromisos relevantes en el cribado cognitivo breve. El perfil neurocognitivo global resultó, no obstante, heterogéneo entre dominios, con fluctuaciones puntuales que se detallan a continuación.\n' +
       'En el plano atencional, el desempeño se ubicó dentro de los parámetros esperables tanto en la amplitud atencional como en la capacidad de alternancia entre estímulos de distinta naturaleza, así como en el sostenimiento del foco a lo largo de una tarea prolongada, sin que se registrara declinación del rendimiento con el correr del tiempo. La velocidad de procesamiento, explorada mediante tareas de búsqueda y trazado visual cronometrada, tampoco mostró apartamientos respecto de lo esperado. Este patrón sugiere una capacidad atencional preservada en sus distintas modalidades —focalizada, dividida y sostenida—, sin evidencia de un compromiso primario en los mecanismos de selección o mantenimiento del foco.\n' +
       'En cuanto al lenguaje, el discurso espontáneo se presentó fluido y coherente, con adecuada comprensión y ejecución de consignas de complejidad creciente, sin dificultades en el acceso al reservorio fonológico de las palabras. Sin embargo, tanto la denominación por confrontación visual como la fluencia verbal de tipo semántica arrojaron un rendimiento en el límite inferior normativo, mientras que la fluencia de tipo fonológica se mantuvo dentro de lo esperado.\n' +
-      'Las habilidades visoespaciales y visoconstructivas se encontraron conservadas: la copia de una figura compleja se ejecutó con una exactitud dentro de los parámetros esperados, aunque con una estrategia de organización de tipo II, caracterizada por un abordaje centrado en detalles englobados dentro de un contorno parcial antes que en la configuración global de la figura, lo que sugiere una planificación perceptiva algo menos eficiente sin repercusión en la precisión del trazado final. En relación con la memoria visual de dicho material, se observó una retención aproximada del 53% de los elementos a los tres minutos y del 66% a los treinta minutos; la relativa estabilidad entre ambos intervalos temporales es compatible con una consolidación mnésica visual adecuada, con una posible fluctuación leve en el momento inicial de la evocación.\n' +
+      'Las habilidades visoespaciales y visoconstructivas se encontraron conservadas: la copia de una figura compleja se ejecutó con una exactitud dentro de los parámetros esperados, aunque con una estrategia de organización de tipo II, caracterizada por un abordaje centrado en detalles englobados dentro de un contorno parcial antes que en la configuración global de la figura, lo que sugiere una planificación perceptiva algo menos eficiente sin repercusión en la precisión del trazado final. En relación con la memoria visual de dicho material, la retención de los elementos resultó estable entre los tres y los treinta minutos; esa estabilidad entre ambos intervalos temporales es compatible con una consolidación mnésica visual adecuada, con una posible fluctuación leve en el momento inicial de la evocación.\n' +
       'En memoria episódica de tipo auditivo-verbal, la curva de aprendizaje mostró un ascenso esperable entre el primer y el último ensayo de una lista de palabras, alcanzando un puntaje total de aprendizaje dentro de los parámetros normativos. El recuerdo libre y con claves semánticas, tanto a corto como a largo plazo, se ubicó dentro de lo esperado, sin diferencias relevantes entre ambas condiciones, al igual que el desempeño en la tarea de reconocimiento, donde identificó correctamente los estímulos previamente aprendidos, sin perseveraciones, intrusiones ni falsos positivos por fuera de lo normativo.\n' +
       'En funciones ejecutivas se observó un perfil heterogéneo. Se mantuvieron preservados la inhibición de respuestas automáticas tanto a nivel verbal como motor, la resistencia a la interferencia, la planificación de secuencias motoras simples y complejas, y la memoria de trabajo explorada mediante tareas específicas de la batería ejecutiva. La flexibilidad cognitiva, en cambio, mostró una dificultad moderada, evidenciada en una tarea de alternancia entre criterios. A su vez, dentro del cribado ejecutivo breve se observó un rendimiento heterogéneo entre sus componentes, con un desempeño relativamente más bajo en las tareas de dígitos en orden inverso y de memoria de trabajo, en contraste con un desempeño preservado en el resto de los ítems administrados. No se registraron perseveraciones ni intrusiones clínicamente relevantes en las tareas de memoria, lo que refuerza la ausencia de un compromiso ejecutivo más extendido.\n' +
       'El perfil descrito es consistente con los hallazgos del WAIS-IV, donde se evidencia un funcionamiento intelectual global promedio (CIT: 107), con un perfil heterogéneo caracterizado por rendimientos sobre el promedio en comprensión verbal y razonamiento perceptual, promedio en velocidad de procesamiento y bajo promedio en memoria de trabajo.\n' +
-      'La reserva cognitiva se ubica en un rango superior, constituyendo un factor protector relevante frente a las demandas cognitivas actuales. En los cuestionarios autoadministrados se observa sintomatología emocional significativa con niveles moderados de estrés. En el SCL-90, los índices globales de Severidad Global, Malestar Positivo y Total de Síntomas Positivos se ubican dentro del rango no significativo.\n' +
+      'La reserva cognitiva se ubica en un rango superior, constituyendo un factor protector relevante frente a las demandas cognitivas actuales. En los cuestionarios autoadministrados se observa sintomatología emocional significativa con niveles moderados de estrés. Los índices globales de severidad, malestar y síntomas positivos se ubican dentro del rango no significativo.\n' +
       'En relación con la evaluación específica de sintomatología compatible con TDAH, los instrumentos de autoinforme evidencian indicadores clínicamente significativos de inatención y disfunción ejecutiva, particularmente vinculados a distractibilidad, dificultades en la planificación, secuenciación temporal, control inhibitorio, persistencia y organización de la conducta, junto con manifestaciones de impulsividad. No se observan indicadores de hiperactividad. Los resultados retrospectivos orientados a etapas previas del desarrollo también resultan significativos, sugiriendo un patrón de larga data. Sin embargo, la presencia de sintomatología emocional activa y un contexto de estrés sostenido sin tratamiento de salud mental en curso constituyen variables que pueden estar amplificando la expresión de los síntomas atencionales y ejecutivos reportados, por lo que en el momento actual el perfil no reúne criterios suficientes para establecer el diagnóstico de TDAH. Los resultados deben interpretarse con cautela y en articulación con la valoración interdisciplinaria en curso.\n' +
       '\n' +
       'Conclusiones:\n' +
@@ -10533,59 +10683,42 @@ function iaBorradorSystemPrompt() {
     '[PERFIL_COGNITIVO]',
     '(acá el texto del perfil cognitivo, en prosa, siguiendo el orden indicado)',
     '[CONCLUSIONES]',
-    '(acá el texto de las conclusiones, en prosa)'
+    '(acá el texto de las conclusiones, en prosa: síntesis, integración diagnóstica y sugerencias, según las reglas de conclusiones)'
   ].join('\n');
 }
 
 function iaBorradorConstruirMensajeUsuario(pacId) {
   var info = iaBorradorInfoPaciente(pacId);
-  var elMotivo  = document.getElementById('inf-motivo');
-  var elAntCli  = document.getElementById('inf-ant-clinicos');
-  var elAntPsiq = document.getElementById('inf-ant-psiq');
-  var elAntFam  = document.getElementById('inf-ant-fam');
-  var elMedic   = document.getElementById('inf-medicacion');
-  var motivo      = elMotivo  ? elMotivo.value.trim()  : '';
-  var antClinicos = elAntCli  ? elAntCli.value.trim()  : '';
-  var antPsiq     = elAntPsiq ? elAntPsiq.value.trim() : '';
-  var antFam      = elAntFam  ? elAntFam.value.trim()  : '';
-  var medicacion  = elMedic   ? elMedic.value.trim()   : '';
+  function valor(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  }
 
   var antecedentesTxt = [];
-  if (antClinicos) antecedentesTxt.push('Clínicos: ' + antClinicos);
-  if (antPsiq)     antecedentesTxt.push('Psiquiátricos/psicológicos: ' + antPsiq);
-  if (antFam)      antecedentesTxt.push('Familiares: ' + antFam);
-  if (medicacion)  antecedentesTxt.push('Medicación actual: ' + medicacion);
+  if (valor('inf-ant-clinicos'))  antecedentesTxt.push('Clínicos: ' + valor('inf-ant-clinicos'));
+  if (valor('inf-ant-psiq'))      antecedentesTxt.push('Psiquiátricos/psicológicos: ' + valor('inf-ant-psiq'));
+  if (valor('inf-ant-fam'))       antecedentesTxt.push('Familiares: ' + valor('inf-ant-fam'));
+  if (valor('inf-medicacion'))    antecedentesTxt.push('Medicación actual: ' + valor('inf-medicacion'));
 
-  var bloques = [
-    'PACIENTE: ' + info.nombre + ', ' + info.edad + ', escolaridad: ' + info.escolaridad,
-    '',
-    'MOTIVO DE CONSULTA:',
-    motivo || 'No consignado.',
-    '',
-    'ANTECEDENTES E HISTORIA EVOLUTIVA:',
-    antecedentesTxt.length ? antecedentesTxt.join('\n') : 'No consignados.',
-    '',
-    'RESULTADOS NEUROPSICOLÓGICOS POR DOMINIO (puntajes Z e interpretación normativa):',
-    iaBorradorTextoNP(pacId),
-    '',
-    'CUESTIONARIOS EMOCIONALES Y DE ESTRÉS (autorreporte del paciente):',
-    iaBorradorTextoCuestionarios(pacId, IA_EMOC_LIST),
-    '',
-    'ESCALAS ESPECÍFICAS DE TDAH (autorreporte del paciente):',
-    iaBorradorTextoCuestionarios(pacId, IA_TDAH_LIST),
-    '',
-    'CUESTIONARIOS FAMILIARES (informante):',
-    iaBorradorTextoFamiliares(pacId)
-  ];
-  // La DIVA-5 casi nunca se administra en este centro: si no hay datos, la sección
-  // se omite directamente en vez de mandar un "no administrada" (ver comentario en
-  // iaBorradorTextoDiva) para que el modelo no la trate como un dato faltante.
-  var diva = iaBorradorTextoDiva(pacId);
-  if (diva != null) {
-    bloques.push('', 'DIVA-5 (entrevista estructurada para TDAH en adultos):', diva);
+  var secciones = [];
+  function agregar(titulo, contenido) {
+    if (contenido) secciones.push(titulo + '\n' + contenido);
   }
-  bloques.push('', 'Con estos datos, redactá el borrador del perfil cognitivo y de las conclusiones siguiendo estrictamente las reglas del system prompt. Respondé solo con el formato pedido, sin agregar nada antes ni después.');
-  return bloques.join('\n');
+
+  secciones.push('PACIENTE: ' + info.nombre + ', ' + info.edad + ', escolaridad: ' + info.escolaridad);
+  agregar('MOTIVO DE CONSULTA:', valor('inf-motivo') || 'No consignado.');
+  agregar('ANTECEDENTES E HISTORIA EVOLUTIVA:', antecedentesTxt.length ? antecedentesTxt.join('\n') : 'No consignados.');
+  agregar('DESCRIPCIÓN DE LA CONDUCTA DURANTE LA EVALUACIÓN (base para el discurso espontáneo y la actitud frente a las tareas):', valor('inf-conducta'));
+  agregar('RESULTADOS NEUROPSICOLÓGICOS POR DOMINIO (puntajes Z e interpretación normativa):', iaBorradorTextoNP(pacId));
+  agregar('RESERVA COGNITIVA:', iaBorradorTextoCuestionarios(pacId, IA_RESERVA_LIST));
+  agregar('CUESTIONARIOS EMOCIONALES Y DE ESTRÉS (autorreporte del paciente):', iaBorradorTextoCuestionarios(pacId, IA_EMOC_LIST));
+  agregar('ESCALAS ESPECÍFICAS DE TDAH (autorreporte del paciente):', iaBorradorTextoCuestionarios(pacId, IA_TDAH_LIST));
+  agregar('ESCALAS ESPECÍFICAS DE TEA:', iaBorradorTextoCuestionarios(pacId, IA_TEA_LIST));
+  // La DIVA-5 casi nunca se administra en este centro: sin datos, la sección se omite.
+  agregar('DIVA-5 (entrevista estructurada para TDAH en adultos):', iaBorradorTextoDiva(pacId));
+  agregar('CUESTIONARIOS FAMILIARES (informante):', iaBorradorTextoFamiliares(pacId));
+  secciones.push('Con estos datos, redactá el borrador del perfil cognitivo y de las conclusiones siguiendo estrictamente las reglas del system prompt. Respondé solo con el formato pedido, sin agregar nada antes ni después.');
+  return secciones.join('\n\n');
 }
 
 function iaBorradorParsearRespuesta(texto) {
@@ -15380,6 +15513,9 @@ function renderPerfilZ() {
 
   var html = '';
   var hayDatos = false;
+  // Copia estructurada de las filas que se dibujan abajo; la lee el botón
+  // "Generar borrador con IA" (iaBorradorTextoNP) para no duplicar esta lógica.
+  window._perfilZFilas = [];
 
   Object.keys(DOMINIOS).forEach(function(dom) {
     var tests = DOMINIOS[dom].filter(function(t){ return byTest[t]; });
@@ -15468,6 +15604,7 @@ function renderPerfilZ() {
           ? { bg: 'transparent', txt: 'var(--muted)' }
           : (interp ? tavecPerfilEstilo(interp) : zColor(fila.z, fila.invertirZ));
         var lblInterp = (tn === 'TAVEC') ? interp.label : c.lbl;
+        window._perfilZFilas.push({ dom: dom, test: tn, lbl: fila.lbl, z: fila.z, interp: lblInterp });
         var gKey = fila.glosario || tn;
         var lblCell = resolverTestGlosario(gKey)
           ? '<span class="test-nombre-glosario" data-glosario-test="' + escGlosarioAttr(gKey) + '" data-glosario-z="' + fila.z + '">' + fila.lbl + '<span class="glosario-info-icon" aria-hidden="true">ℹ</span></span>'
