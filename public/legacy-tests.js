@@ -9775,8 +9775,37 @@ var INF_SUGERENCIAS_OPCIONES = [
   { id: 's1', text: 'Sostener consulta con profesional derivante a fines de correlacionar los resultados obtenidos con estudios complementarios (neuroimágenes, laboratorio, entre otros).' },
   { id: 's2', text: 'Mantener chequeo médico general a fin de controlar factores de salud que puedan influir sobre el estado cognitivo (cardiovasculares, niveles de colesterol y triglicéridos, etc.), ya que son factores de riesgo para fluctuaciones cognitivas.' },
   { id: 's3', text: 'Repetir estudio de valoración neuropsicológica en un plazo de 12 a 18 meses, a los fines de tener un estudio confirmatorio y de seguimiento sobre las variaciones de su estado cognitivo actual.' },
-  { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el Apéndice A del presente informe.' }
+  { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el Apéndice B del presente informe.' }
 ];
+// Apéndice B "Cuidar el cerebro a lo largo de la vida" (folleto del Mes del
+// Alzheimer, basado en la Comisión Lancet 2024). Va al final del informe, después
+// de las firmas, en tarjetas a dos columnas. Se incluye con el check
+// "inf-incluir-apendice-a" (la key incluir_apendice_a se conserva para no romper
+// los informes ya guardados: antes controlaba el viejo apéndice de hábitos).
+var INF_APENDICE_CEREBRO = {
+  titulo: 'Apéndice B: Cuidar el cerebro a lo largo de la vida',
+  introAntes: 'Según la evidencia científica más reciente, ',
+  introDestacado: 'cerca de la mitad de los casos de demencia podrían prevenirse o retrasarse',
+  introDespues: ' actuando sobre factores que están a nuestro alcance. Nunca es tarde para empezar, y cada paso suma.',
+  items: [
+    { t: 'Mantener la mente activa', d: 'Aprender cosas nuevas (por ejemplo, idiomas), leer, estudiar, tocar un instrumento, hacer cursos o talleres. Lo ideal es que la actividad sea novedosa y tenga cierto grado de dificultad.' },
+    { t: 'Cuidar la audición', d: 'Realizar controles auditivos y utilizar audífonos cuando estén indicados. Una adecuada audición favorece la comunicación y participación con otros.' },
+    { t: 'Cuidar la vista', d: 'Realizar controles de la vista y abordar cualquier dificultad visual (por ejemplo, cataratas).' },
+    { t: 'Controlar la presión arterial', d: 'Controlarla con regularidad y sostener el tratamiento médico indicado.' },
+    { t: 'Controlar el colesterol', d: 'Realizar análisis periódicos y tratar el colesterol LDL alto.' },
+    { t: 'Cuidar el azúcar en sangre', d: 'Prevenir la diabetes mediante hábitos saludables y, si está presente, mantener un adecuado control médico.' },
+    { t: 'Comer bien y cuidar el peso', d: 'Priorizar una alimentación de estilo mediterráneo: verduras (especialmente de hoja verde), frutas, legumbres, frutos secos, pescado y aceite de oliva. Una alimentación equilibrada contribuye al control del peso, la glucemia y el colesterol.' },
+    { t: 'Moverse todos los días', d: 'Realizar actividad física de manera cotidiana. Caminar, bailar, nadar, andar en bicicleta: lo importante es la constancia. Sumar ejercicios de fuerza y flexibilidad a la actividad aeróbica potencia el beneficio para el cerebro.' },
+    { t: 'Evitar el consumo de tabaco', d: 'No fumar. En caso de hacerlo, reducir su consumo. Dejar de fumar trae beneficios en cualquier momento.' },
+    { t: 'Limitar el consumo de alcohol', d: 'Reducir el consumo de alcohol y evitar los consumos excesivos.' },
+    { t: 'Proteger la cabeza', d: 'Prevenir posibles golpes o lesiones utilizando elementos de protección (casco) al realizar alguna actividad (andar en moto o bicicleta, por ejemplo). Cuidarse en deportes de contacto y prevenir caídas.' },
+    { t: 'Cuidar el estado de ánimo', d: 'Consultar a un profesional si aparecen tristeza persistente o desánimo, así como ansiedad o estrés.' },
+    { t: 'Cultivar los vínculos', d: 'Compartir tiempo con otras personas, sostener vínculos significativos y participar en actividades recreativas, sociales o de la comunidad.' },
+    { t: 'Reducir la exposición a la contaminación ambiental', d: 'Evitar el humo y ventilar los ambientes.' }
+  ],
+  referencia: 'Basado en: Livingston, G., Huntley, J., Liu, K. Y., Costafreda, S. G., Selbæk, G., Alladi, S., ... & Mukadam, N. (2024). Dementia prevention, intervention, and care: 2024 report of the Lancet standing Commission. ',
+  referenciaItalica: 'The Lancet, 404(10452), 572–628. https://doi.org/10.1016/S0140-6736(24)01296-0'
+};
 var INF_APENDICE_A_ITEMS = [
   'Realice ejercicio físico periódicamente. El mismo debe implicar una frecuencia de al menos 3 veces por semana, y una duración de 45 minutos. Puede realizar caminatas, o alguna otra actividad física aeróbica de su agrado. Se sugiere complementar la actividad aeróbica con actividades de flexibilidad, como yoga, y de resistencia. Para el inicio del programa de ejercicio debe contar con previa autorización y asesoramiento médico.',
   'Lleve un estilo de vida saludable, intentando no abusar del alcohol ni del tabaco.',
@@ -13358,6 +13387,59 @@ function _wTable(rows, colWidths) {
   return '<w:tbl>'+tblPr+tblGrid+rows.join('')+'</w:tbl>';
 }
 
+// Apéndice B "Cuidar el cerebro": hoja nueva al final del informe, con las 14
+// sugerencias en tarjetas a dos columnas (fondo celeste grisáceo, filete verde
+// azulado a la izquierda), igual al folleto del Mes del Alzheimer.
+function buildApendiceCerebroWord() {
+  var A = INF_APENDICE_CEREBRO;
+  var TEAL = '2E7D87', FILL = 'EAF1F3', GRIS = '404040';
+  var GAP = 280, CARD = Math.floor((WORD_CONTENT_W - GAP) / 2);
+  var xml = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+  xml += _wPar(_wRun(A.titulo, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 80 });
+  xml += _wPar([
+    _wRun(A.introAntes, { sz: 19, font: 'Arial', color: GRIS }),
+    _wRun(A.introDestacado, { sz: 19, font: 'Arial', color: TEAL }),
+    _wRun(A.introDespues, { sz: 19, font: 'Arial', color: GRIS })
+  ], { align: 'both', before: 0, after: 200 });
+
+  function card(it, n) {
+    var borders = '<w:tcBorders><w:top w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/>' +
+      '<w:left w:val="single" w:sz="36" w:space="0" w:color="' + TEAL + '"/></w:tcBorders>';
+    var tcPr = '<w:tcPr><w:tcW w:w="' + CARD + '" w:type="dxa"/>' + borders +
+      '<w:shd w:val="clear" w:color="auto" w:fill="' + FILL + '"/>' +
+      '<w:tcMar><w:top w:w="100" w:type="dxa"/><w:bottom w:w="120" w:type="dxa"/><w:left w:w="160" w:type="dxa"/><w:right w:w="160" w:type="dxa"/></w:tcMar></w:tcPr>';
+    if (!it) return '<w:tc>' + tcPr.replace(FILL, 'FFFFFF').replace('w:val="single" w:sz="36" w:space="0" w:color="' + TEAL + '"', 'w:val="nil"') + '<w:p/></w:tc>';
+    return '<w:tc>' + tcPr +
+      _wPar(_wRun(n + '. ' + it.t, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 40 }) +
+      _wPar(_wRun(it.d, { sz: 19, font: 'Arial', color: GRIS }), { align: 'both', before: 0, after: 0 }) +
+      '</w:tc>';
+  }
+  function gapCell() {
+    return '<w:tc><w:tcPr><w:tcW w:w="' + GAP + '" w:type="dxa"/><w:tcBorders><w:top w:val="nil"/><w:bottom w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/></w:tcBorders></w:tcPr><w:p/></w:tc>';
+  }
+  function spacerRow() {
+    var c = '<w:tc><w:tcPr><w:tcW w:w="' + (CARD * 2 + GAP) + '" w:type="dxa"/><w:gridSpan w:val="3"/><w:tcBorders><w:top w:val="nil"/><w:bottom w:val="nil"/><w:left w:val="nil"/><w:right w:val="nil"/></w:tcBorders></w:tcPr>' +
+      '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="100" w:lineRule="exact"/></w:pPr></w:p></w:tc>';
+    return '<w:tr><w:trPr><w:trHeight w:val="100" w:hRule="exact"/></w:trPr>' + c + '</w:tr>';
+  }
+
+  var rows = [];
+  for (var i = 0; i < A.items.length; i += 2) {
+    if (i > 0) rows.push(spacerRow());
+    rows.push('<w:tr><w:trPr><w:cantSplit/></w:trPr>' + card(A.items[i], i + 1) + gapCell() + card(A.items[i + 1], i + 2) + '</w:tr>');
+  }
+  var tblPr = '<w:tblPr><w:tblW w:w="' + (CARD * 2 + GAP) + '" w:type="dxa"/><w:tblLayout w:type="fixed"/>' +
+    '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders></w:tblPr>';
+  var tblGrid = '<w:tblGrid><w:gridCol w:w="' + CARD + '"/><w:gridCol w:w="' + GAP + '"/><w:gridCol w:w="' + CARD + '"/></w:tblGrid>';
+  xml += '<w:tbl>' + tblPr + tblGrid + rows.join('') + '</w:tbl>';
+
+  xml += _wPar([
+    _wRun(A.referencia, { sz: 14, font: 'Arial', color: '7F7F7F' }),
+    _wRun(A.referenciaItalica, { sz: 14, font: 'Arial', color: '7F7F7F', ital: true })
+  ], { before: 60, after: 0 });
+  return xml;
+}
+
 function _wSubescalaTable(rows, colWidths) {
   var totalW = colWidths.reduce(function(a,b){return a+b;},0);
   var tblGrid = '<w:tblGrid>'+colWidths.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>';
@@ -14311,19 +14393,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wPar('',{before:0,after:80});
   })();
 
-  // 7. APÉNDICE A (opcional)
-  if(infCfgPack.cfg.incluir_apendice_a){
-    body+=secTit('7. Apéndice A: Sugerencias para Mantener su Mente Activa');
-    body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
-    INF_APENDICE_A_ITEMS.forEach(function(t){
-      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
-    });
-    body+=_wPar('',{before:0,after:120});
-  }
-
-  // 8. APÉNDICE B - RESULTADOS ESTADÍSTICOS (opcional)
+  // 7. APÉNDICE A - RESULTADOS ESTADÍSTICOS (opcional)
   if(infCfgPack.cfg.incluir_apendice_b){
-  body+=secTit('8. Apéndice B: Resultados Estadísticos');
+  body+=secTit('7. Apéndice A: Resultados Estadísticos');
 
   // Evaluación Neuropsicológica — subescalas screenings + grilla Z
   var waisPerfilTbl = buildWaisPerfilWordTable(datos);
@@ -14511,6 +14583,11 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     return { prof: f.prof, pngBytes: f.pngBytes };
   }));
   body += firmasWord.xml;
+
+  // APÉNDICE B - CUIDAR EL CEREBRO (opcional, siempre al final, en hoja nueva)
+  if(infCfgPack.cfg.incluir_apendice_a){
+    body += buildApendiceCerebroWord();
+  }
 
   // ── Armar XML docx ──
   var enc=new TextEncoder();
