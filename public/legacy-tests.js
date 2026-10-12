@@ -9775,15 +9775,17 @@ var INF_SUGERENCIAS_OPCIONES = [
   { id: 's1', text: 'Sostener consulta con profesional derivante a fines de correlacionar los resultados obtenidos con estudios complementarios (neuroimágenes, laboratorio, entre otros).' },
   { id: 's2', text: 'Mantener chequeo médico general a fin de controlar factores de salud que puedan influir sobre el estado cognitivo (cardiovasculares, niveles de colesterol y triglicéridos, etc.), ya que son factores de riesgo para fluctuaciones cognitivas.' },
   { id: 's3', text: 'Repetir estudio de valoración neuropsicológica en un plazo de 12 a 18 meses, a los fines de tener un estudio confirmatorio y de seguimiento sobre las variaciones de su estado cognitivo actual.' },
-  { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el Apéndice B del presente informe.' }
+  // {APENDICES} se reemplaza al generar el informe por la letra del/los apéndices
+  // de hábitos que estén incluidos (ver infTextoSugerencia).
+  { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el {APENDICES} del presente informe.' }
 ];
-// Apéndice B "Cuidar el cerebro a lo largo de la vida" (folleto del Mes del
-// Alzheimer, basado en la Comisión Lancet 2024). Va al final del informe, después
-// de las firmas, en tarjetas a dos columnas. Se incluye con el check
-// "inf-incluir-apendice-a" (la key incluir_apendice_a se conserva para no romper
-// los informes ya guardados: antes controlaba el viejo apéndice de hábitos).
+// Apéndice "Cuidar el cerebro a lo largo de la vida" (folleto del Mes del
+// Alzheimer, basado en la Comisión Lancet 2024). Es un agregado opcional (check
+// inf-incluir-apendice-cerebro): no reemplaza al apéndice de hábitos ni a los
+// resultados. Va al final del informe, después de las firmas, en tarjetas a dos
+// columnas.
 var INF_APENDICE_CEREBRO = {
-  titulo: 'Apéndice B: Cuidar el cerebro a lo largo de la vida',
+  titulo: 'Cuidar el cerebro a lo largo de la vida',
   introAntes: 'Según la evidencia científica más reciente, ',
   introDestacado: 'cerca de la mitad de los casos de demencia podrían prevenirse o retrasarse',
   introDespues: ' actuando sobre factores que están a nuestro alcance. Nunca es tarde para empezar, y cada paso suma.',
@@ -9821,8 +9823,34 @@ function infDefaultCfg() {
     incluir_conclusiones: false,
     incluir_apendice_a: true,
     incluir_apendice_b: true,
+    incluir_apendice_cerebro: false,
     firmas_seleccionadas: { JULI: false, DANIEL: false, ERWIN: false, FATIMA: false }
   };
+}
+
+// Letras y números de los apéndices según cuáles estén incluidos, en el orden en
+// que aparecen en el informe: hábitos (A) → resultados (B) → cuidar el cerebro
+// (C). Si alguno no se incluye, los siguientes corren una letra; así, sin el de
+// hábitos, los resultados son el "7. Apéndice A" y el del cerebro el "Apéndice B".
+function infLetrasApendices(cfg) {
+  var orden = [['habitos', cfg.incluir_apendice_a], ['resultados', cfg.incluir_apendice_b], ['cerebro', cfg.incluir_apendice_cerebro]];
+  var out = {}, n = 0;
+  orden.forEach(function(o) {
+    if (!o[1]) return;
+    out[o[0]] = { letra: 'ABC'.charAt(n), num: 7 + n };
+    n++;
+  });
+  return out;
+}
+
+function infTextoSugerencia(s, cfg) {
+  if (s.text.indexOf('{APENDICES}') === -1) return s.text;
+  var L = cfg ? infLetrasApendices(cfg) : {};
+  var letras = [L.habitos, L.cerebro].filter(Boolean).map(function(x) { return x.letra; });
+  var ref = !letras.length ? 'Apéndice correspondiente'
+    : letras.length === 1 ? 'Apéndice ' + letras[0]
+    : 'Apéndices ' + letras.join(' y ');
+  return s.text.replace('{APENDICES}', ref);
 }
 
 var INF_DRAFT_LS_PREFIX = 'igp_inf_draft_';
@@ -9848,6 +9876,7 @@ function infBuildDatosFromForm() {
     incluir_conclusiones: cfg.incluir_conclusiones,
     incluir_apendice_a: cfg.incluir_apendice_a,
     incluir_apendice_b: cfg.incluir_apendice_b,
+    incluir_apendice_cerebro: cfg.incluir_apendice_cerebro,
     firmas_seleccionadas: cfg.firmas_seleccionadas,
     sugerencias_personalizadas: extraEl ? extraEl.value : '',
     motivo_consulta: gv('inf-motivo'),
@@ -9906,6 +9935,7 @@ function infApplyLocalDraftToForm(pacId) {
       incluir_conclusiones: d.incluir_conclusiones,
       incluir_apendice_a: d.incluir_apendice_a,
       incluir_apendice_b: d.incluir_apendice_b,
+      incluir_apendice_cerebro: !!d.incluir_apendice_cerebro,
       firmas_seleccionadas: Object.assign({}, infDefaultCfg().firmas_seleccionadas, d.firmas_seleccionadas || {})
     }));
   }
@@ -9953,6 +9983,7 @@ function infExtraerConfig(inf) {
       incluir_conclusiones: d.incluir_conclusiones != null ? d.incluir_conclusiones : cfg.incluir_conclusiones,
       incluir_apendice_a: d.incluir_apendice_a != null ? d.incluir_apendice_a : cfg.incluir_apendice_a,
       incluir_apendice_b: d.incluir_apendice_b != null ? d.incluir_apendice_b : cfg.incluir_apendice_b,
+      incluir_apendice_cerebro: d.incluir_apendice_cerebro != null ? !!d.incluir_apendice_cerebro : !!cfg.incluir_apendice_cerebro,
       firmas_seleccionadas: Object.assign({}, infDefaultCfg().firmas_seleccionadas, cfg.firmas_seleccionadas || d.firmas_seleccionadas || {})
     });
     if (d.sugerencias_personalizadas != null) sugerenciasPersonalizadas = d.sugerencias_personalizadas;
@@ -9966,7 +9997,7 @@ function infRenderSugerenciasChecks() {
   el.innerHTML = INF_SUGERENCIAS_OPCIONES.map(function(s) {
     return '<label style="display:flex;align-items:flex-start;gap:8px;font-size:0.84rem;line-height:1.45;cursor:pointer;">' +
       '<input type="checkbox" id="inf-sug-' + s.id + '" data-sug-id="' + s.id + '" style="accent-color:var(--accent);width:16px;height:16px;margin-top:2px;flex-shrink:0;">' +
-      '<span>' + s.text + '</span></label>';
+      '<span>' + infTextoSugerencia(s, null) + '</span></label>';
   }).join('');
 }
 
@@ -9982,6 +10013,8 @@ function infGetConfigFromForm() {
   cfg.incluir_conclusiones = ic ? ic.checked : false;
   cfg.incluir_apendice_a = ia ? ia.checked : true;
   cfg.incluir_apendice_b = ib ? ib.checked : true;
+  var icb = document.getElementById('inf-incluir-apendice-cerebro');
+  cfg.incluir_apendice_cerebro = icb ? icb.checked : false;
   FIRMA_PROFESIONALES.forEach(function(p) {
     var cb = document.getElementById('inf-firma-chk-' + p.id);
     if (cb) cfg.firmas_seleccionadas[p.id] = cb.checked;
@@ -10001,6 +10034,8 @@ function infApplyConfigToForm(cfg) {
   if (ic) ic.checked = !!cfg.incluir_conclusiones;
   if (ia) ia.checked = cfg.incluir_apendice_a !== false;
   if (ib) ib.checked = cfg.incluir_apendice_b !== false;
+  var icb = document.getElementById('inf-incluir-apendice-cerebro');
+  if (icb) icb.checked = !!cfg.incluir_apendice_cerebro;
   FIRMA_PROFESIONALES.forEach(function(p) {
     var cb = document.getElementById('inf-firma-chk-' + p.id);
     if (cb) cb.checked = !!(cfg.firmas_seleccionadas && cfg.firmas_seleccionadas[p.id]);
@@ -10014,7 +10049,7 @@ function infFormatoBold(txt) {
 function buildSugerenciasInformeHtml(cfg, textoExtra) {
   var items = [];
   INF_SUGERENCIAS_OPCIONES.forEach(function(s) {
-    if (cfg.sugerencias && cfg.sugerencias[s.id]) items.push(s.text);
+    if (cfg.sugerencias && cfg.sugerencias[s.id]) items.push(infTextoSugerencia(s, cfg));
   });
   if (!items.length && !(textoExtra && textoExtra.trim())) return '';
   var html = '<div class="sec-titulo">6. Sugerencias</div>';
@@ -13390,12 +13425,12 @@ function _wTable(rows, colWidths) {
 // Apéndice B "Cuidar el cerebro": hoja nueva al final del informe, con las 14
 // sugerencias en tarjetas a dos columnas (fondo celeste grisáceo, filete verde
 // azulado a la izquierda), igual al folleto del Mes del Alzheimer.
-function buildApendiceCerebroWord() {
+function buildApendiceCerebroWord(letra) {
   var A = INF_APENDICE_CEREBRO;
   var TEAL = '2E7D87', FILL = 'EAF1F3', GRIS = '404040';
   var GAP = 280, CARD = Math.floor((WORD_CONTENT_W - GAP) / 2);
   var xml = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
-  xml += _wPar(_wRun(A.titulo, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 80 });
+  xml += _wPar(_wRun('Apéndice ' + (letra || 'C') + ': ' + A.titulo, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 80 });
   xml += _wPar([
     _wRun(A.introAntes, { sz: 19, font: 'Arial', color: GRIS }),
     _wRun(A.introDestacado, { sz: 19, font: 'Arial', color: TEAL }),
@@ -14376,7 +14411,7 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     var cfg = infCfgPack.cfg;
     var extra = infCfgPack.sugerenciasPersonalizadas || '';
     var items = [];
-    INF_SUGERENCIAS_OPCIONES.forEach(function(s){ if(cfg.sugerencias && cfg.sugerencias[s.id]) items.push(s.text); });
+    INF_SUGERENCIAS_OPCIONES.forEach(function(s){ if(cfg.sugerencias && cfg.sugerencias[s.id]) items.push(infTextoSugerencia(s, cfg)); });
     if(!items.length && !(extra && extra.trim())) return;
     body+=secTit('6. Sugerencias');
     function wEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -14393,9 +14428,22 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wPar('',{before:0,after:80});
   })();
 
-  // 7. APÉNDICE A - RESULTADOS ESTADÍSTICOS (opcional)
-  if(infCfgPack.cfg.incluir_apendice_b){
-  body+=secTit('7. Apéndice A: Resultados Estadísticos');
+  // APÉNDICES: letra y número según cuáles estén incluidos (ver infLetrasApendices)
+  var apLetras = infLetrasApendices(infCfgPack.cfg);
+
+  // APÉNDICE DE HÁBITOS - Sugerencias para mantener su mente activa (opcional)
+  if(apLetras.habitos){
+    body+=secTit(apLetras.habitos.num+'. Apéndice '+apLetras.habitos.letra+': Sugerencias para Mantener su Mente Activa');
+    body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
+    INF_APENDICE_A_ITEMS.forEach(function(t){
+      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
+    });
+    body+=_wPar('',{before:0,after:120});
+  }
+
+  // APÉNDICE DE RESULTADOS ESTADÍSTICOS (opcional)
+  if(apLetras.resultados){
+  body+=secTit(apLetras.resultados.num+'. Apéndice '+apLetras.resultados.letra+': Resultados Estadísticos');
 
   // Evaluación Neuropsicológica — subescalas screenings + grilla Z
   var waisPerfilTbl = buildWaisPerfilWordTable(datos);
@@ -14584,9 +14632,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   }));
   body += firmasWord.xml;
 
-  // APÉNDICE B - CUIDAR EL CEREBRO (opcional, siempre al final, en hoja nueva)
-  if(infCfgPack.cfg.incluir_apendice_a){
-    body += buildApendiceCerebroWord();
+  // APÉNDICE CUIDAR EL CEREBRO (opcional, siempre al final, en hoja nueva)
+  if(apLetras.cerebro){
+    body += buildApendiceCerebroWord(apLetras.cerebro.letra);
   }
 
   // ── Armar XML docx ──
