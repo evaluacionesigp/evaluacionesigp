@@ -84,9 +84,10 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Medicación</div>
-      <div class="card-sub">Indicá nombre y dosis de la medicación que tomás actualmente (opcional).</div>
-      <div class="field"><textarea id="ax-medicacion" rows="2"></textarea></div>
+      <div class="card-title">Medicación *</div>
+      <div class="card-sub">Indicá nombre y dosis de la medicación que tomás actualmente. Si no tomás ninguna, marcá «No tomo medicación».</div>
+      <div class="field"><textarea id="ax-medicacion" rows="2" oninput="medicacionEscrita()"></textarea></div>
+      <div class="chk-list"><label class="chk-item"><input type="checkbox" id="ax-medicacion-ninguna" onchange="medicacionNinguna()"> No tomo medicación</label></div>
     </div>
 
     <div class="card">

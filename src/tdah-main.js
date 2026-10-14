@@ -344,8 +344,29 @@ function _construirIntake() {
     ant_psiquiatricos: document.getElementById('ax-psiq').value.trim() || null,
     ant_familiares: _formatearChecklist(ANT_FAMILIARES, 'ax-fam', 'ax-fam-ninguno', 'ax-fam-otros', 'Ninguno reportado.'),
     habitos_toxicos: _formatearChecklist(HABITOS, 'ax-habitos', 'ax-habitos-ninguno', 'ax-habitos-otros', 'Ninguno reportado.'),
-    medicacion: document.getElementById('ax-medicacion').value.trim() || null
+    medicacion: _medicacionTexto()
   };
+}
+
+// Medicación: o escribe qué toma, o marca «No tomo medicación». Así un campo en
+// blanco ya no queda ambiguo (¿no toma nada o no se acordó?). Ambas opciones se
+// excluyen: escribir destilda el check y tildarlo borra el texto.
+function _medicacionTexto() {
+  var txt = document.getElementById('ax-medicacion').value.trim();
+  if (txt) return txt;
+  return document.getElementById('ax-medicacion-ninguna').checked ? 'No toma medicación actualmente.' : null;
+}
+
+function medicacionNinguna() {
+  if (document.getElementById('ax-medicacion-ninguna').checked) {
+    document.getElementById('ax-medicacion').value = '';
+  }
+}
+
+function medicacionEscrita() {
+  if (document.getElementById('ax-medicacion').value.trim()) {
+    document.getElementById('ax-medicacion-ninguna').checked = false;
+  }
 }
 
 // ══ VALIDACIÓN — bloquea el envío hasta que esté todo completo ══════════════
@@ -361,6 +382,7 @@ function _faltantesTdah() {
   reqTxt('ax-derivado', 'quién te derivó'); reqTxt('ax-tel', 'tu teléfono de contacto');
   reqTxt('ax-correo', 'tu correo de contacto'); reqTxt('ax-dominancia', 'tu dominancia');
   reqTxt('ax-psiq', 'tratamiento psicológico/psiquiátrico');
+  if (!_medicacionTexto()) faltantes.push('tu medicación (o marcá «No tomo medicación»)');
 
   if (!_algunoMarcado(ANT_SALUD, 'ax-salud', 'ax-salud-ninguno')) faltantes.push('antecedentes de salud');
   if (!_algunoMarcado(TRAT_INFANCIA, 'ax-inftto', 'ax-inftto-ninguno')) faltantes.push('tratamientos en la infancia');
@@ -494,6 +516,8 @@ function enviarTdah() {
 
 window.enviarTdah = enviarTdah;
 window.toggleBloqueTdah = toggleBloqueTdah;
+window.medicacionNinguna = medicacionNinguna;
+window.medicacionEscrita = medicacionEscrita;
 
 window.addEventListener('DOMContentLoaded', function() {
   var pacId = getPacienteIdUrl();
