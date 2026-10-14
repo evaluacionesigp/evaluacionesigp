@@ -10805,13 +10805,20 @@ function iaBorradorSystemPrompt() {
     '- La reserva cognitiva elevada se menciona como factor que puede estar modulando la expresión del cuadro, por ejemplo cuando el screening es normal pero hay quejas o cambios referidos por el informante.',
     '- Recomendá siempre reevaluación neuropsicológica en 12 meses.',
     '',
-    'CONCLUSIONES: INTEGRACIÓN CLÍNICA Y SUGERENCIAS',
+    'CONCLUSIONES: INTEGRACIÓN CLÍNICA',
     '- Máximo tres párrafos, cuatro en casos complejos. No repetir el perfil: sintetizar.',
     '- Primer párrafo: síntesis del perfil, con el hallazgo más relevante y las principales fortalezas y desafíos.',
     '- Segundo párrafo: integración clínica. Considerá conjuntamente, con las variables que estén disponibles: motivo de consulta, dificultades referidas, resultados cognitivos objetivos, funcionamiento cotidiano, nivel educativo, trayectoria laboral u ocupacional, antecedentes médicos y neurológicos, medicación, situación emocional, acontecimientos vitales y estresores, antecedentes familiares, conducta observada durante la evaluación e información del informante. Cerrá con la impresión clínica fundamentada.',
     '- Si hay comorbilidad emocional, mencionala como moduladora, no como causa excluyente.',
     '- Diagnóstico confirmado: negrita sobre el nombre diagnóstico completo. Diagnóstico dudoso: sin negrita, con redacción cautelosa.',
-    '- Sugerencias: concisas, específicas e individualizadas, basadas exclusivamente en las características de esta persona (fortalezas a aprovechar, desafíos a abordar, contexto emocional y funcional). No inventes recursos, profesionales ni tratamientos que no surjan de los datos. Si hay más de un tipo de intervención (reevaluación, tratamiento psicológico o psiquiátrico, rehabilitación o estimulación cognitiva, estrategias compensatorias), cada tipo va en su propio párrafo breve; es la única excepción al máximo de párrafos.',
+    '',
+    'SUGERENCIAS (van en el bloque [SUGERENCIAS], no dentro de las conclusiones)',
+    '- Una sugerencia por línea, sin numeración, viñetas ni guiones: el sistema las numera. Cada línea es una indicación completa de una o dos oraciones.',
+    '- Concisas, específicas e individualizadas, basadas exclusivamente en las características de esta persona (fortalezas a aprovechar, desafíos a abordar, contexto emocional y funcional). No inventes recursos, profesionales ni tratamientos que no surjan de los datos.',
+    '- Un tipo de intervención por línea: reevaluación, tratamiento psicológico o psiquiátrico, rehabilitación o estimulación cognitiva, estrategias compensatorias y apoyos en la vida cotidiana.',
+    '- El informe ya ofrece estas sugerencias estándar, que el profesional agrega con un check. No las repitas ni las parafrasees; escribí solo las propias de esta persona:',
+  ].concat(INF_SUGERENCIAS_OPCIONES.map(function(op) { return '  · ' + infTextoSugerencia(op, null); })).concat([
+    '- Si corresponde una reevaluación con un plazo o una condición distinta de la estándar (por ejemplo, en 12 meses por sospecha de deterioro cognitivo, o una vez estabilizado el cuadro emocional), sí incluila en tu lista.',
     '',
     'LO QUE NUNCA DEBE APARECER EN UN INFORME',
     '- Bullets o listas dentro del cuerpo del perfil.',
@@ -10876,12 +10883,14 @@ function iaBorradorSystemPrompt() {
       'El perfil neurocognitivo evidencia un funcionamiento intelectual global promedio, con recursos cognitivos preservados en la mayoría de los dominios y una dificultad específica en flexibilidad cognitiva. Los instrumentos de autoinforme evidencian un perfil atencional y ejecutivo con indicadores clínicamente significativos, con un patrón que incluye antecedentes desde etapas tempranas del desarrollo.\n' +
       'Sin embargo, en el momento actual el cuadro no reúne criterios suficientes para establecer el diagnóstico de TDAH, dado que la presencia de sintomatología emocional activa y un contexto de estrés sostenido sin tratamiento de salud mental en curso constituyen variables que pueden estar explicando o amplificando de manera significativa la sintomatología atencional y ejecutiva reportada."',
     '',
-    'FORMATO DE RESPUESTA (obligatorio — no escribas nada antes ni después de estos dos bloques, ni agregues títulos adicionales):',
+    'FORMATO DE RESPUESTA (obligatorio — no escribas nada antes ni después de estos tres bloques, ni agregues títulos adicionales):',
     '[PERFIL_COGNITIVO]',
     '(acá el texto del perfil cognitivo, en prosa, siguiendo el orden indicado)',
     '[CONCLUSIONES]',
-    '(acá el texto de las conclusiones, en prosa: síntesis, integración clínica y sugerencias, según las reglas de conclusiones)'
-  ].join('\n');
+    '(acá el texto de las conclusiones, en prosa: síntesis e integración clínica, según las reglas de conclusiones)',
+    '[SUGERENCIAS]',
+    '(acá las sugerencias personalizadas, una por línea, según las reglas de sugerencias)'
+  ]).join('\n');
 }
 
 function iaBorradorConstruirMensajeUsuario(pacId) {
@@ -10914,16 +10923,22 @@ function iaBorradorConstruirMensajeUsuario(pacId) {
   // La DIVA-5 casi nunca se administra en este centro: sin datos, la sección se omite.
   agregar('DIVA-5 (entrevista estructurada para TDAH en adultos):', iaBorradorTextoDiva(pacId));
   agregar('CUESTIONARIOS FAMILIARES (informante):', iaBorradorTextoFamiliares(pacId));
-  secciones.push('Con estos datos, redactá el borrador del perfil cognitivo y de las conclusiones siguiendo estrictamente las reglas del system prompt. Respondé solo con el formato pedido, sin agregar nada antes ni después.');
+  secciones.push('Con estos datos, redactá el borrador del perfil cognitivo, de las conclusiones y de las sugerencias siguiendo estrictamente las reglas del system prompt. Respondé solo con el formato pedido, sin agregar nada antes ni después.');
   return secciones.join('\n\n');
 }
 
 function iaBorradorParsearRespuesta(texto) {
-  var mPerfil = texto.match(/\[PERFIL_COGNITIVO\]([\s\S]*?)(?:\[CONCLUSIONES\]|$)/);
-  var mConcl  = texto.match(/\[CONCLUSIONES\]([\s\S]*)$/);
+  var mPerfil = texto.match(/\[PERFIL_COGNITIVO\]([\s\S]*?)(?:\[CONCLUSIONES\]|\[SUGERENCIAS\]|$)/);
+  var mConcl  = texto.match(/\[CONCLUSIONES\]([\s\S]*?)(?:\[SUGERENCIAS\]|$)/);
+  var mSug    = texto.match(/\[SUGERENCIAS\]([\s\S]*)$/);
+  // Una sugerencia por línea; por si el modelo igual numera o pone viñetas, se limpian.
+  var sugerencias = mSug ? mSug[1].split('\n').map(function(l) {
+    return l.replace(/^\s*(?:\d+[.)]|[-•·*])\s*/, '').trim();
+  }).filter(Boolean) : [];
   return {
     perfilCognitivo: mPerfil ? mPerfil[1].trim() : texto.trim(),
-    conclusiones: mConcl ? mConcl[1].trim() : ''
+    conclusiones: mConcl ? mConcl[1].trim() : '',
+    sugerencias: sugerencias
   };
 }
 
@@ -10957,6 +10972,12 @@ function generarBorradorIA() {
       var chkConcl = document.getElementById('inf-incluir-conclusiones');
       if (chkConcl) chkConcl.checked = true;
     }
+    var elSug = document.getElementById('inf-sugerencias-extra');
+    if (elSug && partes.sugerencias.length) {
+      elSug.value = partes.sugerencias.join('\n');
+      infRenderSugExtraLista();
+    }
+    infPersistDraftFromForm(pacId);
     if (statusEl) statusEl.innerHTML = '<span style="color:#2e7a4f;">✓ Borrador generado. Revisalo y editalo antes de guardar y firmar.</span>';
   })
   .catch(function(err) {
