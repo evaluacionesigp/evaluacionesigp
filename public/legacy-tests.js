@@ -9912,7 +9912,7 @@ function infPersistDraftFromForm(pacId) {
 
 function infApplyLocalDraftToForm(pacId) {
   var draft = infLoadLocalDraft(pacId);
-  if (!draft || !draft.datos) return;
+  if (!draft || !draft.datos) { infRenderSugExtraLista(); return; }
   var d = draft.datos;
   var map = {
     'inf-motivo': d.motivo_consulta,
@@ -9939,6 +9939,7 @@ function infApplyLocalDraftToForm(pacId) {
       firmas_seleccionadas: Object.assign({}, infDefaultCfg().firmas_seleccionadas, d.firmas_seleccionadas || {})
     }));
   }
+  infRenderSugExtraLista();
 }
 
 function infBindDraftAutosave() {
@@ -9999,6 +10000,99 @@ function infRenderSugerenciasChecks() {
       '<input type="checkbox" id="inf-sug-' + s.id + '" data-sug-id="' + s.id + '" style="accent-color:var(--accent);width:16px;height:16px;margin-top:2px;flex-shrink:0;">' +
       '<span>' + infTextoSugerencia(s, null) + '</span></label>';
   }).join('');
+}
+
+// ── Sugerencias personalizadas en formato lista ──
+// El textarea oculto #inf-sugerencias-extra sigue siendo la fuente de verdad (una
+// sugerencia por línea: así se guarda en la base y así lo numera el Word). Esta
+// lista es solo el editor: cada ítem es una línea, y cualquier cambio se vuelca
+// al textarea oculto.
+function infSugExtraItems() {
+  var el = document.getElementById('inf-sugerencias-extra');
+  return (el ? el.value : '').split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+}
+
+function infSugExtraSync() {
+  var lista = document.getElementById('inf-sug-extra-lista');
+  var el = document.getElementById('inf-sugerencias-extra');
+  if (!lista || !el) return;
+  var vals = [];
+  lista.querySelectorAll('textarea[data-sugx]').forEach(function(t) {
+    var v = t.value.replace(/\s*\n\s*/g, ' ').trim();
+    if (v) vals.push(v);
+  });
+  el.value = vals.join('\n');
+}
+
+function infSugExtraNumerar() {
+  var lista = document.getElementById('inf-sug-extra-lista');
+  if (!lista) return;
+  var base = INF_SUGERENCIAS_OPCIONES.filter(function(s) {
+    var cb = document.getElementById('inf-sug-' + s.id);
+    return cb && cb.checked;
+  }).length;
+  lista.querySelectorAll('[data-sugx-num]').forEach(function(n, i) { n.textContent = (base + i + 1) + '.'; });
+}
+
+function infSugExtraAutoAlto(t) {
+  t.style.height = 'auto';
+  t.style.height = (t.scrollHeight + 2) + 'px';
+}
+
+function infSugExtraFila(texto) {
+  var fila = document.createElement('div');
+  fila.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+  fila.innerHTML =
+    '<span data-sugx-num style="min-width:24px;padding-top:9px;font-size:0.84rem;font-weight:600;color:var(--muted);text-align:right;"></span>' +
+    '<textarea data-sugx id="inf-sugx-' + Date.now() + Math.floor(Math.random() * 1000) + '" rows="1" placeholder="Escribí la sugerencia..." style="flex:1;resize:none;overflow:hidden;min-height:38px;"></textarea>' +
+    '<button type="button" title="Quitar sugerencia" style="padding:6px 10px;margin-top:2px;background:var(--bg);border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--muted);">✕</button>';
+  var ta = fila.querySelector('textarea');
+  ta.value = texto || '';
+  ta.addEventListener('input', function() { infSugExtraAutoAlto(ta); infSugExtraSync(); });
+  ta.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      var nueva = infSugExtraFila('');
+      fila.parentNode.insertBefore(nueva, fila.nextSibling);
+      infSugExtraNumerar();
+      nueva.querySelector('textarea').focus();
+    }
+  });
+  fila.querySelector('button').addEventListener('click', function() {
+    var lista = fila.parentNode;
+    fila.remove();
+    if (!lista.children.length) lista.appendChild(infSugExtraFila(''));
+    infSugExtraNumerar();
+    infSugExtraSync();
+    infPersistDraftFromForm(INFORME_PAC_ID);
+  });
+  return fila;
+}
+
+// Reconstruye la lista desde el textarea oculto (al abrir/cargar un informe).
+function infRenderSugExtraLista() {
+  var lista = document.getElementById('inf-sug-extra-lista');
+  if (!lista) return;
+  lista.innerHTML = '';
+  var items = infSugExtraItems();
+  if (!items.length) items = [''];
+  items.forEach(function(t) { lista.appendChild(infSugExtraFila(t)); });
+  infSugExtraNumerar();
+  lista.querySelectorAll('textarea[data-sugx]').forEach(infSugExtraAutoAlto);
+  var checks = document.getElementById('inf-sugerencias-checks');
+  if (checks && !checks._sugxBound) {
+    checks._sugxBound = true;
+    checks.addEventListener('change', infSugExtraNumerar);
+  }
+}
+
+function infSugExtraAgregar() {
+  var lista = document.getElementById('inf-sug-extra-lista');
+  if (!lista) return;
+  var fila = infSugExtraFila('');
+  lista.appendChild(fila);
+  infSugExtraNumerar();
+  fila.querySelector('textarea').focus();
 }
 
 function infGetConfigFromForm() {
@@ -10291,6 +10385,7 @@ function abrirInforme() {
     'inf-ant-fam','inf-habitos','inf-medicacion','inf-motivo','inf-conducta','inf-perfil-cog','inf-conclusiones','inf-sugerencias-extra'];
   campos.forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   infRenderSugerenciasChecks();
+  infRenderSugExtraLista();
   infApplyConfigToForm(infDefaultCfg());
   initFirmasUI();
   cargarLogosUI();
