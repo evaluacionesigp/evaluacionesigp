@@ -10813,9 +10813,10 @@ function iaBorradorSystemPrompt() {
     '- Diagnóstico confirmado: negrita sobre el nombre diagnóstico completo. Diagnóstico dudoso: sin negrita, con redacción cautelosa.',
     '',
     'SUGERENCIAS (van en el bloque [SUGERENCIAS], no dentro de las conclusiones)',
-    '- Una sugerencia por línea, sin numeración, viñetas ni guiones: el sistema las numera. Cada línea es una indicación completa de una o dos oraciones.',
-    '- Concisas, específicas e individualizadas, basadas exclusivamente en las características de esta persona (fortalezas a aprovechar, desafíos a abordar, contexto emocional y funcional). No inventes recursos, profesionales ni tratamientos que no surjan de los datos.',
-    '- Un tipo de intervención por línea: reevaluación, tratamiento psicológico o psiquiátrico, rehabilitación o estimulación cognitiva, estrategias compensatorias y apoyos en la vida cotidiana.',
+    '- Pocas y breves: como máximo 3 sugerencias (mejor 1 o 2 si alcanzan). Cada una es una sola oración corta, de no más de 25 palabras, sin numeración, viñetas ni guiones: el sistema las numera.',
+    '- Centradas en el tratamiento: indicá qué abordaje se sugiere (tratamiento psicológico, psiquiátrico, rehabilitación o estimulación cognitiva, reevaluación) y con qué foco, según los hallazgos de esta persona. No inventes recursos, profesionales ni tratamientos que no surjan de los datos.',
+    '- Sin justificaciones ni explicaciones (nada de "dado que...", "aprovechando...", "de modo de..."), sin listas de ejemplos entre paréntesis o guiones, y sin consejos de estilo de vida, hábitos, controles médicos generales ni coordinación con el médico: eso ya lo cubren las sugerencias estándar y los apéndices.',
+    '- Un tipo de intervención por línea. Ejemplos del largo y estilo esperados: "Iniciar rehabilitación cognitiva con foco en memoria de trabajo y funciones ejecutivas." / "Sostener el tratamiento psiquiátrico en curso." / "Iniciar tratamiento psicológico para el abordaje de la sintomatología ansiosa."',
     '- El informe ya ofrece estas sugerencias estándar, que el profesional agrega con un check. No las repitas ni las parafrasees; escribí solo las propias de esta persona:',
   ].concat(INF_SUGERENCIAS_OPCIONES.map(function(op) { return '  · ' + infTextoSugerencia(op, null); })).concat([
     '- Si corresponde una reevaluación con un plazo o una condición distinta de la estándar (por ejemplo, en 12 meses por sospecha de deterioro cognitivo, o una vez estabilizado el cuadro emocional), sí incluila en tu lista.',
