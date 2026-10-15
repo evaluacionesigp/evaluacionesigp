@@ -105,41 +105,55 @@ function dexZLabel(z) {
 // ══ ANAMNESIS · listas de antecedentes ══════════════════════════════════════
 // Cada opción nombra UNA sola cosa: si una casilla mezcla dos diagnósticos
 // no hay forma de saber cuál marcó el paciente (ver commit de separación).
+// `grupo` agrupa las casillas bajo un subtítulo en el formulario; el texto que
+// llega al informe sigue siendo la lista plana de labels marcados.
 var ANT_SALUD = [
-  {id:'prematuridad',   label:'Prematuridad'},
-  {id:'bajo_peso',      label:'Bajo peso al nacer'},
-  {id:'compl_embarazo', label:'Complicaciones en el embarazo de tu madre'},
-  {id:'compl_parto',    label:'Complicaciones en el parto'},
-  {id:'golpe_cabeza',   label:'Golpe en la cabeza con pérdida de conciencia'},
-  {id:'golpe_hospital', label:'Golpe en la cabeza con hospitalización'},
-  {id:'epilepsia',      label:'Epilepsia'},
-  {id:'crisis',         label:'Crisis convulsivas'},
-  {id:'meningitis',     label:'Meningitis'},
-  {id:'encefalitis',    label:'Encefalitis'},
-  {id:'tics',           label:'Tics'},
-  {id:'tourette',       label:'Síndrome de Tourette'},
-  {id:'hta',            label:'Hipertensión arterial (HTA)'},
-  {id:'diabetes',       label:'Diabetes (DBT)'},
-  {id:'hipotiroidismo', label:'Hipotiroidismo'},
-  {id:'hipertiroidismo', label:'Hipertiroidismo'},
-  {id:'arritmia',       label:'Arritmia cardíaca'},
-  {id:'infarto',        label:'Infarto'},
-  {id:'insuf_cardiaca', label:'Insuficiencia cardíaca'},
-  {id:'acv',            label:'ACV (accidente cerebrovascular)'},
-  {id:'ait',            label:'AIT (accidente isquémico transitorio)'},
-  {id:'migrana',        label:'Migraña'},
-  {id:'cefaleas',       label:'Cefaleas frecuentes'},
-  {id:'insomnio',       label:'Insomnio'},
-  {id:'otras_sueno',    label:'Otras dificultades en el sueño'},
-  {id:'internaciones',  label:'Internaciones por alguna causa'},
-  {id:'diag_psi',       label:'Diagnóstico psicológico o de salud mental'},
-  {id:'dislexia',       label:'Dislexia (dificultad de lectura)'},
-  {id:'disgrafia',      label:'Dificultad de escritura (disgrafía)'},
-  {id:'discalculia',    label:'Dificultad de cálculo (discalculia)'},
-  {id:'retraso_lenguaje',   label:'Retraso del lenguaje'},
-  {id:'trastorno_lenguaje', label:'Trastorno del lenguaje'},
-  {id:'repitencia',     label:'Repitencia de años escolares'},
-  {id:'abandono',       label:'Abandono escolar temprano'}
+  {grupo:'Embarazo, nacimiento y desarrollo', id:'prematuridad', label:'Prematuridad'},
+  {grupo:'Embarazo, nacimiento y desarrollo', id:'bajo_peso',      label:'Bajo peso al nacer'},
+  {grupo:'Embarazo, nacimiento y desarrollo', id:'compl_embarazo', label:'Complicaciones en el embarazo de tu madre'},
+  {grupo:'Embarazo, nacimiento y desarrollo', id:'compl_parto',    label:'Complicaciones en el parto'},
+  {grupo:'Neurológicos', id:'golpe_cabeza',   label:'Golpe en la cabeza con pérdida de conciencia'},
+  {grupo:'Neurológicos', id:'golpe_hospital', label:'Golpe en la cabeza con hospitalización'},
+  {grupo:'Neurológicos', id:'epilepsia',      label:'Epilepsia'},
+  {grupo:'Neurológicos', id:'crisis',         label:'Crisis convulsivas'},
+  {grupo:'Neurológicos', id:'meningitis',     label:'Meningitis'},
+  {grupo:'Neurológicos', id:'encefalitis',    label:'Encefalitis'},
+  {grupo:'Neurológicos', id:'acv',            label:'ACV (accidente cerebrovascular)'},
+  {grupo:'Neurológicos', id:'ait',            label:'AIT (accidente isquémico transitorio)'},
+  {grupo:'Neurológicos', id:'migrana',        label:'Migraña'},
+  {grupo:'Neurológicos', id:'cefaleas',       label:'Cefaleas frecuentes'},
+  {grupo:'Neurológicos', id:'tics',           label:'Tics'},
+  {grupo:'Neurológicos', id:'tourette',       label:'Síndrome de Tourette'},
+  {grupo:'Clínicos', id:'hta',            label:'Hipertensión arterial (HTA)'},
+  {grupo:'Clínicos', id:'diabetes',       label:'Diabetes (DBT)'},
+  {grupo:'Clínicos', id:'hipotiroidismo', label:'Hipotiroidismo'},
+  {grupo:'Clínicos', id:'hipertiroidismo', label:'Hipertiroidismo'},
+  {grupo:'Clínicos', id:'arritmia',       label:'Arritmia cardíaca'},
+  {grupo:'Clínicos', id:'infarto',        label:'Infarto'},
+  {grupo:'Clínicos', id:'insuf_cardiaca', label:'Insuficiencia cardíaca'},
+  {grupo:'Clínicos', id:'oncologico',     label:'Cáncer / tratamiento oncológico'},
+  {grupo:'Clínicos', id:'hipoacusia',     label:'Dificultades de audición'},
+  {grupo:'Clínicos', id:'vision',         label:'Dificultades de visión (no corregidas con anteojos)'},
+  {grupo:'Sueño', id:'insomnio',        label:'Insomnio (dificultad para dormirte o mantener el sueño)'},
+  {grupo:'Sueño', id:'somnolencia',     label:'Somnolencia excesiva durante el día'},
+  {grupo:'Sueño', id:'apneas',          label:'Ronquidos fuertes o apneas (pausas en la respiración al dormir)'},
+  {grupo:'Sueño', id:'conducta_sueno',  label:'Alteraciones de la conducta durante el sueño (hablar, gritar, moverte o golpear dormido/a; sonambulismo)'},
+  {grupo:'Sueño', id:'pesadillas',      label:'Pesadillas frecuentes'},
+  {grupo:'Sueño', id:'otras_sueno',     label:'Otras dificultades en el sueño'},
+  {grupo:'Internaciones', id:'intern_clinica',  label:'Internación por razones médicas/clínicas'},
+  {grupo:'Internaciones', id:'intern_uti',      label:'Internación en terapia intensiva (UTI)'},
+  {grupo:'Internaciones', id:'intern_cirugia',  label:'Internación por cirugía'},
+  {grupo:'Internaciones', id:'intern_accidente', label:'Internación por accidente o traumatismo'},
+  {grupo:'Internaciones', id:'intern_salud_mental', label:'Internación por razones de salud mental'},
+  {grupo:'Internaciones', id:'intern_consumo',  label:'Internación por consumo de alcohol o drogas'},
+  {grupo:'Salud mental', id:'diag_psi',       label:'Diagnóstico psicológico o de salud mental'},
+  {grupo:'Aprendizaje y escolaridad', id:'dislexia',       label:'Dislexia (dificultad de lectura)'},
+  {grupo:'Aprendizaje y escolaridad', id:'disgrafia',      label:'Dificultad de escritura (disgrafía)'},
+  {grupo:'Aprendizaje y escolaridad', id:'discalculia',    label:'Dificultad de cálculo (discalculia)'},
+  {grupo:'Aprendizaje y escolaridad', id:'retraso_lenguaje',   label:'Retraso del lenguaje'},
+  {grupo:'Aprendizaje y escolaridad', id:'trastorno_lenguaje', label:'Trastorno del lenguaje'},
+  {grupo:'Aprendizaje y escolaridad', id:'repitencia',     label:'Repitencia de años escolares'},
+  {grupo:'Aprendizaje y escolaridad', id:'abandono',       label:'Abandono escolar temprano'}
 ];
 var TRAT_INFANCIA = [
   {id:'psicopedagogia', label:'Psicopedagogía'},
@@ -198,11 +212,26 @@ function _renderEscala(items, containerId, namePrefix, labels) {
 
 function _renderChecklist(items, containerId, prefix, ningunoLabel) {
   var el = document.getElementById(containerId);
-  var html = items.map(function(it) {
-    return '<label class="chk-item"><input type="checkbox" id="'+prefix+'-'+it.id+'"> '+it.label+'</label>';
-  }).join('');
-  html += '<label class="chk-item"><input type="checkbox" id="'+prefix+'-ninguno"> '+ningunoLabel+'</label>';
-  el.innerHTML = html;
+  function casilla(id, label) {
+    return '<label class="chk-item"><input type="checkbox" id="'+prefix+'-'+id+'"> '+label+'</label>';
+  }
+  var ninguno = casilla('ninguno', ningunoLabel);
+  if (!items.some(function(it){ return it.grupo; })) {
+    el.innerHTML = items.map(function(it){ return casilla(it.id, it.label); }).join('') + ninguno;
+    return;
+  }
+  // Con grupos: un subtítulo por grupo y cada grupo en sus propias columnas.
+  var grupos = [];
+  items.forEach(function(it) {
+    var g = grupos[grupos.length - 1];
+    if (!g || g.nombre !== it.grupo) grupos.push(g = {nombre: it.grupo, items: []});
+    g.items.push(it);
+  });
+  el.classList.add('chk-agrupado');
+  el.innerHTML = grupos.map(function(g) {
+    return '<div class="chk-grupo"><div class="chk-grupo-titulo">'+g.nombre+'</div><div class="chk-list">' +
+      g.items.map(function(it){ return casilla(it.id, it.label); }).join('') + '</div></div>';
+  }).join('') + '<div class="chk-grupo chk-grupo-ninguno">' + ninguno + '</div>';
 }
 
 function _renderTodo() {
@@ -304,7 +333,7 @@ function _algunoMarcado(items, prefix, ningunoId) {
   });
 }
 
-function _formatearChecklist(items, prefix, ningunoId, otrosId, ningunoTexto) {
+function _formatearChecklist(items, prefix, ningunoId, otrosId, ningunoTexto, otrosPrefijo) {
   var otros = document.getElementById(otrosId);
   var otrosVal = otros ? otros.value.trim() : '';
   var ninguno = document.getElementById(ningunoId);
@@ -313,6 +342,10 @@ function _formatearChecklist(items, prefix, ningunoId, otrosId, ningunoTexto) {
     var chk = document.getElementById(prefix + '-' + it.id);
     return chk && chk.checked;
   }).map(function(it){ return it.label; });
+  if (otrosVal && otrosPrefijo) {
+    var aclaracion = otrosPrefijo + otrosVal.replace(/\.+$/, '') + '.';
+    return marcados.length ? marcados.join(', ') + '. ' + aclaracion : aclaracion;
+  }
   if (otrosVal) marcados.push(otrosVal);
   return marcados.length ? marcados.join(', ') + '.' : null;
 }
@@ -324,7 +357,7 @@ function _construirIntake() {
   if (tel) contactoPartes.push('Tel: ' + tel);
   if (correo) contactoPartes.push('Email: ' + correo);
 
-  var saludTxt  = _formatearChecklist(ANT_SALUD, 'ax-salud', 'ax-salud-ninguno', 'ax-salud-otros', 'Ninguno reportado.');
+  var saludTxt  = _formatearChecklist(ANT_SALUD, 'ax-salud', 'ax-salud-ninguno', 'ax-salud-otros', 'Ninguno reportado.', 'Aclaraciones: ');
   var infttoTxt = _formatearChecklist(TRAT_INFANCIA, 'ax-inftto', 'ax-inftto-ninguno', 'ax-inftto-otros', 'Ninguno reportado.');
   var antClinicosPartes = [];
   if (saludTxt)  antClinicosPartes.push('Antecedentes de salud: ' + saludTxt);

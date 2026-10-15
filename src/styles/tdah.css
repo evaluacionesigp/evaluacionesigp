@@ -5,11 +5,18 @@
 
 .card-sub { font-size: 0.78rem; color: var(--muted); margin: -8px 0 14px; line-height: 1.45; }
 
-.chk-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 4px; }
-.chk-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.86rem; cursor: pointer; line-height: 1.35; }
+/* Más ancho que el familiar para que los checklists entren en 2-3 columnas
+   (estilo diario) y no haya que scrollear tanto. */
+.wrap { max-width: 780px; }
+
+.chk-list { columns: 3 150px; column-gap: 22px; margin-bottom: 4px; }
+.chk-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.86rem; cursor: pointer; line-height: 1.35; break-inside: avoid; margin-bottom: 9px; }
+.chk-grupo { margin-bottom: 12px; }
+.chk-grupo-titulo { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accentdk); border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 9px; }
+.chk-grupo-ninguno { border-top: 1px solid var(--border); padding-top: 10px; }
 .chk-item input[type="checkbox"] { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; }
 .chk-otros { margin-top: 8px; }
-.chk-otros input { width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.86rem; }
+.chk-otros input, .chk-otros textarea { width: 100%; resize: vertical; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.86rem; }
 
 .escala-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
 .escala-item:last-child { border-bottom: none; }
