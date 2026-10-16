@@ -4182,7 +4182,7 @@ function guardarResultadoRey() {
 }
 
 // ══ BEM 144 · Signoret ═══════════════════════════════════════════════════════
-// Mismos baremos (M/DS por grupo de edad) ya usados para el Apéndice B del
+// Mismos baremos (M/DS por grupo de edad) ya usados para el Apéndice A (resultados) del
 // informe (ver renderizado de 'BEM 144 Signoret' en la generación de Word).
 var SIGNORET_BAR = {
   rli: { M:[9.19,9.07,8.91,9.12,7.91,7.58], DS:[2.12,1.83,1.54,1.33,1.31,0.74], label:'Rec. Lógico Inmediato' },
@@ -4590,7 +4590,7 @@ function guardarResultadoTMT() {
   }).catch(catchGuardarError);
 }
 
-// ── Etiquetas simplificadas informe (Apéndice B Word/PDF) ──
+// ── Etiquetas simplificadas informe (Apéndice A de resultados, Word/PDF) ──
 var SINT_AUS = 'Ausencia de sintomatología';
 var SINT_SIG = 'Sintomatología significativa';
 
@@ -9775,15 +9775,14 @@ var INF_SUGERENCIAS_OPCIONES = [
   { id: 's1', text: 'Sostener consulta con profesional derivante a fines de correlacionar los resultados obtenidos con estudios complementarios (neuroimágenes, laboratorio, entre otros).' },
   { id: 's2', text: 'Mantener chequeo médico general a fin de controlar factores de salud que puedan influir sobre el estado cognitivo (cardiovasculares, niveles de colesterol y triglicéridos, etc.), ya que son factores de riesgo para fluctuaciones cognitivas.' },
   { id: 's3', text: 'Repetir estudio de valoración neuropsicológica en un plazo de 12 a 18 meses, a los fines de tener un estudio confirmatorio y de seguimiento sobre las variaciones de su estado cognitivo actual.' },
-  // {APENDICES} se reemplaza al generar el informe por la letra del/los apéndices
-  // de hábitos que estén incluidos (ver infTextoSugerencia).
+  // {APENDICES} se reemplaza al generar el informe por «Anexo informativo» si
+  // está incluido (ver infTextoSugerencia).
   { id: 's4', text: 'Sostener hábitos preventivos del funcionamiento cognitivo según se detallan en el {APENDICES} del presente informe.' }
 ];
 // Apéndice "Cuidar el cerebro a lo largo de la vida" (folleto del Mes del
 // Alzheimer, basado en la Comisión Lancet 2024). Es un agregado opcional (check
-// inf-incluir-apendice-cerebro): no reemplaza al apéndice de hábitos ni a los
-// resultados. Va al final del informe, después de las firmas, en tarjetas a dos
-// columnas.
+// inf-incluir-apendice-cerebro) que sale como «Anexo informativo», sin letra.
+// Va al final del informe, después de las firmas, en tarjetas a dos columnas.
 var INF_APENDICE_CEREBRO = {
   titulo: 'Cuidar el cerebro a lo largo de la vida',
   introAntes: 'Según la evidencia científica más reciente, ',
@@ -9808,49 +9807,32 @@ var INF_APENDICE_CEREBRO = {
   referencia: 'Basado en: Livingston, G., Huntley, J., Liu, K. Y., Costafreda, S. G., Selbæk, G., Alladi, S., ... & Mukadam, N. (2024). Dementia prevention, intervention, and care: 2024 report of the Lancet standing Commission. ',
   referenciaItalica: 'The Lancet, 404(10452), 572–628. https://doi.org/10.1016/S0140-6736(24)01296-0'
 };
-var INF_APENDICE_A_ITEMS = [
-  'Realice ejercicio físico periódicamente. El mismo debe implicar una frecuencia de al menos 3 veces por semana, y una duración de 45 minutos. Puede realizar caminatas, o alguna otra actividad física aeróbica de su agrado. Se sugiere complementar la actividad aeróbica con actividades de flexibilidad, como yoga, y de resistencia. Para el inicio del programa de ejercicio debe contar con previa autorización y asesoramiento médico.',
-  'Lleve un estilo de vida saludable, intentando no abusar del alcohol ni del tabaco.',
-  'Mantenga una dieta variada, que incluya al menos 5 porciones de frutas y vegetales cada día. Evite el consumo de grasas saturadas o snacks. Beba al menos 1,5 a 2 litros de agua a diario, fundamental fuente protectora del cerebro.',
-  'Evite situaciones de estrés emocional y mantenga actividades ocio recreativas.',
-  'Mantenga una amplia gama de intereses y actividades de entretenimiento (ver películas, escuchar música). Retome sus intereses previos que le brindaban satisfacción.',
-  'Busque generar momentos de encuentro con sus amistades significativas o familiares, intercambie con ellos temas de su interés.'
-];
-
 function infDefaultCfg() {
   return {
     sugerencias: { s1: false, s2: false, s3: false, s4: false },
     incluir_conclusiones: false,
-    incluir_apendice_a: true,
+    incluir_apendice_a: false,
     incluir_apendice_b: true,
     incluir_apendice_cerebro: false,
     firmas_seleccionadas: { JULI: false, DANIEL: false, ERWIN: false, FATIMA: false }
   };
 }
 
-// Letras y números de los apéndices según cuáles estén incluidos, en el orden en
-// que aparecen en el informe: hábitos (A) → resultados (B) → cuidar el cerebro
-// (C). Si alguno no se incluye, los siguientes corren una letra; así, sin el de
-// hábitos, los resultados son el "7. Apéndice A" y el del cerebro el "Apéndice B".
+// El apéndice de hábitos ("Sugerencias para mantener su mente activa") ya no
+// se consigna: el único apéndice es el de resultados ("7. Apéndice A") y el de
+// cuidar el cerebro va sin letra, como "Anexo informativo". incluir_apendice_a
+// se ignora aunque venga en true en informes guardados antes del cambio.
 function infLetrasApendices(cfg) {
-  var orden = [['habitos', cfg.incluir_apendice_a], ['resultados', cfg.incluir_apendice_b], ['cerebro', cfg.incluir_apendice_cerebro]];
-  var out = {}, n = 0;
-  orden.forEach(function(o) {
-    if (!o[1]) return;
-    out[o[0]] = { letra: 'ABC'.charAt(n), num: 7 + n };
-    n++;
-  });
+  var out = {};
+  if (cfg.incluir_apendice_b) out.resultados = { letra: 'A', num: 7 };
+  if (cfg.incluir_apendice_cerebro) out.cerebro = { titulo: 'Anexo informativo' };
   return out;
 }
 
 function infTextoSugerencia(s, cfg) {
   if (s.text.indexOf('{APENDICES}') === -1) return s.text;
   var L = cfg ? infLetrasApendices(cfg) : {};
-  var letras = [L.habitos, L.cerebro].filter(Boolean).map(function(x) { return x.letra; });
-  var ref = !letras.length ? 'Apéndice correspondiente'
-    : letras.length === 1 ? 'Apéndice ' + letras[0]
-    : 'Apéndices ' + letras.join(' y ');
-  return s.text.replace('{APENDICES}', ref);
+  return s.text.replace('{APENDICES}', L.cerebro ? 'Anexo informativo' : 'anexo correspondiente');
 }
 
 var INF_DRAFT_LS_PREFIX = 'igp_inf_draft_';
@@ -10102,10 +10084,9 @@ function infGetConfigFromForm() {
     if (cb) cfg.sugerencias[s.id] = cb.checked;
   });
   var ic = document.getElementById('inf-incluir-conclusiones');
-  var ia = document.getElementById('inf-incluir-apendice-a');
   var ib = document.getElementById('inf-incluir-apendice-b');
   cfg.incluir_conclusiones = ic ? ic.checked : false;
-  cfg.incluir_apendice_a = ia ? ia.checked : true;
+  cfg.incluir_apendice_a = false;
   cfg.incluir_apendice_b = ib ? ib.checked : true;
   var icb = document.getElementById('inf-incluir-apendice-cerebro');
   cfg.incluir_apendice_cerebro = icb ? icb.checked : false;
@@ -10123,10 +10104,8 @@ function infApplyConfigToForm(cfg) {
     if (cb) cb.checked = !!cfg.sugerencias[s.id];
   });
   var ic = document.getElementById('inf-incluir-conclusiones');
-  var ia = document.getElementById('inf-incluir-apendice-a');
   var ib = document.getElementById('inf-incluir-apendice-b');
   if (ic) ic.checked = !!cfg.incluir_conclusiones;
-  if (ia) ia.checked = cfg.incluir_apendice_a !== false;
   if (ib) ib.checked = cfg.incluir_apendice_b !== false;
   var icb = document.getElementById('inf-incluir-apendice-cerebro');
   if (icb) icb.checked = !!cfg.incluir_apendice_cerebro;
@@ -10157,15 +10136,6 @@ function buildSugerenciasInformeHtml(cfg, textoExtra) {
       html += '<p class="narrativa" style="margin-left:1.2em;text-indent:-1.2em;">' + (startN + j) + '. ' + infFormatoBold(line.trim()) + '</p>';
     });
   }
-  return html;
-}
-
-function buildApendiceAInformeHtml() {
-  var html = '<div class="sec-titulo">7. Apéndice A: Sugerencias para Mantener su Mente Activa</div>';
-  html += '<p class="narrativa">Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:</p>';
-  INF_APENDICE_A_ITEMS.forEach(function(t) {
-    html += '<p class="narrativa" style="margin-left:1em;text-indent:-0.6em;">- ' + t + '</p>';
-  });
   return html;
 }
 
@@ -13568,15 +13538,15 @@ function _wTable(rows, colWidths) {
   return '<w:tbl>'+tblPr+tblGrid+rows.join('')+'</w:tbl>';
 }
 
-// Apéndice B "Cuidar el cerebro": hoja nueva al final del informe, con las 14
+// Anexo informativo "Cuidar el cerebro": hoja nueva al final del informe, con las 14
 // sugerencias en tarjetas a dos columnas (fondo celeste grisáceo, filete verde
 // azulado a la izquierda), igual al folleto del Mes del Alzheimer.
-function buildApendiceCerebroWord(letra) {
+function buildApendiceCerebroWord() {
   var A = INF_APENDICE_CEREBRO;
   var TEAL = '2E7D87', FILL = 'EAF1F3', GRIS = '404040';
   var GAP = 280, CARD = Math.floor((WORD_CONTENT_W - GAP) / 2);
   var xml = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
-  xml += _wPar(_wRun('Apéndice ' + (letra || 'C') + ': ' + A.titulo, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 80 });
+  xml += _wPar(_wRun('Anexo informativo: ' + A.titulo, { bold: true, sz: 20, font: 'Arial', color: TEAL }), { before: 0, after: 80 });
   xml += _wPar([
     _wRun(A.introAntes, { sz: 19, font: 'Arial', color: GRIS }),
     _wRun(A.introDestacado, { sz: 19, font: 'Arial', color: TEAL }),
@@ -14574,18 +14544,8 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
     body+=_wPar('',{before:0,after:80});
   })();
 
-  // APÉNDICES: letra y número según cuáles estén incluidos (ver infLetrasApendices)
+  // APÉNDICES: resultados = "7. Apéndice A"; cerebro = Anexo informativo (ver infLetrasApendices)
   var apLetras = infLetrasApendices(infCfgPack.cfg);
-
-  // APÉNDICE DE HÁBITOS - Sugerencias para mantener su mente activa (opcional)
-  if(apLetras.habitos){
-    body+=secTit(apLetras.habitos.num+'. Apéndice '+apLetras.habitos.letra+': Sugerencias para Mantener su Mente Activa');
-    body+=_wPar(_wRun('Ciertos hábitos han demostrado eficacia en la protección del funcionamiento cognitivo (prevención) y en la disminución del posible impacto de estresores diarios. Siguiendo las evidencias científicas en torno a la protección de la memoria y de las restantes funciones cerebrales, se le sugiere que:',{sz:20,font:'Arial',color:'000000'}),{align:'both',before:0,after:80});
-    INF_APENDICE_A_ITEMS.forEach(function(t){
-      body+='<w:p><w:pPr><w:ind w:left="480" w:hanging="240"/><w:spacing w:before="0" w:after="60"/></w:pPr><w:r><w:rPr><w:sz w:val="'+_wordSz(20)+'"/><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:color w:val="000000"/></w:rPr><w:t xml:space="preserve">-  '+String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p>';
-    });
-    body+=_wPar('',{before:0,after:120});
-  }
 
   // APÉNDICE DE RESULTADOS ESTADÍSTICOS (opcional)
   if(apLetras.resultados){
@@ -14778,9 +14738,9 @@ function _buildWord(datos,pacInfo,pacNombre,pacEdad,pacFnac,pacSexo,pacEscol,pac
   }));
   body += firmasWord.xml;
 
-  // APÉNDICE CUIDAR EL CEREBRO (opcional, siempre al final, en hoja nueva)
+  // ANEXO INFORMATIVO CUIDAR EL CEREBRO (opcional, siempre al final, en hoja nueva)
   if(apLetras.cerebro){
-    body += buildApendiceCerebroWord(apLetras.cerebro.letra);
+    body += buildApendiceCerebroWord();
   }
 
   // ── Armar XML docx ──
