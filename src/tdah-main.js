@@ -102,6 +102,184 @@ function dexZLabel(z) {
   return 'Por debajo del promedio';
 }
 
+// ══ AQ · AQ-10 · EQ (autoadministrados) ══════════════════════════════════════
+// Copiados de public/legacy-tests.js por la misma razón que ASRS/WURS/DEX más
+// arriba: no es un módulo ES, así que no se puede importar. EA y SCQ quedan
+// afuera a propósito — son cuestionarios de informante (los completa un
+// familiar sobre el paciente), no autoadministrados, así que no van en este
+// link que llena el propio paciente.
+var ND_LIKERT4_AQ = ['Totalmente de acuerdo','Bastante de acuerdo','Un poco de acuerdo','Nada de acuerdo'];
+var ND_LIKERT4_EQ = ['Acuerdo absoluto','Acuerdo leve','Desacuerdo leve','Desacuerdo absoluto'];
+var LABELS_AQ10 = ['Definitivamente en desacuerdo','Un poco en desacuerdo','Un poco de acuerdo','Definitivamente de acuerdo'];
+
+var AQ_AGREE = [1,2,4,5,6,7,9,12,13,16,18,19,20,21,22,23,26,33,35,39,41,42,43,45,46];
+var AQ_DISAGREE = [3,8,10,11,14,15,17,24,25,27,28,29,30,31,32,34,36,37,38,40,44,47,48,49,50];
+var AQ10_AGREE = [1,7,8,10];
+var AQ10_DISAGREE = [2,3,4,5,6,9];
+var EQ_AGREE = [1,6,19,22,25,26,35,36,37,38,41,42,43,44,52,54,55,57,58,59,60];
+var EQ_DISAGREE = [4,8,10,11,12,14,15,18,21,27,28,29,32,34,39,46,48,49,50];
+
+var AQ_ITEMS = [
+  {n:1,txt:'Prefiero hacer las cosas con otras personas en lugar de hacerlas sólo'},
+  {n:2,txt:'Prefiero hacer las cosas siempre de la misma manera'},
+  {n:3,txt:'Cuando trato de imaginarme algo, me resulta fácil crear la imagen en mi mente'},
+  {n:4,txt:'Frecuentemente me concentro tanto en una cosa que no presto atención a otras'},
+  {n:5,txt:'A menudo escucho ciertos sonidos que las otras personas no oyen'},
+  {n:6,txt:'Normalmente presto atención a las matrículas de los coches u otras informaciones similares'},
+  {n:7,txt:'Las otras personas frecuentemente me dicen que lo que digo es maleducado aunque yo no creo que sea así'},
+  {n:8,txt:'Cuando estoy leyendo un libro me resulta fácil imaginarme cómo son los personajes'},
+  {n:9,txt:'Me interesan mucho las fechas'},
+  {n:10,txt:'Cuando estoy en una reunión me resulta fácil seguir varias conversaciones a la vez'},
+  {n:11,txt:'Las situaciones sociales me resultan fáciles'},
+  {n:12,txt:'Suelo prestar atención a detalles que otras personas no ven'},
+  {n:13,txt:'Prefiero ir a una biblioteca en lugar de ir a una fiesta'},
+  {n:14,txt:'Me resulta fácil inventar historias'},
+  {n:15,txt:'Me siento más atraído por las personas que por las cosas'},
+  {n:16,txt:'Suelo tener un fuerte interés por ciertas cosas y me molesta si no puedo realizarlas'},
+  {n:17,txt:'Me gusta charlar'},
+  {n:18,txt:'Cuando yo hablo apenas dejo hablar a los demás'},
+  {n:19,txt:'Me interesan mucho los números'},
+  {n:20,txt:'Cuando leo un cuento me resulta muy difícil interpretar las intenciones de los personajes'},
+  {n:21,txt:'No disfruto especialmente con los libros de ciencia ficción'},
+  {n:22,txt:'Me resulta difícil hacer nuevos amigos'},
+  {n:23,txt:'Siempre descubro patrones en las cosas'},
+  {n:24,txt:'Prefiero ir al teatro que a un museo'},
+  {n:25,txt:'No me molesta si mi rutina diaria se modifica'},
+  {n:26,txt:'Frecuentemente noto que me cuesta mantener una conversación con otra persona'},
+  {n:27,txt:'Me resulta fácil "leer entre líneas" cuando alguien me está hablando'},
+  {n:28,txt:'Normalmente me concentro más en el todo que en los detalles'},
+  {n:29,txt:'No soy bueno para recordar números de teléfono'},
+  {n:30,txt:'Normalmente no noto pequeños cambios en una situación o en el aspecto de una persona'},
+  {n:31,txt:'Me doy cuenta cuando una persona con la que estoy hablando se aburre'},
+  {n:32,txt:'Me resulta fácil hacer más de una cosa a la vez'},
+  {n:33,txt:'Cuando hablo por teléfono me cuesta darme cuenta de cuándo es mi turno para hablar'},
+  {n:34,txt:'Me gusta hacer las cosas espontáneamente (sin planificar)'},
+  {n:35,txt:'A menudo soy el último en entender una broma'},
+  {n:36,txt:'Me resulta fácil imaginarme lo que una persona puede estar pensando o sintiendo sólo con mirarla'},
+  {n:37,txt:'Puedo retomar lo que estaba haciendo después de una interrupción'},
+  {n:38,txt:'Soy bueno charlando'},
+  {n:39,txt:'La gente me dice que suelo hablar siempre de un mismo tema'},
+  {n:40,txt:'Cuando era más pequeño me gustaba jugar con los demás a juegos de imaginación'},
+  {n:41,txt:'Me gusta recabar información sobre clases de cosas (coches, pájaros, trenes, plantas, etc.)'},
+  {n:42,txt:'Me resulta difícil imaginarme cómo sería ser otra persona'},
+  {n:43,txt:'Me gusta planificar cuidadosamente las actividades en las que participo'},
+  {n:44,txt:'Disfruto de las reuniones sociales'},
+  {n:45,txt:'Me resulta difícil identificar las intenciones de las otras personas'},
+  {n:46,txt:'Las situaciones nuevas me ponen ansioso'},
+  {n:47,txt:'Me gusta conocer gente nueva'},
+  {n:48,txt:'Soy bastante diplomático'},
+  {n:49,txt:'No soy muy bueno para recordar fechas de cumpleaños'},
+  {n:50,txt:'Me resulta fácil jugar a juegos de imaginación con niños'}
+];
+
+var AQ10_ITEMS = [
+  {n:1,txt:'Muchas veces noto pequeños sonidos en los que otros no reparan'},
+  {n:2,txt:'Por lo general me concentro más en la imagen completa que en los pequeños detalles'},
+  {n:3,txt:'Me resulta fácil hacer más de una cosa a la vez'},
+  {n:4,txt:'Si hay una interrupción, puedo volver a concentrarme muy rápido'},
+  {n:5,txt:'Me resulta fácil "leer entre líneas" cuando alguien me está hablando'},
+  {n:6,txt:'Sé cómo saber si alguien que me escucha se está aburriendo'},
+  {n:7,txt:'Cuando estoy leyendo una historia, me resulta difícil descifrar las intenciones de los personajes'},
+  {n:8,txt:'Me gusta recabar información sobre categorías de cosas (automóviles, aves, trenes, plantas, etc.)'},
+  {n:9,txt:'Me resulta fácil saber lo que alguien piensa o siente mirando su rostro'},
+  {n:10,txt:'Me resulta difícil comprender las intenciones de las personas'}
+];
+
+var EQ_ITEMS = [
+  {n:1,txt:'Puedo captar con facilidad si otra persona quiere tomar parte en una conversación'},
+  {n:2,txt:'Prefiero la compañía de animales a la de las personas'},
+  {n:3,txt:'Intento seguir las tendencias y modas actuales'},
+  {n:4,txt:'Encuentro difícil explicar a otros lo que yo entiendo con facilidad'},
+  {n:5,txt:'Sueño la mayoría de las noches'},
+  {n:6,txt:'Me gusta verdaderamente cuidar a otras personas'},
+  {n:7,txt:'Intento resolver los problemas yo solo antes que discutirlos con los demás'},
+  {n:8,txt:'Encuentro difícil saber qué hay que hacer en una situación social'},
+  {n:9,txt:'A primera hora de la mañana, estoy en mi mejor momento'},
+  {n:10,txt:'A menudo, en medio de una discusión, me dicen que me excedo defendiendo mi punto de vista'},
+  {n:11,txt:'No me preocupa mucho llegar tarde a una cita con un amigo'},
+  {n:12,txt:'Las amistades y relaciones son demasiado difíciles de mantener'},
+  {n:13,txt:'Nunca quebrantaría una ley, por irrelevante que fuera'},
+  {n:14,txt:'Generalmente me cuesta juzgar si alguien ha sido amable o descortés'},
+  {n:15,txt:'En una conversación me concentro en mis pensamientos antes que en los del interlocutor'},
+  {n:16,txt:'Prefiero gastar bromas a contar chistes'},
+  {n:17,txt:'Prefiero vivir al día a pensar en el futuro'},
+  {n:18,txt:'De pequeño me gustaba cortar gusanos en pedazos para ver qué pasaba'},
+  {n:19,txt:'Puedo captar fácilmente si una persona dice una cosa pero quiere decir otra'},
+  {n:20,txt:'Tiendo a tener fuertes convicciones morales'},
+  {n:21,txt:'Me resulta difícil ver por qué algunas cosas molestan tanto a otras personas'},
+  {n:22,txt:'Me resulta fácil ponerme en el lugar de otra persona'},
+  {n:23,txt:'Pienso que la buena educación es lo más importante que los padres pueden enseñar'},
+  {n:24,txt:'Me gusta hacer las cosas sin reflexionar demasiado'},
+  {n:25,txt:'Tengo facilidad para predecir cómo se sentirá otra persona'},
+  {n:26,txt:'Enseguida me doy cuenta si alguien se siente molesto en el grupo'},
+  {n:27,txt:'Si alguien se siente ofendido cuando hablo, pienso que el problema es suyo'},
+  {n:28,txt:'Si me preguntan si me gusta su corte de pelo respondo la verdad aunque no me guste'},
+  {n:29,txt:'A veces no entiendo por qué alguien se ha sentido ofendido por una observación mía'},
+  {n:30,txt:'A menudo me dicen que soy totalmente imprevisible'},
+  {n:31,txt:'Me gusta ser el centro de atención en reuniones sociales'},
+  {n:32,txt:'Ver llorar a la gente no me pone especialmente triste'},
+  {n:33,txt:'Me gusta discutir de política'},
+  {n:34,txt:'Soy muy sincero, lo que hace que algunos me consideren maleducado'},
+  {n:35,txt:'No suelo encontrar confusas las relaciones sociales'},
+  {n:36,txt:'Me dicen que tengo facilidad para entender cómo se sienten y qué piensan'},
+  {n:37,txt:'Cuando hablo tiendo más a hablar de las experiencias del otro que de las mías'},
+  {n:38,txt:'Me da pena ver sufrir a un animal'},
+  {n:39,txt:'Puedo tomar decisiones sin que me influencien los sentimientos de los demás'},
+  {n:40,txt:'No me relajo hasta haber hecho todo lo planeado durante el día'},
+  {n:41,txt:'Captar fácilmente si a alguien le aburre o le interesa lo que digo'},
+  {n:42,txt:'Me afecta ver personas sufriendo en programas informativos'},
+  {n:43,txt:'Mis amigos me hablan de sus problemas porque dicen que los comprendo'},
+  {n:44,txt:'Me doy cuenta de que molesto incluso si la otra persona no me lo dice'},
+  {n:45,txt:'Empiezo nuevas aficiones pero enseguida me canso y busco otras'},
+  {n:46,txt:'A veces me dicen que he ido demasiado lejos con mis bromas'},
+  {n:47,txt:'Subirme a montañas rusas me pondría demasiado nervioso'},
+  {n:48,txt:'A menudo me dicen que soy insensible aunque yo no veo por qué'},
+  {n:49,txt:'Si hay alguien nuevo en un grupo, es cosa suya integrarse'},
+  {n:50,txt:'Por lo general me mantengo emocionalmente indiferente cuando veo una película'},
+  {n:51,txt:'Me gusta tener muy organizadas las actividades cotidianas y hacer listas'},
+  {n:52,txt:'Puedo conectar y saber cómo se siente alguien de forma rápida e intuitiva'},
+  {n:53,txt:'No me gusta correr riesgos'},
+  {n:54,txt:'Me doy cuenta fácilmente de lo que otra persona desea hablar'},
+  {n:55,txt:'Puedo darme cuenta si alguien oculta sus verdaderas emociones'},
+  {n:56,txt:'Antes de tomar una decisión siempre considero pros y contras'},
+  {n:57,txt:'No elaboro conscientemente las reglas de una situación social'},
+  {n:58,txt:'Tengo facilidad para predecir lo que otra persona hará'},
+  {n:59,txt:'Tengo tendencia a implicarme en los problemas de mis amigos'},
+  {n:60,txt:'Aprecio el punto de vista de otras personas aunque no esté de acuerdo'}
+];
+
+function aqScoreFromResponses(getVal) {
+  var total = 0;
+  for (var i = 1; i <= 50; i++) {
+    var v = getVal(i); if (v == null) continue;
+    if (AQ_AGREE.indexOf(i) >= 0 && v <= 2) total++;
+    else if (AQ_DISAGREE.indexOf(i) >= 0 && v >= 3) total++;
+  }
+  return total;
+}
+function eqScoreFromResponses(getVal) {
+  var total = 0;
+  for (var i = 1; i <= 60; i++) {
+    var v = getVal(i); if (v == null) continue;
+    if (EQ_AGREE.indexOf(i) >= 0) { if (v === 1) total += 2; else if (v === 2) total += 1; }
+    else if (EQ_DISAGREE.indexOf(i) >= 0) { if (v === 4) total += 2; else if (v === 3) total += 1; }
+  }
+  return total;
+}
+function aqInterp(total) {
+  if (total <= 10) return { cat:'Bajo', fenotipo:'—' };
+  if (total <= 22) return { cat:'Medio', fenotipo:'Población general' };
+  if (total <= 28) return { cat:'Sobre la media', fenotipo:'BAP' };
+  if (total <= 34) return { cat:'Sobre la media', fenotipo:'MAP' };
+  return { cat:'Muy alto', fenotipo:'NAP' };
+}
+function eqInterp(total) {
+  if (total <= 32) return { cat:'Bajo' };
+  if (total <= 52) return { cat:'Medio' };
+  if (total <= 63) return { cat:'Sobre la media' };
+  return { cat:'Muy alto' };
+}
+
 // ══ ANAMNESIS · listas de antecedentes ══════════════════════════════════════
 // Cada opción nombra UNA sola cosa: si una casilla mezcla dos diagnósticos
 // no hay forma de saber cuál marcó el paciente (ver commit de separación).
@@ -230,6 +408,19 @@ function _renderEscala(items, containerId, namePrefix, labels) {
   }).join('');
 }
 
+// Igual que _renderEscala pero con valores 1..4 (en vez de 0..4) y grilla de 4
+// columnas — así queda compatible con la puntuación de AQ_AGREE/AQ_DISAGREE
+// (copiada de legacy-tests.js, que usa valores 1-based).
+function _renderLikert4(items, containerId, namePrefix, labels) {
+  var el = document.getElementById(containerId);
+  el.innerHTML = items.map(function(it) {
+    var opts = labels.map(function(lbl, j) {
+      return '<label><input type="radio" name="'+namePrefix+'_'+it.n+'" value="'+(j+1)+'"><span>'+(j+1)+'<br>'+lbl+'</span></label>';
+    }).join('');
+    return '<div class="escala-item"><div class="escala-pregunta">'+it.n+'. '+it.txt+'</div><div class="escala-opts escala-opts-4">'+opts+'</div></div>';
+  }).join('');
+}
+
 function _renderChecklist(items, containerId, prefix, ningunoLabel) {
   var el = document.getElementById(containerId);
   function casilla(id, label) {
@@ -264,13 +455,31 @@ function _renderTodo() {
   _renderEscala(ASRS_ITEMS.filter(function(i){ return i.sec==='B'; }), 'asrs-items-b', 'asrs_', LABELS_ASRS);
   _renderEscala(WURS_ITEMS_LIST.map(function(txt,i){ return {n:i+1, txt:'De niño/a era/estaba: '+txt}; }), 'wurs-items', 'wurs_', LABELS_WURS);
   _renderEscala(DEX_ITEMS_TXT, 'dex-items', 'dex', LABELS_DEX);
+
+  _renderLikert4(AQ_ITEMS, 'aq-items', 'aq', ND_LIKERT4_AQ);
+  _renderLikert4(AQ10_ITEMS, 'aq10-items', 'aq10', LABELS_AQ10);
+  _renderLikert4(EQ_ITEMS, 'eq-items', 'eq', ND_LIKERT4_EQ);
 }
 
-// El bloque de cuestionarios TDAH solo se pide si el paciente vino por eso —
-// para el resto de las consultas alcanza con la anamnesis general de arriba.
-function toggleBloqueTdah() {
-  var esTdah = document.getElementById('ax-motivo-tdah').value === 'si';
-  document.getElementById('bloque-tdah').style.display = esTdah ? 'block' : 'none';
+// TDAH y autismo son motivos independientes (un paciente puede venir por los
+// dos, mostrando ambos bloques), pero «Ninguno de los anteriores» es
+// excluyente con los dos — tildar un diagnóstico destilda "Ninguno" y
+// viceversa. Cada bloque de cuestionarios solo se pide si su motivo está marcado.
+function motivoCambio(cual) {
+  var tdah = document.getElementById('ax-motivo-tdah');
+  var autismo = document.getElementById('ax-motivo-autismo');
+  var ninguno = document.getElementById('ax-motivo-ninguno');
+  if (cual === 'ninguno' && ninguno.checked) {
+    tdah.checked = false; autismo.checked = false;
+  } else if ((cual === 'tdah' || cual === 'autismo') && (tdah.checked || autismo.checked)) {
+    ninguno.checked = false;
+  }
+  _syncBloquesMotivo();
+}
+
+function _syncBloquesMotivo() {
+  document.getElementById('bloque-tdah').style.display = document.getElementById('ax-motivo-tdah').checked ? 'block' : 'none';
+  document.getElementById('bloque-autismo').style.display = document.getElementById('ax-motivo-autismo').checked ? 'block' : 'none';
 }
 
 // ══ CÁLCULO DE PUNTAJES (idéntico a calcularAsrs/calcularWurs/calcularDEX) ══
@@ -341,6 +550,36 @@ function _calcularDexPublico() {
     test:'DEX', fecha: null, puntaje_total: total, puntaje_z: zTotal, categoria: dexZLabel(zTotal),
     datos: { version:'auto', total:total, desorg:desorg, desinhi:desinhi, zTotal:zTotal, zDesorg:zDesorg, zDesinhi:zDesinhi, scores:scores }
   };
+}
+
+function _calcularAQPublico() {
+  var sin = 0;
+  var total = aqScoreFromResponses(function(n){ var s=document.querySelector('input[name="aq_'+n+'"]:checked'); if(!s){sin++;return null;} return parseInt(s.value,10); });
+  if (sin) return null;
+  var r = aqInterp(total);
+  return { test:'AQ', fecha: null, puntaje_total: total, puntaje_z: null, categoria: r.cat + (r.fenotipo!=='—' ? ' · '+r.fenotipo : ''), datos: { total:total, cat:r.cat, fenotipo:r.fenotipo } };
+}
+
+function _calcularAQ10Publico() {
+  var total = 0, sin = 0;
+  for (var i = 1; i <= 10; i++) {
+    var s = document.querySelector('input[name="aq10_'+i+'"]:checked');
+    if (!s) { sin++; continue; }
+    var v = parseInt(s.value, 10);
+    if (AQ10_AGREE.indexOf(i) >= 0 && v >= 3) total++;
+    else if (AQ10_DISAGREE.indexOf(i) >= 0 && v <= 2) total++;
+  }
+  if (sin) return null;
+  var pos = total >= 6;
+  return { test:'AQ-10', fecha: null, puntaje_total: total, puntaje_z: null, categoria: pos ? 'Positivo cribado' : 'Negativo cribado', datos: { total:total, positivo:pos } };
+}
+
+function _calcularEQPublico() {
+  var sin = 0;
+  var total = eqScoreFromResponses(function(n){ var s=document.querySelector('input[name="eq_'+n+'"]:checked'); if(!s){sin++;return null;} return parseInt(s.value,10); });
+  if (sin) return null;
+  var r = eqInterp(total);
+  return { test:'EQ', fecha: null, puntaje_total: total, puntaje_z: null, categoria: r.cat, datos: { total:total, cat:r.cat } };
 }
 
 // ══ ANAMNESIS → texto para los campos del informe ═══════════════════════════
@@ -442,11 +681,13 @@ function _faltantesTdah() {
   if (!_algunoMarcado(ANT_FAMILIARES, 'ax-fam', 'ax-fam-ninguno')) faltantes.push('antecedentes familiares');
   if (!_algunoMarcado(HABITOS, 'ax-habitos', 'ax-habitos-ninguno')) faltantes.push('hábitos tóxicos');
 
-  var motivoTdah = document.getElementById('ax-motivo-tdah').value;
-  if (!motivoTdah) { faltantes.push('si tu consulta es por TDAH'); return faltantes; }
+  var mTdah = document.getElementById('ax-motivo-tdah').checked;
+  var mAutismo = document.getElementById('ax-motivo-autismo').checked;
+  var mNinguno = document.getElementById('ax-motivo-ninguno').checked;
+  if (!mTdah && !mAutismo && !mNinguno) { faltantes.push('tu motivo de consulta'); return faltantes; }
 
-  // Los 3 cuestionarios solo son obligatorios si vino por diagnóstico de TDAH.
-  if (motivoTdah === 'si') {
+  // Los cuestionarios de cada bloque solo son obligatorios si ese motivo está marcado.
+  if (mTdah) {
     var asrsSinResp = ASRS_ITEMS.filter(function(it){ return !document.querySelector('input[name="asrs_'+it.n+'"]:checked'); }).length;
     if (asrsSinResp) faltantes.push(asrsSinResp + ' ítem(s) del ASRS-V1.1');
 
@@ -457,6 +698,18 @@ function _faltantesTdah() {
     var dexSinResp = 0;
     for (var j=1;j<=20;j++) { if (!document.querySelector('input[name="dex'+j+'"]:checked')) dexSinResp++; }
     if (dexSinResp) faltantes.push(dexSinResp + ' ítem(s) del DEX');
+  }
+
+  if (mAutismo) {
+    var aqSinResp = AQ_ITEMS.filter(function(it){ return !document.querySelector('input[name="aq_'+it.n+'"]:checked'); }).length;
+    if (aqSinResp) faltantes.push(aqSinResp + ' ítem(s) del AQ');
+
+    var aq10SinResp = 0;
+    for (var k=1;k<=10;k++) { if (!document.querySelector('input[name="aq10_'+k+'"]:checked')) aq10SinResp++; }
+    if (aq10SinResp) faltantes.push(aq10SinResp + ' ítem(s) del AQ-10');
+
+    var eqSinResp = EQ_ITEMS.filter(function(it){ return !document.querySelector('input[name="eq_'+it.n+'"]:checked'); }).length;
+    if (eqSinResp) faltantes.push(eqSinResp + ' ítem(s) del EQ');
   }
 
   return faltantes;
@@ -515,7 +768,7 @@ function enviarTdah() {
   var hoy = new Date().toISOString().split('T')[0];
   var resultados = [];
 
-  if (document.getElementById('ax-motivo-tdah').value === 'si') {
+  if (document.getElementById('ax-motivo-tdah').checked) {
     var edad = calcularEdad(document.getElementById('ax-fnac').value);
     var grupo = edad <= 50 ? '18-50' : '>50';
     var asrs = _calcularAsrsPublico(grupo);
@@ -523,12 +776,25 @@ function enviarTdah() {
     var dex  = _calcularDexPublico();
     if (!asrs || !wurs || !dex) {
       msgEl.style.color = '#c0392b';
-      msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios. Revisá que estén todos completos.';
+      msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios de TDAH. Revisá que estén todos completos.';
       return;
     }
-    resultados = [asrs, wurs, dex];
-    resultados.forEach(function(r) { r.fecha = hoy; });
+    resultados = resultados.concat([asrs, wurs, dex]);
   }
+
+  if (document.getElementById('ax-motivo-autismo').checked) {
+    var aq = _calcularAQPublico();
+    var aq10 = _calcularAQ10Publico();
+    var eq = _calcularEQPublico();
+    if (!aq || !aq10 || !eq) {
+      msgEl.style.color = '#c0392b';
+      msgEl.textContent = 'Faltan respuestas en alguno de los cuestionarios de autismo. Revisá que estén todos completos.';
+      return;
+    }
+    resultados = resultados.concat([aq, aq10, eq]);
+  }
+
+  resultados.forEach(function(r) { r.fecha = hoy; });
 
   var intake = _construirIntake();
 
@@ -568,7 +834,7 @@ function enviarTdah() {
 }
 
 window.enviarTdah = enviarTdah;
-window.toggleBloqueTdah = toggleBloqueTdah;
+window.motivoCambio = motivoCambio;
 window.medicacionNinguna = medicacionNinguna;
 window.medicacionEscrita = medicacionEscrita;
 
@@ -581,6 +847,6 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pantalla-form').style.display = 'block';
   _renderTodo();
   tdahRestoreDraft(pacId);
-  toggleBloqueTdah(); // por si el borrador restaurado ya traía una respuesta
+  _syncBloquesMotivo(); // por si el borrador restaurado ya traía una respuesta
   tdahBindDraftAutosave(pacId);
 });

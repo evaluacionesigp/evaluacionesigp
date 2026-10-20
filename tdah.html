@@ -99,14 +99,12 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Motivo de consulta</div>
-      <div class="field">
-        <label>¿Tu motivo de consulta es para diagnóstico de Trastorno por Déficit de Atención e Hiperactividad, Altas Capacidades u otra neurodivergencia? *</label>
-        <select id="ax-motivo-tdah" onchange="toggleBloqueTdah()" required>
-          <option value="">— Seleccionar —</option>
-          <option value="si">Sí</option>
-          <option value="no">No</option>
-        </select>
+      <div class="card-title">Motivo de consulta *</div>
+      <div class="card-hint">Marcá el/los motivo(s) de tu consulta. Si no es ninguno de estos dos, marcá «Ninguno de los anteriores» para poder enviar el cuestionario.</div>
+      <div class="chk-list" style="columns:1;">
+        <label class="chk-item"><input type="checkbox" id="ax-motivo-tdah" onchange="motivoCambio('tdah')"> TDAH, Altas Capacidades u otra neurodivergencia</label>
+        <label class="chk-item"><input type="checkbox" id="ax-motivo-autismo" onchange="motivoCambio('autismo')"> Autismo / Espectro Autista (TEA)</label>
+        <label class="chk-item"><input type="checkbox" id="ax-motivo-ninguno" onchange="motivoCambio('ninguno')"> Ninguno de los anteriores</label>
       </div>
     </div>
 
@@ -137,6 +135,35 @@
       <div class="card">
         <div class="card-hint">Las siguientes afirmaciones describen situaciones que pueden pasarte en tu <strong>vida cotidiana actual</strong>. Para cada una, marcá con qué frecuencia te sucede: 0 = Nunca · 1 = Ocasionalmente · 2 = Algunas veces · 3 = Con bastante frecuencia · 4 = Muy frecuentemente. No hay respuestas buenas ni malas.</div>
         <div id="dex-items"></div>
+      </div>
+    </div>
+
+    <div id="bloque-autismo" style="display:none;">
+      <div class="seccion-marca">
+        <div class="seccion-marca-titulo">AQ · Cociente del Espectro Autista</div>
+        <div class="seccion-marca-sub">50 ítems</div>
+      </div>
+      <div class="card">
+        <div class="card-hint">Para cada frase, marcá qué tan de acuerdo estás, pensando en cómo sos habitualmente. No hay respuestas correctas ni incorrectas.</div>
+        <div id="aq-items"></div>
+      </div>
+
+      <div class="seccion-marca">
+        <div class="seccion-marca-titulo">AQ-10</div>
+        <div class="seccion-marca-sub">Cribado breve · 10 ítems</div>
+      </div>
+      <div class="card">
+        <div class="card-hint">Mismo criterio que el cuestionario anterior: marcá qué tan de acuerdo estás con cada frase.</div>
+        <div id="aq10-items"></div>
+      </div>
+
+      <div class="seccion-marca">
+        <div class="seccion-marca-titulo">EQ · Coeficiente de Empatía</div>
+        <div class="seccion-marca-sub">60 ítems</div>
+      </div>
+      <div class="card">
+        <div class="card-hint">Para cada frase, marcá qué tan de acuerdo estás, pensando en cómo sos habitualmente con las personas que te rodean.</div>
+        <div id="eq-items"></div>
       </div>
     </div>
 

@@ -22,6 +22,7 @@
 .escala-item:last-child { border-bottom: none; }
 .escala-pregunta { font-size: 0.86rem; margin-bottom: 10px; line-height: 1.4; }
 .escala-opts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.escala-opts-4 { grid-template-columns: repeat(4, 1fr); }
 .escala-opts label { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 7px 3px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); text-align: center; }
 .escala-opts input[type="radio"] { accent-color: var(--accent); }
 .escala-opts span { font-size: 0.64rem; color: var(--muted); line-height: 1.2; }
