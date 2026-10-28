@@ -619,8 +619,10 @@ function _construirIntake() {
   var saludTxt  = _formatearChecklist(ANT_SALUD, 'ax-salud', 'ax-salud-ninguno', 'ax-salud-otros', 'Ninguno reportado.', 'Aclaraciones: ');
   var infttoTxt = _formatearChecklist(TRAT_INFANCIA, 'ax-inftto', 'ax-inftto-ninguno', 'ax-inftto-otros', 'Ninguno reportado.');
   var antClinicosPartes = [];
-  if (saludTxt)  antClinicosPartes.push('Antecedentes de salud: ' + saludTxt);
-  if (infttoTxt) antClinicosPartes.push('Tratamientos realizados durante la infancia: ' + infttoTxt);
+  if (saludTxt) antClinicosPartes.push('Antecedentes de salud: ' + saludTxt);
+  // Si no hizo ningún tratamiento en la infancia no aporta nada al informe —
+  // se omite la línea entera en vez de escribir "...: Ninguno reportado." en el Word.
+  if (infttoTxt && infttoTxt !== 'Ninguno reportado.') antClinicosPartes.push('Tratamientos realizados durante la infancia: ' + infttoTxt);
 
   return {
     nombre: document.getElementById('ax-nombre').value.trim() || null,
