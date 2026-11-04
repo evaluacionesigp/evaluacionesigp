@@ -5227,16 +5227,16 @@ var YESAVAGE_ITEMS = [
   {n:30, text:'¿Su mente está tan clara como lo acostumbraba a estar?',              dep:'NO'}
 ];
 function yesavageCatFromTotal(total){
-  if(total<=9)  return{cat:'Sin depresión significativa',    rango:'0–9',   badge:'bg-minima'};
-  if(total<=19) return{cat:'Depresión leve',                 rango:'10–19', badge:'bg-moderada'};
-  return              {cat:'Depresión establecida',           rango:'20–30', badge:'bg-grave'};
+  if(total<=9)  return{cat:'Sin sintomatología significativa', rango:'0–9',   badge:'bg-minima'};
+  if(total<=19) return{cat:'Sintomatología leve',               rango:'10–19', badge:'bg-moderada'};
+  return              {cat:'Sintomatología significativa',      rango:'20–30', badge:'bg-grave'};
 }
 function _mostrarResultadoYesavage(total){
   var r=yesavageCatFromTotal(total);
   var interp='<p>Puntaje GDS-30: <strong>'+total+'/30</strong> — <strong>'+r.cat+'</strong>.</p>';
-  if(total<=9) interp+='<p>La puntuación se encuentra dentro del rango de normalidad, sin indicadores de depresión geriátrica clínicamente significativa.</p>';
-  else if(total<=19) interp+='<p>La puntuación sugiere <strong>depresión leve</strong>. Se recomienda seguimiento y evaluación clínica complementaria.</p>';
-  else interp+='<p>La puntuación indica una <strong>depresión establecida</strong>. Se recomienda evaluación clínica completa y tratamiento especializado.</p>';
+  if(total<=9) interp+='<p>La puntuación se encuentra dentro del rango de normalidad, sin indicadores de sintomatología depresiva significativa.</p>';
+  else if(total<=19) interp+='<p>La puntuación sugiere <strong>sintomatología depresiva leve</strong>. Se recomienda seguimiento y evaluación clínica complementaria.</p>';
+  else interp+='<p>La puntuación indica <strong>sintomatología depresiva significativa</strong>. Se recomienda evaluación clínica completa y tratamiento especializado.</p>';
   interp+='<p><em>Yesavage et al. (1983). Corte ≥12 anormalidad; ≥15 sensibilidad 84%, especificidad 95% (Burke et al. 1992).</em></p>';
   document.getElementById('yesavage-pts').textContent=total;
   document.getElementById('yesavage-cat').textContent=r.cat;
