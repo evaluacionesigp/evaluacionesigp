@@ -5676,14 +5676,19 @@ var MMP_CAMPOS = [
   { id: 'mmp-orient', max: 10, label: 'Orientación' },
   { id: 'mmp-mem', max: 3, label: 'Memoria inmediata' },
   { id: 'mmp-aten', max: 5, label: 'Atención 100−7' },
-  { id: 'mmp-control', max: 3, label: 'Control mental' },
+  { id: 'mmp-control', max: 5, label: 'Control mental (MUNDO al revés)' },
   { id: 'mmp-fluencia', max: 3, label: 'Fluencia verbal' },
-  { id: 'mmp-mem-asoc', max: 3, label: 'Memoria asociación' },
+  { id: 'mmp-mem-asoc', max: 4, label: 'Memoria asociación' },
   { id: 'mmp-recon', max: 4, label: 'Reconocimiento' },
   { id: 'mmp-conceptos', max: 3, label: 'Proces. conceptos' }
 ];
 var MMP_TOTAL_MAX = 32;
 var MMP_CORTE = 24;
+// "Atención 100−7" y "Control mental" son dos métodos para el mismo dominio
+// (resta seriada vs. deletrear MUNDO al revés): el MMP toma el mayor de los
+// dos como puntaje del dominio (máx. 5), no se suman — por eso alcanza con
+// cargar uno solo de los dos.
+var MMP_PAR_ATENCION = ['mmp-aten', 'mmp-control'];
 
 function iniciarMMP() {
   document.getElementById('mmp-fecha').value = new Date().toISOString().split('T')[0];
@@ -5696,19 +5701,30 @@ function limpiarMMP() {
 function calcularMMP() {
   var total = 0, vals = {}, todos = true;
   MMP_CAMPOS.forEach(function(c) {
+    var esAtencion = MMP_PAR_ATENCION.indexOf(c.id) !== -1;
     var v = document.getElementById(c.id).value;
-    if (v === '') { todos = false; return; }
+    if (v === '') { if (!esAtencion) todos = false; return; }
     var n = parseInt(v, 10);
     if (isNaN(n) || n < 0 || n > c.max) { alert('Puntaje inválido en ' + c.label + ' (0–' + c.max + ').'); todos = false; return; }
     vals[c.id] = n;
-    total += n;
   });
+  if (vals['mmp-aten'] === undefined && vals['mmp-control'] === undefined) {
+    alert('Completá al menos uno de los dos: Atención 100−7 o Control mental (MUNDO al revés).');
+    return;
+  }
   if (!todos) { alert('Completá todos los dominios.'); return; }
+  var atencionPts = Math.max(vals['mmp-aten'] || 0, vals['mmp-control'] || 0);
+  MMP_CAMPOS.forEach(function(c) {
+    if (MMP_PAR_ATENCION.indexOf(c.id) !== -1) return; // atención/control: ya se cuenta aparte, no se suma dos veces
+    total += vals[c.id];
+  });
+  total += atencionPts;
   var normal = total >= MMP_CORTE;
   var cat = normal ? 'Normal' : 'Por debajo del punto de corte';
   var badge = normal ? 'bg-minima' : 'bg-grave';
   var dominiosHtml = MMP_CAMPOS.map(function(c) {
     var v = vals[c.id];
+    if (v === undefined) return ''; // el método de atención/control que no se cargó
     var pct = Math.round((v / c.max) * 100);
     var col = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
     return '<div class="detalle-item"><div class="detalle-num" style="color:' + col + '">' + v + '/' + c.max + '</div><div class="detalle-lbl">' + c.label + '</div></div>';
@@ -5717,7 +5733,7 @@ function calcularMMP() {
   interp += '<p>Punto de corte: ≥' + MMP_CORTE + ' (por debajo sugiere deterioro cognitivo en EP).</p>';
   if (normal) interp += '<p>El puntaje se encuentra <strong>dentro del rango esperado</strong> en el cribado cognitivo para Parkinson.</p>';
   else interp += '<p>El puntaje se encuentra <strong>por debajo del punto de corte</strong>. Se recomienda evaluación neuropsicológica complementaria.</p>';
-  var domBajos = MMP_CAMPOS.filter(function(c) { return vals[c.id] < Math.floor(c.max * 0.5); }).map(function(c) { return c.label; });
+  var domBajos = MMP_CAMPOS.filter(function(c) { return vals[c.id] !== undefined && vals[c.id] < Math.floor(c.max * 0.5); }).map(function(c) { return c.label; });
   if (domBajos.length) interp += '<p>Dominios con desempeño reducido (&lt; 50%): ' + domBajos.join(', ') + '.</p>';
   interp += '<p><em>Fuente: Fernández et al. · Mini Mental Parkinson. Interpretación orientativa.</em></p>';
   document.getElementById('mmp-pts-total').textContent = total;
@@ -13628,9 +13644,9 @@ var SCREENING_SUBESCALAS_CFG = {
       { label: 'MMP - Orientación', key: 'mmp-orient', max: 10 },
       { label: 'MMP - Memoria inmediata', key: 'mmp-mem', max: 3 },
       { label: 'MMP - Atención 100−7', key: 'mmp-aten', max: 5 },
-      { label: 'MMP - Control mental', key: 'mmp-control', max: 3 },
+      { label: 'MMP - Control mental', key: 'mmp-control', max: 5 },
       { label: 'MMP - Fluencia verbal', key: 'mmp-fluencia', max: 3 },
-      { label: 'MMP - Memoria asociación', key: 'mmp-mem-asoc', max: 3 },
+      { label: 'MMP - Memoria asociación', key: 'mmp-mem-asoc', max: 4 },
       { label: 'MMP - Reconocimiento', key: 'mmp-recon', max: 4 },
       { label: 'MMP - Proces. conceptos', key: 'mmp-conceptos', max: 3 }
     ],

@@ -77,7 +77,7 @@
     <div class="sidebar-bottom">
       <div class="sidebar-user" id="topbar-email"></div>
       <button class="sidebar-btn-salir" onclick="doLogout()">Cerrar sesión</button>
-      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.80</div>
+      <div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;letter-spacing:0.5px;font-family:monospace;font-weight:700;">IGP — v1.14.81</div>
     </div>
   </aside>
 
@@ -1426,10 +1426,10 @@
           <div class="form-grid">
             <div class="field"><label>Orientación temporal y espacial (0–10)</label><input type="number" id="mmp-orient" min="0" max="10" placeholder="0–10"></div>
             <div class="field"><label>Memoria inmediata — tarjetas ABC (0–3)</label><input type="number" id="mmp-mem" min="0" max="3" placeholder="0–3"></div>
-            <div class="field"><label>Atención — restas 100−7 (0–5)</label><input type="number" id="mmp-aten" min="0" max="5" placeholder="0–5"></div>
-            <div class="field"><label>Control mental — MUNDO al revés (0–3)</label><input type="number" id="mmp-control" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Atención — restas 100−7 (0–5, opcional si cargás el de abajo)</label><input type="number" id="mmp-aten" min="0" max="5" placeholder="0–5"></div>
+            <div class="field"><label>Control mental — MUNDO al revés (0–5, opcional si ya cargaste la resta de 7 — se toma el mayor de los dos)</label><input type="number" id="mmp-control" min="0" max="5" placeholder="0–5"></div>
             <div class="field"><label>Fluencia verbal — animales letra L (0–3)</label><input type="number" id="mmp-fluencia" min="0" max="3" placeholder="0–3"></div>
-            <div class="field"><label>Memoria de asociación — tarjetas DEF (0–3)</label><input type="number" id="mmp-mem-asoc" min="0" max="3" placeholder="0–3"></div>
+            <div class="field"><label>Memoria de asociación — tarjetas DEF (0–4)</label><input type="number" id="mmp-mem-asoc" min="0" max="4" placeholder="0–4"></div>
             <div class="field"><label>Reconocimiento — tarjeta G (0–4)</label><input type="number" id="mmp-recon" min="0" max="4" placeholder="0–4"></div>
             <div class="field"><label>Procesamiento de conceptos (0–3)</label><input type="number" id="mmp-conceptos" min="0" max="3" placeholder="0–3"></div>
           </div>
@@ -5452,7 +5452,7 @@
 
 <script src="/globals.js"></script>
 <script type="module" src="/src/main.js"></script>
-<script src="/legacy-tests.js?v=1.14.80" defer></script>
+<script src="/legacy-tests.js?v=1.14.81" defer></script>
 
 <div id="tooltip-glosario" role="tooltip" aria-hidden="true"></div>
 </body>
