@@ -13643,8 +13643,7 @@ var SCREENING_SUBESCALAS_CFG = {
     dominios: [
       { label: 'MMP - Orientación', key: 'mmp-orient', max: 10 },
       { label: 'MMP - Memoria inmediata', key: 'mmp-mem', max: 3 },
-      { label: 'MMP - Atención 100−7', key: 'mmp-aten', max: 5 },
-      { label: 'MMP - Control mental', key: 'mmp-control', max: 5 },
+      { label: 'MMP - Atención y control mental', keys: ['mmp-aten', 'mmp-control'], max: 5 },
       { label: 'MMP - Fluencia verbal', key: 'mmp-fluencia', max: 3 },
       { label: 'MMP - Memoria asociación', key: 'mmp-mem-asoc', max: 4 },
       { label: 'MMP - Reconocimiento', key: 'mmp-recon', max: 4 },
@@ -13692,9 +13691,23 @@ function generarTablaSubescalas(test, datos) {
     return _wCell(_wPar(_wRun(String(txt != null ? txt : '—'), { sz: 20, bold: !!bold, font: 'Arial', color: '000000' }), { align: center ? 'center' : 'left', before: 14, after: 14 }), { w: w, fill: bg || 'FFFFFF', compact: true });
   }
 
+  function _subescalaValor(key) {
+    var v = dom[key];
+    if (v === null || v === undefined || v === '') v = datos[key];
+    return (v === null || v === undefined || v === '') ? null : v;
+  }
+
   cfg.dominios.forEach(function(row) {
-    var v = dom[row.key];
-    if (v === null || v === undefined || v === '') v = datos[row.key];
+    var v;
+    if (row.keys) {
+      // Fila combinada: dos formas de cargar el mismo dominio (ej. MMP
+      // Atención 100−7 / Control mental) — se muestra el mayor de las que
+      // estén cargadas, nunca la suma, para que coincida con el total.
+      var cargados = row.keys.map(_subescalaValor).filter(function(x) { return x !== null; });
+      v = cargados.length ? Math.max.apply(null, cargados.map(Number)) : null;
+    } else {
+      v = _subescalaValor(row.key);
+    }
     rows.push(_wRow([
       subCell(row.label, COL_SUB[0], 'FFFFFF', false, false),
       subCell(_subescalaScoreTxt(v, row.max), COL_SUB[1], 'FFFFFF', true, false)
