@@ -16176,7 +16176,7 @@ var FAM_AVDE = [
 function famAvdItemSignificativo(v) {
   if (v == null || v === '') return false;
   var n = parseInt(v, 10);
-  return !isNaN(n) && n >= 2;
+  return !isNaN(n) && n >= 1;
 }
 
 function famAvdHaySignificativo(obj, items) {
